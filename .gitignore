@@ -1,0 +1,37 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+
+# JavaScript dependencies and generated output
+node_modules/
+dist/
+build/
+.next/
+
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+.pytest_cache/
+
+# Compiled output (review if a future stack uses bin/ for source scripts)
+target/
+bin/
+obj/
+
+# Test output and logs
+coverage/
+*.log
+
+# OS and personal editor settings
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Keep source, dependency manifests, lockfiles, and documentation tracked.
