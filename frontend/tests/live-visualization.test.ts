@@ -171,12 +171,11 @@ test('local and analyzed sources stay separate and arbitrary analysis remains di
   const unsupported = result(); unsupported.source_type = 'real'; assert.equal(supportsDemoFrames(unsupported), false);
   assert.match(renderToStaticMarkup(createElement(DemoWorkbench, { result: unsupported })), /No images or overlays are substituted/);
 });
-test('observation workspace precedes explicitly synthetic controls without substituting results', () => {
+test('live observation workspace excludes synthetic controls without substituting results', () => {
   const html = renderToStaticMarkup(createElement(WorkbenchShell));
-  assert.ok(html.indexOf('id="observations"') < html.indexOf('id="synthetic-analysis"'));
+  assert.match(html, /id="observations"/);
   assert.match(html, /data-source="local_preview"/);
-  assert.match(html, /data-source="synthetic"/);
-  assert.match(html, /Simulated source/);
+  assert.doesNotMatch(html, /id="synthetic-analysis"|data-source="synthetic"|Simulated source/);
   assert.doesNotMatch(html, /data-job-id|scientific-detection|data-observed-frame/);
   assert.match(html, /Not performed/);
 });

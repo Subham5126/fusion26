@@ -12,6 +12,8 @@ import { useLocalSequence } from '../../hooks/useLocalSequence';
 import { useFramePlayback } from '../../hooks/useFramePlayback';
 import { trackColors } from '../../viewer/trackColors';
 import { apiUrl } from '../../api/baseUrl';
+import { TrackQualityPanel } from './TrackQualityPanel';
+import { buildTrackReport, downloadTrackReport } from '../../viewer/trackReport';
 
 export function LocalWorkbench() {
   const sequence = useLocalSequence(), playback = useFramePlayback(sequence.frames);
@@ -41,6 +43,11 @@ export function LocalWorkbench() {
   const track = result?.tracks.find(track => track.track_id === selected);
   const ready = !!current && !sequence.loading && !sequence.draft.length;
   const choose = () => { playback.pause(); input.current?.click(); };
+  const download = () => {
+    if (!result || !manifest) return;
+    try { downloadTrackReport(buildTrackReport(result, manifest, sequence.frames, selected)); }
+    catch (error) { setUploadError(error instanceof Error ? error.message : 'Report download failed'); }
+  };
   return <section id="observations" className="workbench-shell local-workbench" aria-label="Mission image workbench" data-source={result ? 'uploaded_images' : 'local_preview'} data-job-id={result?.job_id} data-analysis-phase={analysis.state.phase}>
     <header className="observation-toolbar" aria-label="Image selection and sequence controls">
       <div className="observation-toolbar-heading"><Icon name="image" /><div><h2>Optical observations</h2><p>Local Image Preview · Analyze uploads your confirmed sequence.</p></div></div>
@@ -52,7 +59,7 @@ export function LocalWorkbench() {
     </header>
     <input ref={input} hidden type="file" multiple accept="image/jpeg,image/png,.jpg,.jpeg,.png" aria-label="Select telescope images" tabIndex={-1}
       onChange={event => { const files = Array.from(event.currentTarget.files ?? []); event.currentTarget.value = ''; if (files.length) { playback.pause(); void sequence.select(files); } }} />
-    <div className="local-sequence-notice"><Icon name="shield" /><span>Confirm exactly five grayscale telescope frames, then Analyze to upload them to the local backend. Timestamps are unknown.</span></div>
+    <div className="local-sequence-notice"><Icon name="shield" /><span>Confirm exactly five grayscale telescope frames, then Analyze to upload them to the analysis service. Timestamps are unknown.</span></div>
     {analysis.state.phase !== 'idle' && <div className="sequence-feedback" role={analysis.state.phase === 'failed' ? 'alert' : 'status'}>
       <strong>{presentation.label}</strong> · {presentation.description}
       {analysis.state.phase === 'failed' && <span> Error: {analysis.state.error.code}.</span>}
@@ -77,10 +84,10 @@ export function LocalWorkbench() {
     <div className="workspace-body"><div className="observation-area">
       <OpticalViewer key={sequence.frames[0]?.id ?? 'empty'} frame={current} onSelect={choose} onStep={direction => playback.seek(playback.index + direction)}
         onToggle={() => { if (ready) playback.toggle(); }} onError={playback.pause}
-        overlay={scale => <ScientificOverlay model={model} scale={scale} selected={selected} select={setSelected} visibility={visibility}
+        overlay={scale => <ScientificOverlay model={model} scale={scale} selected={selected} select={setSelected} visibility={visibility} currentFrame={playback.index}
           nativeSize={current ? { width: current.width_px, height: current.height_px } : undefined} />} />
       {!!model.warnings.length && <p className="analysis-note" role="status">{model.warnings.join(' ')}</p>}
-      {result && !model.detections.length && <p className="analysis-note">No candidates in this frame.</p>}
+      {result && !model.warnings.length && !model.detections.length && <p className="analysis-note">No candidates in this frame.</p>}
       {result && <p className="t08-forecast-status" data-final-frame={playback.index === sequence.frames.length - 1}>
         {playback.index === sequence.frames.length - 1 ? 'Final frame · ' : ''}
         {model.tracks.some(t => t.predictions.length) ? `Forecast continuation · ${model.tracks.reduce((n, t) => n + t.predictions.length, 0)} backend predictions. Dashed lines and hollow dots are not observations.`
@@ -112,13 +119,14 @@ export function LocalWorkbench() {
       {result && <><label className="demo-track-selector">Selected track<select aria-label="Select upload track" value={selected ?? ''} onChange={event => setSelected(event.target.value)}>
         {!result.tracks.length && <option value="">No tracks</option>}{result.tracks.map(track => <option key={track.track_id}>{track.track_id}</option>)}</select></label>
         {track && <><div className="t08-track-colors"><span style={{ color: trackColors(track.track_id).observed }}>● Observed</span><span style={{ color: trackColors(track.track_id).forecast }}>◌ Forecast</span></div>
-          <dl className="evidence-values"><div><dt>Status</dt><dd>{track.status}</dd></div><div><dt>Actual observations</dt><dd>{track.observed_count}</dd></div><div><dt>Heuristic quality</dt><dd>{track.quality_score.toFixed(3)}</dd></div><div><dt>Image-plane speed</dt><dd>{track.trajectory ? track.trajectory.speed.toFixed(3) + ' ' + track.trajectory.speed_unit : 'No fit'}</dd></div>
+          <TrackQualityPanel track={track} coordinateFrame={result.coordinate_frame} />
+          <dl className="evidence-values"><div><dt>Status</dt><dd>{track.status}</dd></div><div><dt>Image-plane speed</dt><dd>{track.trajectory ? track.trajectory.speed.toFixed(3) + ' ' + track.trajectory.speed_unit : 'No fit'}</dd></div>
             <div><dt>Fit RMSE</dt><dd>{track.trajectory?.fit_rmse_px == null ? 'Not provided' : `${track.trajectory.fit_rmse_px.toFixed(3)} px`}</dd></div></dl>
           {track.warnings.map((warning, i) => <p className="analysis-note" key={i}>{warning}</p>)}</>}</>}
       {!result && <div className="local-evidence-pending"><span className="inspector-section-label">Local analysis</span><strong>{analysis.state.phase === 'idle' ? 'Not performed' : presentation.label}</strong><p>Detections, track IDs and predictions will appear only with matching backend results.</p></div>}
       <div className="identity-note"><Icon name="info" /><span>Candidate identity remains unverified.</span></div></aside></div>
     <footer className="workspace-footer"><span><Icon name="info" />Observed tracks use solid lines; predictions use dashed lines. Candidate identity is unverified.</span>
-      <div className="export-actions">{result ? <><a className="button button--quiet button--small" href={apiUrl(`/api/jobs/${result.job_id}/exports/json`)}>JSON</a><a className="button button--quiet button--small" href={apiUrl(`/api/jobs/${result.job_id}/exports/csv`)}>CSV</a></> : <span>Exports available after analysis</span>}</div></footer>
+      <div className="export-actions">{result ? <><button type="button" className="button button--primary button--small" onClick={download}><Icon name="download" />Download Report</button><a className="button button--quiet button--small" target="_blank" rel="noopener noreferrer" href={apiUrl(`/api/jobs/${result.job_id}/exports/json`)}>Backend JSON</a><a className="button button--quiet button--small" target="_blank" rel="noopener noreferrer" href={apiUrl(`/api/jobs/${result.job_id}/exports/csv`)}>Backend CSV</a></> : <span>Exports available after analysis</span>}</div></footer>
     {result && <AnalysisResults result={result} showViewer={false} />}
   </section>;
 }

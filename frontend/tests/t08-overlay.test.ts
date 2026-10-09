@@ -82,3 +82,16 @@ test('wrong coordinate frame and failed registration cannot render plausible for
   s.result.coordinate_frame = 'reference_frame_0'; s.result.registration.status = 'failed';
   assert.equal(uploadOverlay(s.result, s.frames[4], 4, s.manifest, s.diagnostics).tracks.length, 0);
 });
+test('selected observed path accumulates and rewinds with the timeline, retaining native projected geometry', () => {
+  const s = uploaded();
+  for (const index of [0, 1, 2, 3, 4, 1, 0]) {
+    const model = uploadOverlay(s.result, s.frames[index], index, s.manifest, s.diagnostics);
+    const html = renderToStaticMarkup(createElement(T08Overlay, { model, scale: 2, selected: s.result.tracks[0].track_id,
+      currentFrame: index, select: () => {}, visibility: { detections: true, tracks: true, predictions: true } }));
+    assert.equal((html.match(/data-observed-frame=/g) ?? []).length, Math.min(index + 1, 3));
+    assert.equal((html.match(/data-from-frame=/g) ?? []).length, Math.min(index, 2));
+    assert.equal((html.match(/data-current-observed-frame=/g) ?? []).length, index < 3 ? 1 : 0);
+    assert.match(html, /cx="20" cy="17"/); // reference (10,12) + current-frame inverse (10,5)
+    assert.ok(model.tracks[0].observed.every(point => point.frame <= index));
+  }
+});

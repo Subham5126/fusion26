@@ -11,10 +11,11 @@ export interface T08OverlayProps {
   select: (id: string) => void;
   visibility: { detections: boolean; tracks: boolean; predictions: boolean };
   nativeSize?: Size;
+  currentFrame?: number;
 }
 // Positions are already projected by the verified source-specific mappers.
 // Keep OpticalViewer's integer pixel centers and exclusive raster edges intact.
-export function T08Overlay({ model, scale, selected, select, visibility, nativeSize }: T08OverlayProps) {
+export function T08Overlay({ model, scale, selected, select, visibility, nativeSize, currentFrame }: T08OverlayProps) {
   const px = (value: number) => value / Math.max(scale, .001);
   const glow = (color: string) => ({ filter: `drop-shadow(0 0 ${px(2.5)}px ${color})` });
   const opacity = (id?: string) => !selected || selected === id ? 1 : .3;
@@ -34,12 +35,17 @@ export function T08Overlay({ model, scale, selected, select, visibility, nativeS
         {visibility.tracks && track.observed.map((point, index) => {
           const previous = track.observed[index - 1];
           const recent = index === track.observed.length - 1;
+          const current = point.frame === currentFrame;
           const ageOpacity = .25 + .75 * (index + 1) / track.observed.length;
           return <g key={point.frame} opacity={ageOpacity}>
             {previous && <line className="t08-observed-segment" data-from-frame={previous.frame} data-to-frame={point.frame}
-              x1={previous.x} y1={previous.y} x2={point.x} y2={point.y} strokeWidth={px(highlighted ? 2.5 : 1.6)} />}
-            <circle className={`observed-point ${recent ? 't08-glow' : ''}`} cx={point.x} cy={point.y} r={px(recent ? 3.7 : 2.5)}
+              x1={previous.x} y1={previous.y} x2={point.x} y2={point.y} strokeWidth={px(highlighted ? 3.2 : 1.6)} style={highlighted ? glow(color.observed) : undefined} />}
+            <circle className={`observed-point ${recent ? 't08-glow' : ''}`} cx={point.x} cy={point.y} r={px(highlighted ? recent ? 5.5 : 3.5 : recent ? 3.7 : 2.5)}
               stroke="none" data-observed-frame={point.frame} style={recent ? glow(color.observed) : undefined} />
+            {highlighted && current && <circle className="t08-current-observation" data-current-observed-frame={point.frame}
+              cx={point.x} cy={point.y} r={px(9)} fill="none" strokeWidth={px(1.5)} style={glow(color.observed)} />}
+            {highlighted && current && <text className="t08-frame-label" x={point.x + px(10)} y={point.y + px(17)}
+              fontSize={px(10)} stroke="#071520" strokeWidth={px(3)} paintOrder="stroke">F{point.frame + 1}</text>}
             <circle className="track-hit-target" cx={point.x} cy={point.y} r={px(11)} fill="transparent" stroke="none"
               {...controls(track.id, `Select track ${track.id}, observed frame ${point.frame}`)} />
           </g>;
