@@ -163,9 +163,10 @@ test('selection, visibility and non-color forecast distinctions appear in the SV
   assert.doesNotMatch(render(false, false), /data-observed-frame|data-predicted-frame|data-detection-id/);
   assert.doesNotMatch(render(true, false), /predicted-point/); assert.match(render(false, true), /predicted-point/);
 });
-test('local and analyzed sources stay separate and arbitrary analysis remains disabled', () => {
+test('local and analyzed sources stay separate and unavailable local actions are absent', () => {
   const local = renderToStaticMarkup(createElement(LocalWorkbench)); const demo = renderToStaticMarkup(createElement(DemoWorkbench, { result: result() }));
-  assert.match(local, /Local Image Preview/); assert.match(local, /Analyze local images/); assert.match(local, /disabled/);
+  assert.match(local, /Local Image Preview/); assert.match(local, /Select telescope images/);
+  assert.doesNotMatch(local, /Analyze local images|Not performed|Timestamps|class="export-actions"/);
   assert.doesNotMatch(local, /data-job-id|Scientific image overlays|scientific-detection/);
   assert.match(demo, /data-source="analyzed_demo"/); assert.match(demo, /Local Image Preview has independent images and no synthetic overlays/);
   const unsupported = result(); unsupported.source_type = 'real'; assert.equal(supportsDemoFrames(unsupported), false);
@@ -179,5 +180,5 @@ test('observation workspace precedes explicitly synthetic controls and contains 
   assert.match(html, /data-source="synthetic"/);
   assert.match(html, /Simulated source/);
   assert.doesNotMatch(html, /data-job-id|scientific-detection|data-observed-frame/);
-  assert.match(html, /Not performed/);
+  assert.match(html, /Run Synthetic Demo/);
 });

@@ -3,14 +3,12 @@ import type { AppPage } from '../../hooks/useHashRoute';
 import { Icon } from '../ui/Icon';
 import { Brand } from './Brand';
 
-export function AppNavigation({ page, hash }: { page: AppPage; hash: string }) {
+export function AppNavigation({ page }: { page: AppPage; hash?: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuToggle = useRef<HTMLButtonElement>(null);
   const destinations = [
-    { label: 'Home', href: '#/', active: page === 'home' && hash !== '#capabilities' },
-    { label: 'Mission Workbench', href: '#/workbench', active: page === 'workbench' },
-    { label: 'Capabilities', href: '#capabilities', active: hash === '#capabilities' },
-    { label: 'System Readiness', href: '#/readiness', active: page === 'readiness' },
+    { label: 'Home', href: '#/', active: page === 'home' },
+    { label: 'Mission Workbench', href: '#/workbench', active: page === 'workbench' || page === 'readiness' },
   ];
 
   return <header className="site-header" onKeyDown={event => {
@@ -30,7 +28,7 @@ export function AppNavigation({ page, hash }: { page: AppPage; hash: string }) {
       <nav id="primary-navigation" className={`primary-navigation ${menuOpen ? 'is-open' : ''}`}
         aria-label="Primary">
         {destinations.map(link => <a key={link.href} href={link.href}
-          aria-current={link.active ? (link.href === '#capabilities' ? 'location' : 'page') : undefined}
+          aria-current={link.active ? 'page' : undefined}
           onClick={() => setMenuOpen(false)}>{link.label}</a>)}
         <a className="button button--primary nav-launch" href="#/workbench"
           onClick={() => setMenuOpen(false)}>Launch Workbench <Icon name="arrow" /></a>
