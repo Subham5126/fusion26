@@ -4,7 +4,7 @@ export type AppPage = 'home' | 'workbench' | 'readiness';
 
 function resolvePage(hash: string): AppPage {
   if (hash === '#/workbench') return 'workbench';
-  if (hash === '#/readiness') return 'readiness';
+  if (hash === '#/readiness' || hash === '#system-diagnostics') return 'readiness';
   return 'home';
 }
 

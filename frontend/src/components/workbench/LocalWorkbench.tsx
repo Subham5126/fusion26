@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useAnalysisJob } from '../../hooks/useAnalysisJob';
 import { presentAnalysis } from '../../state/analysis';
 import { getJobDiagnostics } from '../../api/client';
@@ -18,7 +19,7 @@ import { downloadPdfReport } from '../../viewer/pdfReport';
 import { TrackPathDetail } from './TrackPathDetail';
 import { isSupportedTrack, reviewTracks, reviewOverlay } from '../../viewer/resultReview';
 
-export function LocalWorkbench() {
+export function LocalWorkbench({ overview, navigation }: { overview?: ReactNode; navigation?: ReactNode } = {}) {
   const sequence = useLocalSequence(), playback = useFramePlayback(sequence.frames);
   const analysis = useAnalysisJob();
   const [manifest, setManifest] = useState<SequenceInput | null>(null);
@@ -64,6 +65,12 @@ export function LocalWorkbench() {
     catch (error) { setUploadError(error instanceof Error ? error.message : 'Report download failed'); }
   };
   return <section id="observations" className="workbench-shell local-workbench" aria-label="Mission image workbench" data-source={result ? 'uploaded_images' : 'local_preview'} data-job-id={result?.job_id} data-analysis-phase={analysis.state.phase}>
+    <header className="workbench-overview"><div className="workbench-overview-main">{overview}
+      {current && <dl className="observation-summary" aria-label="Confirmed local sequence summary">
+        <div><Icon name="image" /><div><dt>Frames loaded</dt><dd>{sequence.frames.length}</dd><small>Confirmed sequence</small></div></div>
+        <div><Icon name="scan" /><div><dt>Native dimensions</dt><dd>{`${current.width_px} × ${current.height_px}`}</dd><small>Original pixels</small></div></div>
+      </dl>}
+    </div><div className="workbench-overview-controls">{navigation}</div></header>
     <header className="observation-toolbar" aria-label="Image selection and sequence controls">
       <div className="observation-toolbar-heading"><Icon name="image" /><div><h2>Optical observations</h2><p>Local Image Preview · Analyze uploads your confirmed sequence.</p></div></div>
       <div className="source-actions" role="group" aria-label="Image selection">
@@ -109,6 +116,29 @@ export function LocalWorkbench() {
         {model.tracks.some(t => t.predictions.length) ? 'Short forecast · next frame only. Dashed lines and hollow markers.'
           : result.tracks.some(t => t.trajectory?.predictions.length) ? 'Forecasts appear after the last observation.' : 'Not enough repeated observations for a reliable forecast.'}
         {!visibility.predictions && ' Predictions are hidden.'}</p>}
+    </div><aside className="track-inspector local-sequence-inspector" aria-label="Sequence inspector" tabIndex={0}>
+      <div className="inspector-title"><Icon name="layers" /><h3>Sequence inspector</h3></div>
+      <span className="inspector-section-label">Source & status</span>
+      <dl className="evidence-values"><div><dt>Source</dt><dd>{result ? 'Uploaded images' : 'Local images'}</dd></div><div><dt>Status</dt><dd>{sequence.loading ? 'Validating' : sequence.draft.length ? 'Review order' : result ? 'Live analysis result' : current ? 'Ready to inspect' : 'Awaiting images'}</dd></div><div><dt>Frames</dt><dd>{sequence.frames.length || 'Not loaded'}</dd></div><div><dt>Dimensions</dt><dd>{current ? `${current.width_px} × ${current.height_px} px` : 'Not available'}</dd></div><div><dt>Timestamps</dt><dd>Unknown</dd></div><div><dt>Analysis</dt><dd>{analysis.state.phase === 'idle' ? 'Not performed' : analysis.state.phase}</dd></div></dl>
+      <section className="inspector-frame-card" aria-label="Frame order">
+      <span className="inspector-section-label inspector-frames-label"><Icon name="layers" />Frame order</span>
+      {!current && <p className="inspector-empty-text">Your confirmed frame order will appear here.</p>}
+      {current && <ol className="confirmed-frame-list" aria-label="Confirmed frame order">{sequence.frames.map((frame, index) => <li key={frame.id}><button type="button" disabled={sequence.loading || !!sequence.draft.length}
+        aria-current={index === playback.index ? 'true' : undefined} aria-label={`Inspect frame ${index + 1}: ${frame.file.name}`} onClick={() => playback.seek(index)}>
+        <span>{String(index + 1).padStart(2, '0')}</span><img src={frame.url} alt="" width="44" height="33" /><span title={frame.file.name}>{frame.file.name}</span></button></li>)}</ol>}
+      </section>
+      {result && <><label className="demo-track-selector">Selected track<select aria-label="Select upload track" value={selected ?? ''} onChange={event => setSelected(event.target.value)}>
+        {!reviewedTracks.length && <option value="">No supported tracks</option>}{reviewedTracks.map(track => <option key={track.track_id} value={track.track_id}>{track.track_id} · {track.observed_count} observations</option>)}</select></label>
+        {track && <><div className="t08-track-colors"><span style={{ color: trackColors(track.track_id).observed }}>● Observed</span><span style={{ color: trackColors(track.track_id).forecast }}>◌ Forecast</span></div>
+          {track.observed_count < 2 && <p className="analysis-note">This track has one observation, so there is no observed path to connect. Select a track with two or more observations.</p>}
+          <TrackQualityPanel track={track} coordinateFrame={result.coordinate_frame} />
+          <TrackPathDetail track={track} frameIndex={playback.index} coordinateFrame={result.coordinate_frame} visibility={visibility} />
+          <dl className="evidence-values"><div><dt>Status</dt><dd>{track.status}</dd></div><div><dt>Image-plane speed</dt><dd>{track.trajectory ? track.trajectory.speed.toFixed(3) + ' ' + track.trajectory.speed_unit : 'No fit'}</dd></div>
+            <div><dt>Fit RMSE</dt><dd>{track.trajectory?.fit_rmse_px == null ? 'Not provided' : `${track.trajectory.fit_rmse_px.toFixed(3)} px`}</dd></div></dl>
+          {!!track.warnings.length && <details><summary>Track notes</summary>{track.warnings.map((warning, i) => <p className="analysis-note" key={i}>{warning}</p>)}</details>}</>}</>}
+      {!result && <div className="local-evidence-pending"><span className="inspector-section-label">Local analysis</span><strong>{analysis.state.phase === 'idle' ? 'Not performed' : presentation.label}</strong><p>Detections, track IDs and predictions will appear only with matching backend results.</p></div>}
+      <div className="identity-note"><Icon name="info" /><span>Candidate identity remains unverified.</span></div></aside></div>
+    <div className="local-playback-dock" role="group" aria-label="Local frame playback">
       <div className="frame-caption"><span>{current ? `FRAME ${String(playback.index + 1).padStart(2, '0')}` : 'NO FRAME SELECTED'}</span><strong title={current?.file.name}>{current?.file.name ?? 'Choose and confirm your observations'}</strong></div>
       <div className="frame-timeline local-frame-timeline"><div className="timeline-controls">
         <button type="button" disabled={!ready || playback.index === 0} aria-label="Previous frame" onClick={() => playback.seek(playback.index - 1)}><Icon name="back" /></button>
@@ -123,26 +153,7 @@ export function LocalWorkbench() {
         aria-valuetext={current ? `Frame ${playback.index + 1} of ${sequence.frames.length}: ${current.file.name}` : 'No confirmed sequence'} onChange={event => playback.seek(Number(event.target.value) - 1)} />
         <div><span>01</span><span>{sequence.frames.length ? String(sequence.frames.length).padStart(2, '0') : '—'}</span></div></div>
       <p>Display rate only · acquisition timing unknown</p></div>
-    </div><aside className="track-inspector local-sequence-inspector" aria-label="Sequence inspector">
-      <div className="inspector-title"><Icon name="layers" /><h3>Sequence inspector</h3></div>
-      <span className="inspector-section-label">Source & status</span>
-      <dl className="evidence-values"><div><dt>Source</dt><dd>{result ? 'Uploaded images' : 'Local images'}</dd></div><div><dt>Status</dt><dd>{sequence.loading ? 'Validating' : sequence.draft.length ? 'Review order' : result ? 'Live analysis result' : current ? 'Ready to inspect' : 'Awaiting images'}</dd></div><div><dt>Frames</dt><dd>{sequence.frames.length || 'Not loaded'}</dd></div><div><dt>Dimensions</dt><dd>{current ? `${current.width_px} × ${current.height_px} px` : 'Not available'}</dd></div><div><dt>Timestamps</dt><dd>Unknown</dd></div><div><dt>Analysis</dt><dd>{analysis.state.phase === 'idle' ? 'Not performed' : analysis.state.phase}</dd></div></dl>
-      <span className="inspector-section-label inspector-frames-label">Frames</span>
-      {!current && <p className="inspector-empty-text">Your confirmed frame order will appear here.</p>}
-      {current && <ol className="confirmed-frame-list" aria-label="Confirmed frame order">{sequence.frames.map((frame, index) => <li key={frame.id}><button type="button" disabled={sequence.loading || !!sequence.draft.length}
-        aria-current={index === playback.index ? 'true' : undefined} aria-label={`Inspect frame ${index + 1}: ${frame.file.name}`} onClick={() => playback.seek(index)}>
-        <span>{String(index + 1).padStart(2, '0')}</span><img src={frame.url} alt="" width="44" height="33" /><span title={frame.file.name}>{frame.file.name}</span></button></li>)}</ol>}
-      {result && <><label className="demo-track-selector">Selected track<select aria-label="Select upload track" value={selected ?? ''} onChange={event => setSelected(event.target.value)}>
-        {!reviewedTracks.length && <option value="">No supported tracks</option>}{reviewedTracks.map(track => <option key={track.track_id} value={track.track_id}>{track.track_id} · {track.observed_count} observations</option>)}</select></label>
-        {track && <><div className="t08-track-colors"><span style={{ color: trackColors(track.track_id).observed }}>● Observed</span><span style={{ color: trackColors(track.track_id).forecast }}>◌ Forecast</span></div>
-          {track.observed_count < 2 && <p className="analysis-note">This track has one observation, so there is no observed path to connect. Select a track with two or more observations.</p>}
-          <TrackQualityPanel track={track} coordinateFrame={result.coordinate_frame} />
-          <TrackPathDetail track={track} frameIndex={playback.index} coordinateFrame={result.coordinate_frame} visibility={visibility} />
-          <dl className="evidence-values"><div><dt>Status</dt><dd>{track.status}</dd></div><div><dt>Image-plane speed</dt><dd>{track.trajectory ? track.trajectory.speed.toFixed(3) + ' ' + track.trajectory.speed_unit : 'No fit'}</dd></div>
-            <div><dt>Fit RMSE</dt><dd>{track.trajectory?.fit_rmse_px == null ? 'Not provided' : `${track.trajectory.fit_rmse_px.toFixed(3)} px`}</dd></div></dl>
-          {!!track.warnings.length && <details><summary>Track notes</summary>{track.warnings.map((warning, i) => <p className="analysis-note" key={i}>{warning}</p>)}</details>}</>}</>}
-      {!result && <div className="local-evidence-pending"><span className="inspector-section-label">Local analysis</span><strong>{analysis.state.phase === 'idle' ? 'Not performed' : presentation.label}</strong><p>Detections, track IDs and predictions will appear only with matching backend results.</p></div>}
-      <div className="identity-note"><Icon name="info" /><span>Candidate identity remains unverified.</span></div></aside></div>
+    </div>
     <footer className="workspace-footer"><span><Icon name="info" />Solid: observed · Dashed: forecast</span>
       <div className="export-actions">{result ? <><button type="button" className="button button--primary button--small" onClick={() => download('pdf')}><Icon name="download" />Download Report (PDF)</button><button type="button" className="button button--quiet button--small" onClick={() => download('json')}>Report JSON</button><a className="button button--quiet button--small" target="_blank" rel="noopener noreferrer" href={apiUrl(`/api/jobs/${result.job_id}/exports/csv`)}>Backend CSV</a></> : <span>Exports available after analysis</span>}</div></footer>
     {result && <AnalysisResults result={result} showViewer={false} reviewCounts={{ tracks: supportedCount, predictions: visibility.predictions ? model.tracks.reduce((n,t) => n+t.predictions.length,0) : 0 }} />}

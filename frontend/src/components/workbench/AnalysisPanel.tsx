@@ -31,9 +31,9 @@ export function AnalysisResults({ result, showViewer = true, reviewCounts }: { r
   const predictions = result.tracks.reduce((count, track) => count + (track.trajectory?.predictions.length ?? 0), 0);
   return <div className="analysis-results">
     <div className="analysis-counts" aria-label="Completed analysis counts">
-      <div><span>{reviewCounts ? 'Candidate detections' : 'Detections'}</span><strong>{result.detections.length}</strong></div>
-      <div><span>{reviewCounts ? 'Supported tracks' : 'Tracks'}</span><strong>{reviewCounts?.tracks ?? result.tracks.length}</strong></div>
-      <div><span>{reviewCounts ? 'Forecast points shown' : 'Predicted points'}</span><strong>{reviewCounts?.predictions ?? predictions}</strong></div>
+      <div><Icon name="scan" /><span>{reviewCounts ? 'Candidate detections' : 'Detections'}</span><strong>{result.detections.length}</strong></div>
+      <div><Icon name="track" /><span>{reviewCounts ? 'Supported tracks' : 'Tracks'}</span><strong>{reviewCounts?.tracks ?? result.tracks.length}</strong></div>
+      <div><Icon name="clock" /><span>{reviewCounts ? 'Forecast points shown' : 'Predicted points'}</span><strong>{reviewCounts?.predictions ?? predictions}</strong></div>
     </div>
     {showViewer && <DemoWorkbench result={result} />}
     {showViewer && <p className="analysis-note">Synthetic results belong to this backend job. Local telescope observations remain a separate sequence.</p>}

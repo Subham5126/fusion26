@@ -15,6 +15,8 @@ import { ScientificOverlay } from '../src/components/workbench/ScientificOverlay
 import { LocalWorkbench } from '../src/components/workbench/LocalWorkbench';
 import { DemoWorkbench } from '../src/components/workbench/DemoWorkbench';
 import { WorkbenchShell } from '../src/components/workbench/WorkbenchShell';
+import { WorkbenchPage } from '../src/pages/WorkbenchPage';
+import { SystemDiagnostics } from '../src/components/workbench/SystemDiagnostics';
 
 // Authored headers and contract fixture exercise boundaries; none are live assets.
 function png(width = 64, height = 48) {
@@ -178,4 +180,23 @@ test('live observation workspace excludes synthetic controls without substitutin
   assert.doesNotMatch(html, /id="synthetic-analysis"|data-source="synthetic"|Simulated source/);
   assert.doesNotMatch(html, /data-job-id|scientific-detection|data-observed-frame/);
   assert.match(html, /Not performed/);
+});
+
+test('integrated UI retains upload actions and keeps diagnostics outside the default live view', () => {
+  const html = renderToStaticMarkup(createElement(WorkbenchPage));
+  assert.match(html, /Mission Workbench/);
+  assert.match(html, /Analyze local images/);
+  assert.match(html, /aria-label="Local frame playback"/);
+  assert.match(html, /aria-controls="system-diagnostics"/);
+  assert.doesNotMatch(html, /id="system-diagnostics"|Synthetic Analysis|Browser only; no upload/);
+  assert.equal(renderToStaticMarkup(createElement(SystemDiagnostics, { isOpen: false })), '');
+});
+
+test('opened diagnostics describes real upload and report capabilities without fabricating a health result', () => {
+  const html = renderToStaticMarkup(createElement(WorkbenchPage, { initialDiagnosticsOpen: true }));
+  assert.match(html, /id="system-diagnostics"/);
+  assert.match(html, /Upload exactly five confirmed grayscale telescope frames/);
+  assert.match(html, /Frontend PDF and JSON track reports/);
+  assert.match(html, /Checking backend/);
+  assert.doesNotMatch(html, /workflow and registration handling are pending|downloads are not connected yet|readiness:.*bootstrap/);
 });
