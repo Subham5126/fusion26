@@ -61,7 +61,7 @@ export interface Capabilities {
   analysis_api: boolean; uploads: boolean; exports: boolean;
 }
 export interface HealthResponse {
-  status: 'ok'; service: 'OrbitTrace'; readiness: 'bootstrap_only';
+  status: 'ok'; service: 'OrbitTrace'; readiness: 'bootstrap_only' | 'local_prototype';
   schema_version: '0.1.0'; capabilities: Capabilities;
 }
 export interface ApiError {code: string; message: string; details: Record<string, string> | null}

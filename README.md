@@ -1,86 +1,33 @@
-# OrbitTrace — FUSION 2K26 / SPACE-02
+# OrbitTrace — original Fusion integration
 
-Ground-based optical detection and tracking of orbital-object candidates.
-The planned workflow is ordered telescope images → image-only candidate
-detections → persistent track IDs → short image-plane trajectory → visual
-evidence and JSON/CSV report. Synthetic sequences are the first end-to-end route;
-real telescope validation is separate. Candidate identity is unverified.
+The one working project is **E:\Fusion**, branch **Subham**. Its original .git,
+datasets, experimental YOLO work and unrelated edits are preserved. The integrated
+app uses existing suitability/OpenCV/registration/tracking/fitting implementations
+and the latest live frontend design with neon boxes, observed paths and forecasts.
 
-## Current readiness
-
-This is a **bootstrap**, with strict schema 0.1.0, bounded configuration, a
-health-only FastAPI service, React readiness screen, authored JSON fixtures and
-explicitly failing CLI placeholders. No generator, detector, tracker, trajectory
-fit, upload service, analysis job or benchmark is implemented. No performance
-numbers have been measured. Fixtures are not inference results.
-
-## Run the bootstrap
-
-The verified local environment is Python 3.12 with Node 24. Install/setup and
-Windows/Linux instructions are in [SETUP](docs/SETUP.md).
-
-Windows PowerShell, from the repository root:
-
+Terminal 1:
 ```powershell
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+Set-Location E:\Fusion
+.\scripts\Start-Backend.ps1
+```
+Terminal 2:
+```powershell
+Set-Location E:\Fusion\frontend
+..\scripts\Start-Frontend.ps1
 ```
 
-In a second terminal:
+Open http://127.0.0.1:5173/#/workbench ; API http://127.0.0.1:8000/docs.
+Services are already running at the verification checkpoint; launch scripts refuse
+occupied ports rather than creating duplicates or killing processes.
 
-```powershell
-cd frontend
-npm run dev
-```
+- [Setup, exact test reproduction and outputs](docs/SETUP.md)
+- [Actual readiness](docs/STATUS.md)
+- [Original-directory integration report](docs/handoffs/T19_ORIGINAL_INTEGRATION.md)
+- [Exact changed/created file allowlist](docs/handoffs/T19_ORIGINAL_INTEGRATION_FILES.txt)
+- [Review-only old-workspace audit](docs/ORIGINAL_WORKSPACE_CLEANUP.md)
 
-Visit the localhost URL Vite prints. It proxies `/api` to port 8000.
-`GET /api/health` reports bootstrap readiness and all algorithm capabilities
-false. Analysis routes are not registered; there is no pretend run button.
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest -q -c backend/pyproject.toml
-.\.venv\Scripts\python.exe scripts/check_imports.py
-.\.venv\Scripts\python.exe scripts/check_docs.py
-```
-
-Algorithm commands such as `scripts/generate_demo.py`, `analyze_sequence.py`
-and `evaluate.py` have working `--help` only; execution exits 2 and names the
-pending task. See [scripts](scripts/README.md).
-
-## Repository map
-
-| Path | Purpose |
-|---|---|
-| backend/app | HTTP health, bounded defaults and Pydantic contracts |
-| backend/orbittrace | Importable algorithm packages; T07 pipeline raises NotImplementedError |
-| frontend | React/TypeScript/Vite readiness UI and synchronized transport types |
-| configs | Proposed demo/pipeline defaults; not validated scientific thresholds |
-| tests/contracts | Authored fixtures and bootstrap contract/health checks |
-| data | Manifests and ignored raw/external/synthetic storage; truth is separate |
-| artifacts / models | Documented future output/optional weight storage; no outputs/weights |
-| docs / docs/agents / docs/handoffs | Project plan, role prompts and task handoffs |
-| SPACE02_Hackathon_Pack | Original supplied planning material, preserved |
-| docs/preparation | Original replaced hackathon templates, preserved |
-
-## Team navigation
-
-Start with [PROJECT_BRIEF](docs/PROJECT_BRIEF.md), [TEAM](docs/TEAM.md),
-[CONTRACTS](docs/CONTRACTS.md), [BACKLOG](docs/BACKLOG.md) and [STATUS](docs/STATUS.md).
-Implementation guidance: [ARCHITECTURE](docs/ARCHITECTURE.md),
-[ALGORITHMS](docs/ALGORITHMS.md), [UI_SPEC](docs/UI_SPEC.md),
-[EVALUATION](docs/EVALUATION.md). Preparation and evidence:
-[DATASETS](docs/DATASETS.md), [RESEARCH](docs/RESEARCH.md),
-[SOURCES](docs/SOURCES.md), [CREDITS](docs/CREDITS.md),
-[SECURITY](docs/SECURITY.md), [RISKS](docs/RISKS.md),
-[DECISIONS](docs/DECISIONS.md), [HACKATHON_PLAN](docs/HACKATHON_PLAN.md),
-[DEMO_AND_JUDGING](docs/DEMO_AND_JUDGING.md).
-
-Root [AGENTS](AGENTS.md) applies to repository work. Integration owns shared
-schemas/config/dependencies and reviews separate worker handoffs. T01 is ready
-for review; B starts T02/T03, C starts T04/T06 on authored fixtures, D starts T08.
-T06 real scoring depends on T02. A prepares T07 after T03/T04/T05.
-
-Unknown timestamps mean pixels/frame; this project does not derive a physical
-orbit, altitude, collision probability or km/s from uncalibrated pixels. Actual
-dataset rights and official event/submission rules remain to be confirmed.
-Original preparation templates and GitHub workflows were preserved. No
-repo-wide license has been selected; no dataset/model was downloaded.
+Five ordered native grayscale PNG/JPEG images drive the actual API. Synthetic demo
+is clearly labeled; ESA train/84 has detections without confirmed trajectories.
+Candidate does not certify debris identity; image-plane tracks establish no orbit,
+altitude, physical speed or collision probability. Quality is heuristic. No Git
+commit/push or workspace deletion was performed. YOLO remains experimental.

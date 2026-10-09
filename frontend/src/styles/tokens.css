@@ -1,0 +1,73 @@
+:root {
+  color-scheme: dark;
+  --color-background: #020c11;
+  --color-surface: #09252a;
+  --color-surface-raised: #0e343b;
+  --color-surface-hover: #14424b;
+  --color-image-background: #01080c;
+  --color-text: #f4f8fa;
+  --color-text-secondary: #a5b9c4;
+  --color-text-muted: #6c828f;
+
+  /* Approved aerospace emerald & ice-blue accents */
+  --color-accent: #12d6aa;
+  --color-accent-bright: #39e6c7;
+  --color-accent-blue: #86d9f1;
+  --color-accent-prediction: #86d9f1;
+  --color-accent-purple: #12d6aa;
+  --color-accent-violet: #39e6c7;
+  --color-on-accent: #020c11;
+
+  /* Glassmorphism & borders */
+  --color-border: rgba(57, 230, 199, 0.16);
+  --color-border-soft: rgba(165, 185, 196, 0.12);
+  --glass-border: rgba(57, 230, 199, 0.16);
+  --glass-border-glow: rgba(18, 214, 170, 0.35);
+  --glass-bg: rgba(9, 37, 42, 0.82);
+  --glass-bg-hover: rgba(14, 52, 59, 0.92);
+  --glass-blur: blur(16px);
+
+  /* Gradients */
+  --gradient-accent: linear-gradient(110deg, #12d6aa 0%, #39e6c7 100%);
+  --gradient-accent-hover: linear-gradient(110deg, #39e6c7 0%, #86d9f1 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(57, 230, 199, 0.08) 0%, rgba(9, 37, 42, 0.4) 100%);
+  --color-accent-wash: rgba(18, 214, 170, 0.08);
+
+  --color-success: #12d6aa;
+  --color-warning: #f5bb68;
+  --color-error: #f87171;
+
+  /* Typography */
+  --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+
+  --type-caption: 13px;
+  --type-small: 14px;
+  --type-body: 16px;
+  --type-panel: 20px;
+  --type-section: 30px;
+  --type-page: 36px;
+  --type-hero: clamp(56px, 4.8vw, 72px);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  --radius-control: 8px;
+  --radius-panel: 14px;
+  --radius-hero: 20px;
+
+  --motion-hover: 200ms;
+  --motion-panel: 280ms;
+  --motion-entrance: 520ms;
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --shadow-panel: 0 16px 48px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 6px 22px rgba(18, 214, 170, 0.18);
+}

@@ -1,0 +1,16 @@
+{
+  "asset": "orbittrace-earth-background.webp",
+  "origin": "Edited with built-in OpenAI image_gen tool",
+  "purpose": "Decorative Earth horizon background; satellite removed, not observation data",
+  "edit_target": "orbittrace-space.webp",
+  "edit_target_sha256": "d5ca543085cf67ea76a802be8379c9c6163870ab1427cdaea6a760de8d12a262",
+  "generated_source_sha256": "e8dc5d26d7bbdb8d26fb601d911af55814c5d6935f294ac89d71e04ebbf3d8df",
+  "asset_sha256": "578e5548db27c37bf6a4262076b02c108526f8950f94da5e827ef0f1e2845372",
+  "dimensions": [
+    1536,
+    1024
+  ],
+  "bytes": 178344,
+  "processing": "WebP format encoding only after the built-in image edit; original source files retained",
+  "edit_prompt": "Use case: precise-object-edit. Edit target: the provided original 1536 by 1024 decorative website background. Remove ONLY the single large foreground satellite from the upper-right part of the sky: remove its complete metal body, both blue rectangular solar-panel wings, dishes, rods, antennas, all associated reflections and silhouette. Seamlessly inpaint that area with the surrounding deep navy space background, sparse tiny stars and the same soft blue haze. Preserve the existing Earth exactly: identical diagonal curved horizon, Earth position and scale, continents, clouds, city lights, thin blue atmospheric horizon, far-right sunrise glow, existing fine light arcs, overall framing and palette. Preserve all other background content and the large dark negative space on the left. No replacement spacecraft, no new satellites, no planets or foreground objects, no extra orbit rings. No text, logo or watermark. Keep the original landscape aspect ratio. The final artwork should look identical except the satellite has disappeared."
+}

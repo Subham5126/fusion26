@@ -1,0 +1,13 @@
+frontend/src/components/workbench/ScientificOverlay.tsx
+frontend/src/components/workbench/LocalWorkbench.tsx
+frontend/src/components/workbench/DemoWorkbench.tsx
+frontend/src/viewer/uploadOverlay.ts
+frontend/tests/run-data-tests.mjs
+frontend/src/components/workbench/T08Overlay.tsx
+frontend/src/components/workbench/t08-overlay.css
+frontend/src/viewer/trackColors.ts
+frontend/tests/t08-overlay.test.ts
+frontend/tests/verify-t08-http.mjs
+docs/handoffs/T08_LIVE_INTEGRATION.md
+docs/handoffs/T08_LIVE_INTEGRATION.patch
+docs/handoffs/T08_LIVE_INTEGRATION_FILES.txt
