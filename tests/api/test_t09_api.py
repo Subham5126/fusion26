@@ -38,7 +38,7 @@ def test_demo_endpoint_and_job_lifecycle():
     response = client.post("/api/analyze/demo")
     assert response.status_code == 202
     job_id = response.json()["job_id"]
-    
+
     # 2. Poll job until success
     max_retries = 50
     succeeded = False
@@ -52,14 +52,14 @@ def test_demo_endpoint_and_job_lifecycle():
         elif state["status"] == "failed":
             pytest.fail(f"Job failed: {state.get('error')}")
         time.sleep(0.1)
-    
+
     assert succeeded, "Job did not complete in time"
-    
+
     # 3. Get result
     result_resp = client.get(f"/api/jobs/{job_id}/result")
     assert result_resp.status_code == 200
     result_data = result_resp.json()
-    
+
     # Validate via pydantic
     AnalysisResult.model_validate(result_data)
     assert result_data["status"] == "succeeded"
@@ -71,7 +71,7 @@ def test_upload_spoofed_synthetic_profile_rejected():
     for i, frame in enumerate(frames):
         success, encoded = cv2.imencode('.png', frame)
         files.append(("files", (f"frame_{i}.png", encoded.tobytes(), "image/png")))
-        
+
     manifest = {
         "schema_version": "0.1.0",
         "sequence_id": "test_upload",
@@ -86,7 +86,7 @@ def test_upload_spoofed_synthetic_profile_rejected():
             } for i in range(3)
         ]
     }
-    
+
     response = client.post(
         "/api/analyze/upload",
         data={"manifest": json.dumps(manifest)},
@@ -100,7 +100,7 @@ def test_upload_invalid_registration():
     for i, frame in enumerate(frames):
         success, encoded = cv2.imencode('.png', frame)
         files.append(("files", (f"frame_{i}.png", encoded.tobytes(), "image/png")))
-        
+
     manifest = {
         "schema_version": "0.1.0",
         "sequence_id": "test_spotgeo",
@@ -115,7 +115,7 @@ def test_upload_invalid_registration():
             } for i in range(3)
         ]
     }
-    
+
     response = client.post(
         "/api/analyze/upload",
         data={"manifest": json.dumps(manifest)},
@@ -123,14 +123,14 @@ def test_upload_invalid_registration():
     )
     assert response.status_code == 202
     job_id = response.json()["job_id"]
-    
+
     # Wait for completion
     for _ in range(30):
         resp = client.get(f"/api/jobs/{job_id}")
         if resp.json()["status"] in ["succeeded", "failed"]:
             break
         time.sleep(0.1)
-        
+
     state = resp.json()
     assert state["status"] == "failed"
     assert state["error"]["code"] == "pipeline_error"
@@ -146,7 +146,7 @@ def test_upload_invalid_file_count():
         "frames": [{"frame_index": 0, "image_ref": "frame_0", "width_px": 64, "height_px": 48}]
         # But wait, sequence needs min 3 frames, so manifest itself will fail!
     }
-    
+
     response = client.post(
         "/api/analyze/upload",
         data={"manifest": json.dumps(manifest)},
@@ -157,3 +157,38 @@ def test_upload_invalid_file_count():
 def test_job_not_found():
     response = client.get("/api/jobs/missing_job")
     assert response.status_code == 404
+
+def test_job_frame_retrieval_and_errors():
+    # Submit demo to get a job id and generate frames
+    response = client.post("/api/analyze/demo")
+    assert response.status_code == 202
+    job_id = response.json()["job_id"]
+
+    # Wait for completion
+    for _ in range(30):
+        resp = client.get(f"/api/jobs/{job_id}")
+        if resp.json()["status"] in ["succeeded", "failed"]:
+            break
+        time.sleep(0.1)
+
+    assert resp.json()["status"] == "succeeded"
+
+    # Test valid frame
+    frame_resp = client.get(f"/api/jobs/{job_id}/frames/0")
+    assert frame_resp.status_code == 200
+    assert frame_resp.headers["content-type"] == "image/png"
+
+    # Test valid frame index 4
+    frame_resp_4 = client.get(f"/api/jobs/{job_id}/frames/4")
+    assert frame_resp_4.status_code == 200
+
+    # Test invalid frame index bounds (demo creates 5 frames, index 5 is OOB)
+    frame_resp_oob = client.get(f"/api/jobs/{job_id}/frames/5")
+    assert frame_resp_oob.status_code == 404
+
+    frame_resp_neg = client.get(f"/api/jobs/{job_id}/frames/-1")
+    assert frame_resp_neg.status_code == 404
+
+    # Test invalid job id
+    frame_resp_missing = client.get("/api/jobs/missing_job/frames/0")
+    assert frame_resp_missing.status_code == 404

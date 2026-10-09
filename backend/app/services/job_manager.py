@@ -1,6 +1,7 @@
 import asyncio
 import uuid
 import traceback
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict
 
@@ -16,28 +17,39 @@ class JobManager:
         self.max_concurrent = max_concurrent
         self.jobs: Dict[str, JobState] = {}
         self.results: Dict[str, AnalysisResult] = {}
+        self.frames: Dict[str, list] = {}
         self.executor = ThreadPoolExecutor(max_workers=max_concurrent)
         self.active_count = 0
+        self.lock = threading.RLock()
 
     def generate_id(self, prefix="job") -> str:
         return f"{prefix}-{uuid.uuid4().hex}"
 
     def can_accept_job(self) -> bool:
-        queued_or_running = sum(1 for j in self.jobs.values() if j.status in ("queued", "running"))
-        return queued_or_running < self.max_concurrent
+        with self.lock:
+            queued_or_running = sum(1 for j in self.jobs.values() if j.status in ("queued", "running"))
+            return queued_or_running < self.max_concurrent
 
     def submit_job(self, sequence: SequenceInput, frame_pixels: list, config: PipelineConfig, background_tasks=None) -> JobState:
-        if not self.can_accept_job():
-            raise RuntimeError("Capacity exceeded")
+        with self.lock:
+            if not self.can_accept_job():
+                raise RuntimeError("Capacity exceeded")
 
-        # Evict old completed jobs to enforce retention limit
-        if len(self.jobs) >= 100:
-            completed = [k for k, v in self.jobs.items() if v.status in ("succeeded", "failed")]
-            for k in completed[:20]:  # Remove oldest 20 completed jobs
-                self.jobs.pop(k, None)
-                self.results.pop(k, None)
+            # Evict old completed jobs to enforce retention limit and aggregate memory bounds (~500MB)
+            MAX_JOBS = 100
+            MAX_BYTES = 500 * 1024 * 1024
+
+            while len(self.jobs) > MAX_JOBS or sum(f.nbytes for frames in self.frames.values() for f in frames) > MAX_BYTES:
+                completed = [k for k, v in self.jobs.items() if v.status in ("succeeded", "failed")]
+                if not completed:
+                    break
+                oldest = completed[0]
+                self.jobs.pop(oldest, None)
+                self.results.pop(oldest, None)
+                self.frames.pop(oldest, None)
 
         job_id = self.generate_id()
+        self.frames[job_id] = frame_pixels
         job_state = JobState(
             job_id=job_id,
             status="queued",
@@ -58,7 +70,7 @@ class JobManager:
         job = self.jobs[job_id]
         job.status = "running"
         job.progress_stage = "processing"
-        
+
         import functools
         loop = asyncio.get_running_loop()
         try:
