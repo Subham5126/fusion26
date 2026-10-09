@@ -3,6 +3,8 @@ import { Icon } from '../ui/Icon';
 import { ConceptualField } from './ConceptualField';
 import { presentAnalysis, unavailableAnalysis } from '../../state/analysis';
 import type { AnalysisState } from '../../state/analysis';
+import { LocalWorkbench } from './LocalWorkbench';
+import { AnalysisPanel } from './AnalysisPanel';
 
 function TrackInspector() {
   const [tab, setTab] = useState<'evidence' | 'sequence'>('evidence');
@@ -36,6 +38,7 @@ function TrackInspector() {
 }
 
 export function WorkbenchShell({ preview = false, analysis = unavailableAnalysis }: { preview?: boolean; analysis?: AnalysisState }) {
+  if (!preview) return <><AnalysisPanel /><LocalWorkbench /></>;
   const presentation = presentAnalysis(analysis);
   return <section className={`workbench-shell ${preview ? 'workbench-shell--preview' : ''}`}
     aria-label={preview ? 'Conceptual mission workbench preview' : 'Mission workbench shell'}>

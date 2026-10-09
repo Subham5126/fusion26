@@ -140,7 +140,7 @@ test('aborted requests and unverified endpoints never resolve as success', async
   globalThis.fetch = async (_url, options) => { if (options?.signal?.aborted) throw new DOMException('Aborted', 'AbortError'); return new Response('{}'); };
   try {
     await assert.rejects(requestJson('/api/health', controller.signal), { name: 'AbortError' });
-    await assert.rejects(requestJson('/api/jobs/not-installed' as '/api/health'), /not been verified/);
+    await assert.rejects(requestJson('/api/analyze/upload' as '/api/health'), /not been verified/);
   } finally { globalThis.fetch = original; }
 });
 

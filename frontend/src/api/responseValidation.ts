@@ -69,6 +69,11 @@ export function parseApiError(value: unknown): ApiError {
   return value as ApiError;
 }
 
+export function parseJobId(value: unknown): string {
+  text(value, 'job_id', opaqueId);
+  return value as string;
+}
+
 export function parseHealthResponse(value: unknown): HealthResponse {
   const data = record(value, ['status', 'service', 'readiness', 'schema_version', 'capabilities'], 'health');
   choice(data.status, ['ok'], 'health.status'); choice(data.service, ['OrbitTrace'], 'health.service');
@@ -85,6 +90,16 @@ export function parseJobState(value: unknown): JobState {
   nullableNumber(data.progress_fraction, 'progress_fraction', 0, 1);
   if (data.error !== null) parseApiError(data.error);
   return value as JobState;
+}
+
+// HTTP envelope verified in origin/Yogesh at 9e292f9; not a full JobState.
+export interface DemoSubmission { job_id: string; status: 'queued' }
+
+export function parseDemoSubmission(value: unknown): DemoSubmission {
+  const data = record(value, ['job_id', 'status'], 'demo submission');
+  parseJobId(data.job_id);
+  choice(data.status, ['queued'], 'demo submission.status');
+  return value as DemoSubmission;
 }
 
 function detection(value: unknown): Record<string, unknown> {
