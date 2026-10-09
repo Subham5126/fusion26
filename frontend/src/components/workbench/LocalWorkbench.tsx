@@ -13,7 +13,9 @@ import { useFramePlayback } from '../../hooks/useFramePlayback';
 import { trackColors } from '../../viewer/trackColors';
 import { apiUrl } from '../../api/baseUrl';
 
-export function LocalWorkbench() {
+import type { ReactNode } from 'react';
+
+export function LocalWorkbench({ overview, navigation, connection }: { overview?: ReactNode; navigation?: ReactNode; connection?: ReactNode } = {}) {
   const sequence = useLocalSequence(), playback = useFramePlayback(sequence.frames);
   const analysis = useAnalysisJob();
   const [manifest, setManifest] = useState<SequenceInput | null>(null);
@@ -42,21 +44,26 @@ export function LocalWorkbench() {
   const ready = !!current && !sequence.loading && !sequence.draft.length;
   const choose = () => { playback.pause(); input.current?.click(); };
   return <section id="observations" className="workbench-shell local-workbench" aria-label="Mission image workbench" data-source={result ? 'uploaded_images' : 'local_preview'} data-job-id={result?.job_id} data-analysis-phase={analysis.state.phase}>
+    <header className="workbench-overview"><div className="workbench-overview-main">{overview}
+    {current && <dl className="observation-summary" aria-label="Confirmed local sequence summary">
+      <div><Icon name="image" /><div><dt>Frames loaded</dt><dd>{sequence.frames.length}</dd><small>Confirmed local sequence</small></div></div>
+      <div><Icon name="scan" /><div><dt>Native dimensions</dt><dd>{`${current.width_px} × ${current.height_px}`}</dd><small>Original pixels</small></div></div>
+    </dl>}
+    </div><div className="workbench-overview-controls">{navigation}{connection}</div></header>
     <header className="observation-toolbar" aria-label="Image selection and sequence controls">
-      <div className="observation-toolbar-heading"><Icon name="image" /><div><h2>Optical observations</h2><p>Local Image Preview · Analyze uploads your confirmed sequence.</p></div></div>
+      <div className="observation-toolbar-heading"><Icon name="image" /><div><h2>Optical observations</h2><p>Local Image Preview · Analysis uploads your confirmed sequence.</p></div></div>
       <div className="source-actions" role="group" aria-label="Image selection">
         <button className="button button--primary button--small" type="button" onClick={choose}><Icon name="plus" />{current ? 'Replace images' : 'Choose images'}</button>
-        <button className="button button--secondary button--small" type="button" aria-label="Analyze local images" title="Analyze five confirmed images" disabled={!ready || busy || sequence.frames.length !== 5} onClick={submit}><Icon name="scan" /><span className="local-analysis-control-label">Analyze local images</span></button>
+        {ready && sequence.frames.length === 5 && <button className="button button--secondary button--small" type="button" aria-label="Run local image analysis" title="Analyze five confirmed images" disabled={busy} onClick={submit}><Icon name="scan" />Run analysis</button>}
         {!!(current || sequence.draft.length || sequence.loading) && <button className="button button--quiet button--small" type="button" aria-label="Clear sequence" title="Clear sequence" onClick={() => { playback.pause(); sequence.clear(); }}>Clear</button>}
       </div>
     </header>
-    <input ref={input} hidden type="file" multiple accept="image/jpeg,image/png,.jpg,.jpeg,.png" aria-label="Select telescope images" tabIndex={-1}
+    <input ref={input} className="visually-hidden" type="file" multiple accept="image/jpeg,image/png,.jpg,.jpeg,.png" aria-label="Select telescope images" tabIndex={-1}
       onChange={event => { const files = Array.from(event.currentTarget.files ?? []); event.currentTarget.value = ''; if (files.length) { playback.pause(); void sequence.select(files); } }} />
-    <div className="local-sequence-notice"><Icon name="shield" /><span>Confirm exactly five grayscale telescope frames, then Analyze to upload them to the local backend. Timestamps are unknown.</span></div>
     {analysis.state.phase !== 'idle' && <div className="sequence-feedback" role={analysis.state.phase === 'failed' ? 'alert' : 'status'}>
       <strong>{presentation.label}</strong> · {presentation.description}
       {analysis.state.phase === 'failed' && <span> Error: {analysis.state.error.code}.</span>}
-      {busy && <><progress aria-label="Analysis progress" value={presentation.progress ?? 0} max={1} /><button type="button" onClick={analysis.cancel}>Stop monitoring</button></>}
+      {busy && <><progress aria-label="Analysis progress" value={presentation.progress ?? undefined} max={1} /><button type="button" onClick={analysis.cancel}>Stop monitoring</button></>}
     </div>}
     {uploadError && <div className="sequence-feedback sequence-feedback--error" role="alert">{uploadError}</div>}
     {result && <div className="demo-overlay-controls" aria-label="Upload overlay visibility">{(['detections','tracks','predictions'] as const).map(key => <label key={key}><input type="checkbox" checked={visibility[key]} onChange={event => setVisibility(v => ({...v, [key]:event.target.checked}))} />{key}</label>)}</div>}
@@ -86,39 +93,40 @@ export function LocalWorkbench() {
         {model.tracks.some(t => t.predictions.length) ? `Forecast continuation · ${model.tracks.reduce((n, t) => n + t.predictions.length, 0)} backend predictions. Dashed lines and hollow dots are not observations.`
           : result.tracks.some(t => t.trajectory?.predictions.length) ? 'Forecasts appear once the timeline reaches each track’s last observation.' : 'No backend forecasts available for these tracks.'}
         {!visibility.predictions && ' Predictions are hidden.'}</p>}
-      <div className="frame-caption"><span>{current ? `FRAME ${String(playback.index + 1).padStart(2, '0')}` : 'NO FRAME SELECTED'}</span><strong title={current?.file.name}>{current?.file.name ?? 'Choose and confirm your observations'}</strong></div>
-      <div className="frame-timeline local-frame-timeline"><div className="timeline-controls">
-        <button type="button" disabled={!ready || playback.index === 0} aria-label="Previous frame" onClick={() => playback.seek(playback.index - 1)}><Icon name="back" /></button>
-        <button type="button" disabled={!ready} className="timeline-play" aria-label={playback.playing ? 'Pause frames' : 'Play frames'} onClick={playback.toggle}><Icon name={playback.playing ? 'pause' : 'play'} /></button>
-        <button type="button" disabled={!ready || playback.index === sequence.frames.length - 1} aria-label="Next frame" onClick={() => playback.seek(playback.index + 1)}><Icon name="next" /></button>
-        <button type="button" disabled={!ready} aria-label="Restart from first frame" onClick={playback.restart}><Icon name="restart" /></button>
-        <output aria-label="Current frame">Frame {current ? playback.index + 1 : '—'} / {sequence.frames.length || '—'}</output>
-      </div>
-      <label className="playback-speed">Display rate<select aria-label="Playback display rate" value={playback.rate} disabled={!ready} onChange={event => playback.setRate(Number(event.target.value))}>
-        {[.5, 1, 2, 4].map(rate => <option key={rate} value={rate}>{rate} frames/s</option>)}</select></label>
-      <div className="frame-slider"><input type="range" aria-label="Frame timeline" min="1" max={Math.max(1, sequence.frames.length)} value={current ? playback.index + 1 : 1} disabled={!ready}
-        aria-valuetext={current ? `Frame ${playback.index + 1} of ${sequence.frames.length}: ${current.file.name}` : 'No confirmed sequence'} onChange={event => playback.seek(Number(event.target.value) - 1)} />
-        <div><span>01</span><span>{sequence.frames.length ? String(sequence.frames.length).padStart(2, '0') : '—'}</span></div></div>
-      <p>Display rate only · acquisition timing unknown</p></div>
     </div><aside className="track-inspector local-sequence-inspector" aria-label="Sequence inspector">
-      <div className="inspector-title"><Icon name="layers" /><h3>Sequence inspector</h3></div>
-      <span className="inspector-section-label">Source & status</span>
-      <dl className="evidence-values"><div><dt>Source</dt><dd>{result ? 'Uploaded images' : 'Local images'}</dd></div><div><dt>Status</dt><dd>{sequence.loading ? 'Validating' : sequence.draft.length ? 'Review order' : result ? 'Live analysis result' : current ? 'Ready to inspect' : 'Awaiting images'}</dd></div><div><dt>Frames</dt><dd>{sequence.frames.length || 'Not loaded'}</dd></div><div><dt>Dimensions</dt><dd>{current ? `${current.width_px} × ${current.height_px} px` : 'Not available'}</dd></div><div><dt>Timestamps</dt><dd>Unknown</dd></div><div><dt>Analysis</dt><dd>{analysis.state.phase === 'idle' ? 'Not performed' : analysis.state.phase}</dd></div></dl>
-      <span className="inspector-section-label inspector-frames-label">Frames</span>
-      {!current && <p className="inspector-empty-text">Your confirmed frame order will appear here.</p>}
-      {current && <ol className="confirmed-frame-list" aria-label="Confirmed frame order">{sequence.frames.map((frame, index) => <li key={frame.id}><button type="button" disabled={sequence.loading || !!sequence.draft.length}
-        aria-current={index === playback.index ? 'true' : undefined} aria-label={`Inspect frame ${index + 1}: ${frame.file.name}`} onClick={() => playback.seek(index)}>
-        <span>{String(index + 1).padStart(2, '0')}</span><img src={frame.url} alt="" width="44" height="33" /><span title={frame.file.name}>{frame.file.name}</span></button></li>)}</ol>}
+        <div className="inspector-title"><Icon name="layers" /><h3>Sequence inspector</h3></div>
+        <section className="inspector-frame-card" aria-label="Frame order"><span className="inspector-section-label inspector-frames-label"><Icon name="layers" />Frame order</span>
+        {!current && <div className="inspector-empty-sequence"><span className="empty-frame-stack" aria-hidden="true"><i /><i /><i /></span><strong>Choose images to begin</strong><p className="inspector-empty-text">Your confirmed frame order will appear here. Review the order before playback.</p></div>}
+        {current && <ol className="confirmed-frame-list" aria-label="Confirmed frame order">{sequence.frames.map((frame, index) => <li key={frame.id}><button type="button" disabled={sequence.loading || !!sequence.draft.length}
+          aria-current={index === playback.index ? 'true' : undefined} aria-label={`Inspect frame ${index + 1}: ${frame.file.name}`} onClick={() => playback.seek(index)}>
+          <span>{String(index + 1).padStart(2, '0')}</span><img src={frame.url} alt="" width="44" height="33" /><span title={frame.file.name}>{frame.file.name}</span></button></li>)}</ol>}
+        </section>
       {result && <><label className="demo-track-selector">Selected track<select aria-label="Select upload track" value={selected ?? ''} onChange={event => setSelected(event.target.value)}>
         {!result.tracks.length && <option value="">No tracks</option>}{result.tracks.map(track => <option key={track.track_id}>{track.track_id}</option>)}</select></label>
         {track && <><div className="t08-track-colors"><span style={{ color: trackColors(track.track_id).observed }}>● Observed</span><span style={{ color: trackColors(track.track_id).forecast }}>◌ Forecast</span></div>
           <dl className="evidence-values"><div><dt>Status</dt><dd>{track.status}</dd></div><div><dt>Actual observations</dt><dd>{track.observed_count}</dd></div><div><dt>Heuristic quality</dt><dd>{track.quality_score.toFixed(3)}</dd></div><div><dt>Image-plane speed</dt><dd>{track.trajectory ? track.trajectory.speed.toFixed(3) + ' ' + track.trajectory.speed_unit : 'No fit'}</dd></div>
             <div><dt>Fit RMSE</dt><dd>{track.trajectory?.fit_rmse_px == null ? 'Not provided' : `${track.trajectory.fit_rmse_px.toFixed(3)} px`}</dd></div></dl>
           {track.warnings.map((warning, i) => <p className="analysis-note" key={i}>{warning}</p>)}</>}</>}
-      {!result && <div className="local-evidence-pending"><span className="inspector-section-label">Local analysis</span><strong>{analysis.state.phase === 'idle' ? 'Not performed' : presentation.label}</strong><p>Detections, track IDs and predictions will appear only with matching backend results.</p></div>}
-      <div className="identity-note"><Icon name="info" /><span>Candidate identity remains unverified.</span></div></aside></div>
-    <footer className="workspace-footer"><span><Icon name="info" />Observed tracks use solid lines; predictions use dashed lines. Candidate identity is unverified.</span>
-      <div className="export-actions">{result ? <><a className="button button--quiet button--small" href={apiUrl(`/api/jobs/${result.job_id}/exports/json`)}>JSON</a><a className="button button--quiet button--small" href={apiUrl(`/api/jobs/${result.job_id}/exports/csv`)}>CSV</a></> : <span>Exports available after analysis</span>}</div></footer>
-    {result && <AnalysisResults result={result} showViewer={false} />}
+      {result && <div className="identity-note"><Icon name="info" /><span>Candidate identity remains unverified.</span></div>}
+      </aside></div>
+    <div className="local-playback-dock" role="group" aria-label="Local frame playback">
+      <div className="frame-caption"><span><Icon name="image" />Frame timeline</span><strong title={current?.file.name}>{current?.file.name ?? 'No frame selected'}</strong></div>
+      <div className="frame-timeline local-frame-timeline"><div className="timeline-controls">
+        <button type="button" disabled={!ready || playback.index === 0} aria-label="Previous frame" title="Previous frame" onClick={() => playback.seek(playback.index - 1)}><Icon name="back" /></button>
+        <button type="button" disabled={!ready} className="timeline-play" aria-label={playback.playing ? 'Pause frames' : 'Play frames'} onClick={playback.toggle}><Icon name={playback.playing ? 'pause' : 'play'} /></button>
+        <button type="button" disabled={!ready || playback.index === sequence.frames.length - 1} aria-label="Next frame" title="Next frame" onClick={() => playback.seek(playback.index + 1)}><Icon name="next" /></button>
+        <button type="button" disabled={!ready} aria-label="Restart from first frame" title="Restart from first frame" onClick={playback.restart}><Icon name="restart" /></button>
+        <output aria-label="Current frame">Frame {current ? playback.index + 1 : '—'} / {sequence.frames.length || '—'}</output>
+      </div>
+        <label className="playback-speed">Playback rate<select aria-label="Playback display rate" value={playback.rate} disabled={!ready} onChange={event => playback.setRate(Number(event.target.value))}>
+          {[.5, 1, 2, 4].map(rate => <option key={rate} value={rate}>{rate} frames/s</option>)}</select></label>
+        <div className="frame-slider"><input type="range" aria-label="Frame timeline" min="1" max={Math.max(1, sequence.frames.length)} value={current ? playback.index + 1 : 1} disabled={!ready}
+          aria-valuetext={current ? `Frame ${playback.index + 1} of ${sequence.frames.length}: ${current.file.name}` : 'No confirmed sequence'} onChange={event => playback.seek(Number(event.target.value) - 1)} />
+          <div><span>01</span><span>{sequence.frames.length ? String(sequence.frames.length).padStart(2, '0') : '—'}</span></div></div>
+        </div>
+    </div>
+    {result && <><footer className="workspace-footer"><span><Icon name="info" />Observed tracks use solid lines; predictions use dashed lines.</span>
+      <div className="export-actions"><a className="button button--quiet button--small" href={apiUrl(`/api/jobs/${result.job_id}/exports/json`)}>JSON</a><a className="button button--quiet button--small" href={apiUrl(`/api/jobs/${result.job_id}/exports/csv`)}>CSV</a></div></footer>
+      <AnalysisResults result={result} showViewer={false} /></>}
   </section>;
 }
