@@ -18,6 +18,6 @@ class Capabilities(ContractModel):
 class HealthResponse(ContractModel):
     status: Literal["ok"] = "ok"
     service: Literal["OrbitTrace"] = "OrbitTrace"
-    readiness: Literal["bootstrap_only"] = "bootstrap_only"
+    readiness: Literal["bootstrap_only", "local_prototype"] = "local_prototype"
     schema_version: Version = "0.1.0"
     capabilities: Capabilities = Capabilities()

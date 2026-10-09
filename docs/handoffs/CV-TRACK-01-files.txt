@@ -1,0 +1,6 @@
+backend/orbittrace/cv_tracking.py
+backend/orbittrace/evaluation/cv_track_diagnostics.py
+scripts/verify_cv_track_01.py
+tests/pipeline/test_cv_track_01.py
+docs/handoffs/CV-TRACK-01.md
+docs/handoffs/CV-TRACK-01-files.txt

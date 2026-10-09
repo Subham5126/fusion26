@@ -1,0 +1,13 @@
+{
+  "asset": "earth-blue-marble.webp",
+  "source": "NASA Blue Marble: Next Generation, June 2004",
+  "credit": "Reto St\u00f6ckli / NASA Earth Observatory (NASA Goddard Space Flight Center)",
+  "source_page": "https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/",
+  "source_url": "https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-base/june/world.200406.3x5400x2700.jpg",
+  "usage_guidelines": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "usage_review": "NASA-produced Earth texture; no third-party copyright notice, logos or identifiable people; acknowledgement provided; no endorsement implied.",
+  "purpose": "Decorative globe in landing hero, not analysis or observation data",
+  "processing": "Resampled from 5400x2700 to 2048x1024 and encoded as WebP",
+  "source_sha256": "dc059529b8ed1cfcdd59747a7c3f259c93c1322bf88ca1ec8bab1dd71fcc57f5",
+  "asset_sha256": "e84ef1cf2ea7b1e61d9c9076b2d214e28304d99c6464d79ddea4bac1a0477d68"
+}

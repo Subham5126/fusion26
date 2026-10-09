@@ -1,0 +1,24 @@
+# Allowlisted source context: raw data, checkpoints, secrets and Git are never sent.
+**
+!Dockerfile
+!.dockerignore
+!pyproject.toml
+!backend/
+!backend/**
+!src/
+!src/**
+**/__pycache__/
+**/*.py[cod]
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pt
+**/*.pth
+**/*.onnx
+**/*.fits
+**/tests/
+**/fixtures/
+**/.cache/
+**/*.egg-info/

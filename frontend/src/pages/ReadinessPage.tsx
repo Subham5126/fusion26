@@ -2,22 +2,21 @@ import { HealthPanel } from '../components/HealthPanel';
 import { emptyResult } from '../fixtures/empty-result';
 
 export function ReadinessPage() {
-  return <main>
-    <header><div className="brand">ORBITTRACE <span>FUSION 2K26 · SPACE-02</span></div>
-      <span className="badge">Bootstrap</span></header>
-    <section className="intro"><p className="eyebrow">Telescope sequence workbench</p>
-      <h1>Evidence behind<br />every candidate.</h1>
-      <p className="lead">The foundation is ready. Detection, tracking, and short image-plane trajectories are the next implementation tasks.</p>
-      <p className="notice">No analysis has been performed. Object identity remains unverified; performance has not been measured.</p></section>
+  return <div className="container readiness-page">
+    <section className="readiness-intro"><div className="readiness-heading"><p className="eyebrow">System readiness</p></div>
+      <h1>Know what is available.</h1>
+      <p className="lead">Live backend connectivity, current frontend capabilities and the remaining integration boundaries.</p>
+      <p className="notice">Candidate identity and physical orbit remain unverified. Synthetic processing does not establish performance on real observations.</p></section>
     <div className="grid"><HealthPanel />
-      <section className="panel"><h2>Build the first real sequence</h2>
-        <ol className="tasks"><li><strong>T02 / T03 · Data & CV</strong><p>Generate seeded images with separate truth, then detect image-only candidates.</p></li>
-          <li><strong>T04 / T06 · Tracking & evaluation</strong><p>Associate observations on the shared fixture and build the matching protocol.</p></li>
-          <li><strong>T08 · Viewer</strong><p>Build ordered frames and overlays, with observed and predicted points distinct.</p></li></ol>
-        <p className="muted">Integration prepares T07 after detector, tracker, and trajectory handoffs.</p></section></div>
+      <section className="panel"><h2>Application capabilities</h2>
+        <ul className="application-capabilities"><li><div><strong>Local observation viewer</strong><p>Ordered images, playback, zoom, pan and pixel coordinates.</p></div><span className="ready">Implemented</span></li>
+          <li><div><strong>Synthetic Analysis</strong><p>Job submission, polling, results, manifests, frames and aligned overlays. Requires the backend.</p></div><span className="ready">Integrated</span></li>
+          <li><div><strong>Local image analysis</strong><p>Five confirmed telescope images are uploaded to the local backend. Suitability and registration failures are reported; accepted results render in native image coordinates.</p></div><span className="ready">Integrated</span></li>
+          <li><div><strong>Scientific exports</strong><p>Backend JSON and CSV exports are available after a completed upload analysis.</p></div><span className="ready">Integrated</span></li></ul>
+        <a className="text-link" href="#/workbench">Open Mission Workbench →</a></section></div>
     <section className="panel fixture"><h2>Illustrative schema fixture</h2>
       <p>This empty example documents the result shape. It is authored for development and is not a detector output or benchmark.</p>
       <details><summary>Inspect example JSON · schema 0.1.0</summary><pre>{JSON.stringify(emptyResult, null, 2)}</pre></details></section>
-    <footer>CPU first · Native image coordinates · Pixels/frame when timestamps are unknown</footer>
-  </main>;
+    <p className="readiness-footnote">CPU first · Native image coordinates · Pixels/frame when timestamps are unknown</p>
+  </div>;
 }

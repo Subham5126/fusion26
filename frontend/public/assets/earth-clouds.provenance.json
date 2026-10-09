@@ -1,0 +1,16 @@
+{
+  "asset": "earth-clouds.jpg",
+  "source": "NASA Blue Marble (2002) cloud composite",
+  "source_page": "https://science.nasa.gov/earth/earth-observatory/the-blue-marble-true-color-global-imagery-at-1km-resolution/",
+  "source_url": "https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57747/cloud_combined_2048.jpg",
+  "credit": "NASA Goddard Space Flight Center; Reto Stoeckli and Robert Simmon",
+  "usage_guidelines": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "purpose": "Decorative cloud layer on the landing globe, not observation or analysis data",
+  "processing": "Original NASA JPEG served locally, unchanged; grayscale used as an alpha map",
+  "dimensions": [
+    2048,
+    1024
+  ],
+  "bytes": 829367,
+  "asset_sha256": "daddaad84d7a33bbbc86cdda3f591099f57cee8607b7bcf3b67eb7e4f7a1c793"
+}
