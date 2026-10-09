@@ -1,10 +1,11 @@
 import type { ApiError } from '../types/contracts';
 import { parseApiError, parseJobId, ResponseValidationError } from './responseValidation';
 
-// These JSON routes were inspected in origin/Yogesh at 9e292f9.
+// Job/result routes were inspected at 9e292f9; manifest at 026a0c8
+// on review/member-integration. No arbitrary API routes are enabled.
 // Binary frames use a separate exchange; they are never parsed as JSON.
 type VerifiedReadEndpoint = '/api/health' | `/api/jobs/${string}`;
-const jobReadRoute = /^\/api\/jobs\/[A-Za-z0-9][A-Za-z0-9_-]{0,95}(?:\/result)?$/;
+const jobReadRoute = /^\/api\/jobs\/[A-Za-z0-9][A-Za-z0-9_-]{0,95}(?:\/(?:result|manifest))?$/;
 
 export class ApiRequestError extends Error {
   readonly code: string;
@@ -26,10 +27,12 @@ export function postDemoJson(signal?: AbortSignal): Promise<unknown> {
 }
 
 async function exchangeJson(endpoint: string, method: 'GET' | 'POST', expectedStatus: number, signal?: AbortSignal): Promise<unknown> {
+  signal?.throwIfAborted();
   const response = await fetch(endpoint, { method, signal, headers: { Accept: 'application/json' } });
+  signal?.throwIfAborted();
   if (!response.ok) await throwHttpError(response, signal);
   if (response.status !== expectedStatus) throw new ResponseValidationError(`HTTP ${response.status}; expected ${expectedStatus}`);
-  try { return await response.json(); }
+  try { const body: unknown = await response.json(); signal?.throwIfAborted(); return body; }
   catch (cause) {
     if (signal?.aborted) throw cause;
     throw new ResponseValidationError('invalid JSON');
@@ -41,6 +44,8 @@ async function throwHttpError(response: Response, signal?: AbortSignal): Promise
   try {
     const body: unknown = await response.json();
     if (typeof body === 'object' && body !== null && 'error' in body) error = parseApiError(body.error);
+    else if (typeof body === 'object' && body !== null && 'detail' in body && typeof body.detail === 'string')
+      error = { code: 'http_error', message: body.detail, details: null };
   } catch (cause) {
     if (signal?.aborted) throw cause;
   }

@@ -1,20 +1,18 @@
 import { getJobFrame } from '../api/client';
 import { parseJobId } from '../api/responseValidation';
+import { parseJobManifest } from '../api/frameManifest';
+import type { JobManifest } from '../api/frameManifest';
 import { ApiRequestError } from '../api/transport';
 import type { AnalysisResult } from '../types/contracts';
 import { browserResources, readImageHeader } from './localSequence';
 import type { ViewerFrame } from './localSequence';
 import type { Size } from './geometry';
 
-// Demo-specific source contract: backend/app/api/analyze.py at
-// 9e292f94b00d6eecf24ea06b5c33ff2649d97c71 creates indexes 0–4, 64 × 48.
-// This is NOT an API manifest. No frame timestamps or input hashes are invented.
-export const verifiedDemoLayout = { width: 64, height: 48, indexes: [0, 1, 2, 3, 4] as readonly number[] } as const;
 export const demoFrameCacheLimit = 3;
 export function supportsDemoFrames(result: AnalysisResult) {
   return result.status === 'succeeded' && result.source_type === 'synthetic' && result.profile === 'synthetic_static_stars';
 }
-export interface DemoFrame extends ViewerFrame { source: 'analyzed_demo'; job_id: string; frame_index: number }
+export interface DemoFrame extends ViewerFrame { source: 'analyzed_demo'; job_id: string; frame_index: number; manifest: JobManifest }
 export type DemoFrameState = { jobId: string; index: number; phase: 'loading' | 'ready' | 'failed'; frame?: DemoFrame; error?: string; errorCode?: string; errorStatus?: number };
 export interface DemoFrameServices {
   fetch: (jobId: string, index: number, signal: AbortSignal) => Promise<Blob>;
@@ -25,8 +23,9 @@ const services: DemoFrameServices = { fetch: getJobFrame, createUrl: blob => URL
   revokeUrl: browserResources.revokeUrl, decode: browserResources.decode };
 
 /** One active frame request per job; cache owns only validated, decoded PNG URLs. */
-export function createDemoFrameController(jobId: string, publish: (state: DemoFrameState) => void, resources = services) {
-  parseJobId(jobId);
+export function createDemoFrameController(input: JobManifest, publish: (state: DemoFrameState) => void, resources = services) {
+  const jobId = parseJobId(input.job_id), manifest = parseJobManifest(input, jobId);
+  const entries = new Map(manifest.frames.map(frame => [frame.frame_index, frame]));
   const cache = new Map<number, DemoFrame>();
   let active: AbortController | undefined, revision = 0, disposed = false;
   async function select(index: number, force = false) {
@@ -36,7 +35,8 @@ export function createDemoFrameController(jobId: string, publish: (state: DemoFr
     let pendingUrl: string | undefined;
     const current = () => !disposed && version === revision && !request.signal.aborted;
     try {
-      if (!verifiedDemoLayout.indexes.includes(index)) throw new Error('Frame is outside the verified five-frame demo range');
+      const metadata = entries.get(index);
+      if (!metadata) throw new Error('Frame index is not listed in the backend manifest');
       if (force && cache.has(index)) { resources.revokeUrl(cache.get(index)!.url); cache.delete(index); }
       const cached = cache.get(index);
       if (cached) { cache.delete(index); cache.set(index, cached); publish({ jobId, index, phase: 'ready', frame: cached }); return; }
@@ -45,16 +45,16 @@ export function createDemoFrameController(jobId: string, publish: (state: DemoFr
       request.signal.throwIfAborted();
       const header = readImageHeader(new Uint8Array(await blob.arrayBuffer()));
       request.signal.throwIfAborted();
-      if (header.format !== 'image/png' || header.orientation !== 1 || header.width !== verifiedDemoLayout.width || header.height !== verifiedDemoLayout.height)
-        throw new Error('Frame geometry does not match the verified demo source; overlays are suppressed');
+      if (header.format !== 'image/png' || header.orientation !== 1 || header.width !== metadata.width_px || header.height !== metadata.height_px)
+        throw new Error('PNG dimensions do not match the backend manifest; image and overlays are suppressed');
       pendingUrl = resources.createUrl(blob);
       const decoded = await resources.decode(pendingUrl, request.signal);
       request.signal.throwIfAborted();
-      if (decoded.width !== header.width || decoded.height !== header.height) throw new Error('Decoded PNG dimensions do not match its metadata');
+      if (decoded.width !== metadata.width_px || decoded.height !== metadata.height_px) throw new Error('Decoded PNG dimensions do not match the backend manifest; image and overlays are suppressed');
       if (!current()) return;
-      const frame: DemoFrame = { id: `${jobId}/${index}`, source: 'analyzed_demo', job_id: jobId, frame_index: index,
+      const frame: DemoFrame = { id: `${jobId}/${index}`, source: 'analyzed_demo', job_id: jobId, frame_index: index, manifest,
         label: `Analyzed demo · frame ${index + 1} (index ${index})`, url: pendingUrl, header,
-        width_px: decoded.width, height_px: decoded.height, timestamp_s: null };
+        width_px: decoded.width, height_px: decoded.height, timestamp_s: metadata.timestamp_s };
       cache.set(index, frame); pendingUrl = undefined;
       while (cache.size > demoFrameCacheLimit) {
         const oldest = cache.keys().next().value!; resources.revokeUrl(cache.get(oldest)!.url); cache.delete(oldest);
