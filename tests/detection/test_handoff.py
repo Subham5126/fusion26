@@ -91,14 +91,21 @@ def test_final_membership_is_disjoint_deterministic_not_annotation_selected():
         handoff.select_final_ids(ids, excluded, True, 0)
 
 
-def test_current_backend_read_only_probe_reports_absence_without_fake_tracking():
+def test_current_backend_read_only_probe_reports_actual_integration_state():
     report = handoff.integration_report()
-    assert not report["tracker_available"]
-    assert report["tracker_callables"] == {}
+    # Detection and tracking modules are available.
+    assert report["tracker_available"] is True
+    assert "Tracker" in report["tracker_callables"]
+    assert "extract_detection_coords" in report["tracker_callables"]
+    assert report["backend_detection_adapter"]["available"] is True
+    assert report["backend_detection_adapter"]["default_method"] == "optimized"
+    # The real T07 pipeline is not implemented yet.
     assert report["end_to_end_tracker_test"].startswith("not_run")
     assert report["backend_detector_selection"] == "neither"
     assert report["pipeline"]["status"] == "not_implemented"
+    # T09 API capabilities remain disabled.
     assert report["health_status_code"] == 200
-    assert not report["health"]["capabilities"]["detection"]
-    assert not report["health"]["capabilities"]["tracking"]
+    assert report["health"]["capabilities"]["detection"] is False
+    assert report["health"]["capabilities"]["tracking"] is False
+    assert report["health"]["capabilities"]["analysis_api"] is False
     assert report["analysis_route_status_code"] == 404
