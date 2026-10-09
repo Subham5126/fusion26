@@ -36,10 +36,13 @@ quantization=...)` returns CandidateImage(response,noise,global_noise). Paramete
 come from validated BaselineConfig; formulas and limitations are in the detector
 guide. Defaults can miss broader streaks or respond to star fragments.
 
-No registration or geometric transform is implemented. Coordinates remain native
-top-left `(x,y)`, with NumPy indexing `[y,x]`. Tracking receives actual detector
-outputs with separately reviewed image-derived registration, not this display
-image. Targeted verification:
+T13 adds a separate [registration pipeline](REGISTRATION.md) in registration.py.
+The original T03/CV-T04 preprocessing stays unchanged. Registration estimates
+apparent background-field translation to frame0, returns explicit failure/quality
+diagnostics, and optionally populates reference coordinates on copies of raw
+detections. Original images, raw positions and boxes remain native top-left xy.
+Aligned previews carry validity masks; they do not replace detector input.
+Targeted verification:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q -c backend/pyproject.toml tests/detection
