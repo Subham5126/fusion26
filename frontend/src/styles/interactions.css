@@ -15,9 +15,11 @@
 .hero-3d-canvas-wrap {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: -1;
   pointer-events: none;
   overflow: hidden;
+  mask-image: radial-gradient(ellipse 95% 85% at 60% 45%, black 40%, transparent 95%);
+  -webkit-mask-image: radial-gradient(ellipse 95% 85% at 60% 45%, black 40%, transparent 95%);
 }
 
 .hero-3d-canvas-wrap canvas {
