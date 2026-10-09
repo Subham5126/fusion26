@@ -39,9 +39,11 @@ test('selected track and owning box match; forecast is contrasting, dashed and h
   const html = render(), colors = trackColors('track-A');
   assert.notEqual(colors.observed, colors.forecast);
   assert.match(html, /t08-track is-selected/);
-  assert.match(html, /opacity:0.3/); assert.match(html, /opacity:1/);
+  assert.match(html, /opacity:0.5/); assert.match(html, /opacity:1/);
   assert.ok(html.includes(`stroke:${colors.observed}`)); assert.ok(html.includes(`stroke:${colors.forecast}`));
   assert.match(html, /stroke-dasharray="5 4"/); assert.match(html, /class="predicted-point"[^>]*fill="none"/);
+  assert.match(html, new RegExp(`data-observed-frame="0" style="fill:${colors.observed}`));
+  assert.match(html, new RegExp(`class="predicted-point"[^>]*stroke:${colors.forecast}`));
 });
 test('overlay toggles remain independent, and empty completed results have no fake geometry', () => {
   const forecastOnly = render(1, null, { detections: false, tracks: false, predictions: true });

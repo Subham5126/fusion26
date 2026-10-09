@@ -18,7 +18,7 @@ export interface T08OverlayProps {
 export function T08Overlay({ model, scale, selected, select, visibility, nativeSize, currentFrame }: T08OverlayProps) {
   const px = (value: number) => value / Math.max(scale, .001);
   const glow = (color: string) => ({ filter: `drop-shadow(0 0 ${px(2.5)}px ${color})` });
-  const opacity = (id?: string) => !selected || selected === id ? 1 : .3;
+  const opacity = (id?: string) => !selected || selected === id ? 1 : .5;
   const controls = (id: string, label: string) => ({
     'data-track-control': true,
     role: 'button', tabIndex: 0, 'aria-label': label, 'aria-pressed': selected === id,
@@ -39,9 +39,10 @@ export function T08Overlay({ model, scale, selected, select, visibility, nativeS
           const ageOpacity = .25 + .75 * (index + 1) / track.observed.length;
           return <g key={point.frame} opacity={ageOpacity}>
             {previous && <line className="t08-observed-segment" data-from-frame={previous.frame} data-to-frame={point.frame}
-              x1={previous.x} y1={previous.y} x2={point.x} y2={point.y} strokeWidth={px(highlighted ? 3.2 : 1.6)} style={highlighted ? glow(color.observed) : undefined} />}
+              x1={previous.x} y1={previous.y} x2={point.x} y2={point.y} strokeWidth={px(highlighted ? 3.8 : 2.2)}
+              style={{ stroke: color.observed, ...glow(color.observed) }} />}
             <circle className={`observed-point ${recent ? 't08-glow' : ''}`} cx={point.x} cy={point.y} r={px(highlighted ? recent ? 5.5 : 3.5 : recent ? 3.7 : 2.5)}
-              stroke="none" data-observed-frame={point.frame} style={recent ? glow(color.observed) : undefined} />
+              stroke="none" data-observed-frame={point.frame} style={{ fill: color.observed, ...(recent ? glow(color.observed) : {}) }} />
             {highlighted && current && <circle className="t08-current-observation" data-current-observed-frame={point.frame}
               cx={point.x} cy={point.y} r={px(9)} fill="none" strokeWidth={px(1.5)} style={glow(color.observed)} />}
             {highlighted && current && <text className="t08-frame-label" x={point.x + px(10)} y={point.y + px(17)}
@@ -55,7 +56,7 @@ export function T08Overlay({ model, scale, selected, select, visibility, nativeS
           <polyline points={track.forecast.map(point => `${point.x},${point.y}`).join(' ')} fill="none"
             strokeDasharray={`${px(5)} ${px(4)}`} strokeWidth={px(highlighted ? 2.2 : 1.7)} />
           {track.predictions.map(point => <circle key={point.frame} className="predicted-point" data-predicted-frame={point.frame}
-            cx={point.x} cy={point.y} r={px(4.2)} fill="none" strokeWidth={px(1.7)} aria-label={`Predicted frame ${point.frame} · not observed`} />)}
+            cx={point.x} cy={point.y} r={px(4.2)} fill="none" strokeWidth={px(1.7)} style={{ stroke: color.forecast }} aria-label={`Predicted frame ${point.frame} · not observed`} />)}
         </g>}
       </g>;
     })}

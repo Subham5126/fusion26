@@ -131,3 +131,76 @@ at `https://orbittrace-api-production.up.railway.app`, then verify the new repor
 button and a fresh upload on the production URL. Railway backend/schema requires
 no update for this frontend change. JSON is supported; HTML/PDF reports are not
 implemented. Heuristic quality is not scientific identity confidence.
+
+## Follow-up: visible connections and PDF report (2026-10-10)
+
+Base revision: `80a988df9abf07125c209b63e6e45c53e47c0238` on Subham.
+This supersedes the preceding JSON-only limitation: Download Report now saves
+a real frontend-generated PDF directly; Report JSON retains the complete data.
+
+Observed root causes in the user's current 640x480 upload:
+- Default track-0001 had one observation, so no legitimate segment existed.
+- Track-0002 and track-0003 each had five observations and four SVG segments.
+  Existing `.observed-point` CSS forced cyan dots while the owning lines used
+  lime/magenta. The non-selected tracks were heavily dimmed.
+- Selected track-0002's registered full-track displacement was only 0.919 px;
+  its points/segments nearly overlapped on the native image. Other central dots
+  were different single-observation track records and cannot honestly be linked.
+
+Changes: explicit matching colors on observed dots/lines and forecast markers,
+stronger glowing strokes, non-selected opacity 0.5, automatic longest observed
+track selection, observation counts in track options, explanation for single
+observations, and a separately labeled enlarged selected-track path detail.
+The detail retains reference coordinates and aspect ratio; the main raw image
+overlay is unchanged geometrically. Detail observations follow timeline frames;
+future dashed/hollow markers appear after the last observed frame only, and
+only when prediction and observation coordinate frames match.
+
+PDF: dependency-free PDF 1.4, A4, Helvetica, paginated source/frame metadata,
+selected track/quality bar, motion summary, observed raw/reference tables,
+forecast table, warnings/limitations and page numbers. No backend/schema or
+package/lock changes. PDF strings are escaped, byte offsets/stream lengths are
+computed, and long text is wrapped. Coordinates are rounded to 3 decimals in
+PDF; JSON preserves exact values. Non-ASCII PDF text is transliterated when
+possible, otherwise replaced with `?`; original filenames remain in JSON.
+
+Follow-up exact staging allowlist:
+```text
+frontend/src/components/workbench/LocalWorkbench.tsx
+frontend/src/components/workbench/T08Overlay.tsx
+frontend/src/components/workbench/TrackPathDetail.tsx
+frontend/src/components/workbench/t08-overlay.css
+frontend/src/viewer/pdfReport.ts
+frontend/tests/t08-overlay.test.ts
+frontend/tests/track-report.test.ts
+docs/handoffs/T11_LIVE_PATH_REPORT.md
+```
+
+Actual commands: same frontend commands above, now 115 data/component tests plus
+19 legacy overlay tests passed (134 total); TypeScript/Vite build passed with
+the existing large landing chunk warning. Python tests were not repeated for
+these additional UI-only edits.
+
+Browser tests on the actual annotated upload: track-0002 selected automatically;
+frames 1..5 yielded 1..5 dots and 0..4 connecting segments, matching lime point
+and line colors, separate magenta forecast, enlarged path, single-observation
+explanation, and actual PDF download without navigation. Job
+`job-1479c61680764933a36507f2bd754df4`: 24 detections, 16 tracks, 4 predictions.
+Additional genuine five-image browser upload regressions:
+synthetic counts-change 22 detections/5 tracks/10 forecasts (selected 5 dots,
+4 lines); ESA84 34 detections/31 tracks/0 forecasts (selected 2 dots, 1 line);
+empty result 0/0/0, valid PDF with no selected track. Console errors/warnings: 0.
+
+Actual downloaded PDFs were reopened with `pypdf` strict parsing; text bounds
+verified with `pdfplumber`. The annotated upload's two PDF pages were rendered
+via Poppler and visually inspected: no clipping/overlap. Poppler emitted two
+local fallback-font notices (`Symbol`/`ArialUnicode`) but rendered Helvetica
+correctly; no such fonts are referenced by the report. All four browser PDF
+downloads parsed successfully and their text stayed inside margins.
+
+Ignored evidence: `.cache/pdf-path/actual-upload-report.pdf`, three regression
+PDFs, rendered PDF pages, browser-regressions JSON and connected-path screenshots.
+User's current result tab remains available; select a multi-observation track
+and use Download Report (PDF). Production Vercel deployment still requires the
+owner action described above; this local verification does not claim a new
+production deployment. Existing unrelated Git changes remain excluded.

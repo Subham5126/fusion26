@@ -21,3 +21,8 @@
 .quality-explanation { font-size: 11px; color: #a6bdc6; margin: 8px 0; line-height: 1.5; }
 .track-quality-panel .evidence-values dd { overflow-wrap: anywhere; }
 .local-workbench .export-actions { flex-wrap: wrap; }
+.track-path-detail { padding: 12px; margin: 12px 0; border: 1px solid #23dabb40; border-radius: 10px; background: #050e13; }
+.track-path-detail strong { font-size: 13px; }
+.track-path-detail p { font-size: 11px; line-height: 1.5; color: #a6bdc6; margin: 8px 0; }
+.track-path-detail svg { display: block; width: 100%; height: 180px; }
+.track-path-detail polyline { stroke-linejoin: round; stroke-linecap: round; }

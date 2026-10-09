@@ -8,6 +8,8 @@ import type { LocalFrame } from '../src/viewer/localSequence';
 import { buildTrackReport, trackEvidence } from '../src/viewer/trackReport';
 import { TrackQualityPanel } from '../src/components/workbench/TrackQualityPanel';
 import { WorkbenchShell } from '../src/components/workbench/WorkbenchShell';
+import { buildPdfReport } from '../src/viewer/pdfReport';
+import { TrackPathDetail } from '../src/components/workbench/TrackPathDetail';
 
 const frames: LocalFrame[] = Array.from({ length: 5 }, (_, index) => ({ id: String(index), file: new File(['test'], `frame-${index}.png`),
   url: 'blob:private-preview', width_px: 640, height_px: 480, timestamp_s: null,
@@ -75,4 +77,38 @@ test('main workbench has uploads without synthetic runner; landing preview remai
   const live = renderToStaticMarkup(createElement(WorkbenchShell));
   assert.match(live, /Choose images/); assert.doesNotMatch(live, /id="synthetic-analysis"|CONCEPTUAL ILLUSTRATION/);
   assert.match(renderToStaticMarkup(createElement(WorkbenchShell, { preview: true })), /CONCEPTUAL ILLUSTRATION/);
+});
+test('PDF report contains actual quality, coordinate labels, source metadata, predictions and valid byte offsets', () => {
+  const input = result();
+  const bytes = buildPdfReport(buildTrackReport(input, manifest, frames, input.tracks[0].track_id));
+  const pdf = new TextDecoder().decode(bytes);
+  assert.ok(pdf.startsWith('%PDF-1.4')); assert.ok(pdf.endsWith('%%EOF\n'));
+  assert.match(pdf, /fixture-track-1/); assert.match(pdf, /50.0%/); assert.match(pdf, /reference_frame_0/);
+  assert.match(pdf, /frame-0.png/); assert.match(pdf, /22.000, 21.000 px/);
+  assert.ok(pdf.includes('Predicted coordinates \\(not observations\\)'));
+  const start = Number(pdf.match(/startxref\n(\d+)/)![1]);
+  assert.equal(pdf.slice(start, start + 4), 'xref');
+  for (const row of pdf.matchAll(/(\d{10}) 00000 n /g)) assert.match(pdf.slice(Number(row[1]), Number(row[1]) + 20), /^\d+ 0 obj/);
+});
+test('PDF paginates long metadata, escapes PDF literals and handles empty results', () => {
+  const input = result(); input.tracks = []; input.detections = [];
+  const report = buildTrackReport(input, manifest, frames, null);
+  report.source.frames[0].filename = 'image (draft) \\ endstream\ntrailer.png';
+  report.analysis_result.warnings = Array.from({ length: 90 }, (_, i) => `Warning ${i}: ${'long warning '.repeat(10)}`);
+  const pdf = new TextDecoder().decode(buildPdfReport(report));
+  assert.ok(pdf.includes('image \\(draft\\)'));
+  assert.match(pdf, /No selected track/); assert.doesNotMatch(pdf, /Heuristic quality:/);
+  const count = Number(pdf.match(/\/Type \/Pages \/Count (\d+)/)![1]);
+  assert.ok(count > 2); assert.match(pdf, new RegExp(`Page ${count} of ${count}`));
+  assert.match(pdf, /Warning 89/);
+});
+test('enlarged path connects only actual past observations and keeps future forecasts separate', () => {
+  const track = result().tracks[0];
+  const render = (frameIndex: number, coordinateFrame = 'reference_frame_0') => renderToStaticMarkup(createElement(TrackPathDetail,
+    { track, frameIndex, coordinateFrame, visibility: { tracks: true, predictions: true } }));
+  assert.doesNotMatch(render(0), /detail-observed-path|detail-predicted-path/);
+  assert.match(render(1), /points="10,12 14,15"/); assert.doesNotMatch(render(1), /detail-predicted-path/);
+  assert.match(render(4), /points="10,12 14,15 18,18"/);
+  assert.match(render(4), /detail-predicted-path/);
+  assert.doesNotMatch(render(4, 'raw_pixels'), /detail-predicted-path/);
 });

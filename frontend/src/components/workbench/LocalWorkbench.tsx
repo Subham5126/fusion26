@@ -14,6 +14,8 @@ import { trackColors } from '../../viewer/trackColors';
 import { apiUrl } from '../../api/baseUrl';
 import { TrackQualityPanel } from './TrackQualityPanel';
 import { buildTrackReport, downloadTrackReport } from '../../viewer/trackReport';
+import { downloadPdfReport } from '../../viewer/pdfReport';
+import { TrackPathDetail } from './TrackPathDetail';
 
 export function LocalWorkbench() {
   const sequence = useLocalSequence(), playback = useFramePlayback(sequence.frames);
@@ -30,7 +32,8 @@ export function LocalWorkbench() {
     if (!result) return;
     const request = new AbortController();
     getJobDiagnostics(result.job_id, request.signal).then(setDiagnostics).catch(error => { if (!request.signal.aborted) setUploadError(String(error)); });
-    setSelected(result.tracks[0]?.track_id ?? null);
+    // Prefer an actual multi-frame path over an unrelated single-frame candidate.
+    setSelected([...result.tracks].sort((a, b) => b.observed_count - a.observed_count)[0]?.track_id ?? null);
     return () => request.abort();
   }, [result]);
   const submit = () => {
@@ -43,9 +46,12 @@ export function LocalWorkbench() {
   const track = result?.tracks.find(track => track.track_id === selected);
   const ready = !!current && !sequence.loading && !sequence.draft.length;
   const choose = () => { playback.pause(); input.current?.click(); };
-  const download = () => {
+  const download = (format: 'pdf' | 'json') => {
     if (!result || !manifest) return;
-    try { downloadTrackReport(buildTrackReport(result, manifest, sequence.frames, selected)); }
+    try {
+      const report = buildTrackReport(result, manifest, sequence.frames, selected);
+      if (format === 'pdf') downloadPdfReport(report); else downloadTrackReport(report);
+    }
     catch (error) { setUploadError(error instanceof Error ? error.message : 'Report download failed'); }
   };
   return <section id="observations" className="workbench-shell local-workbench" aria-label="Mission image workbench" data-source={result ? 'uploaded_images' : 'local_preview'} data-job-id={result?.job_id} data-analysis-phase={analysis.state.phase}>
@@ -117,16 +123,18 @@ export function LocalWorkbench() {
         aria-current={index === playback.index ? 'true' : undefined} aria-label={`Inspect frame ${index + 1}: ${frame.file.name}`} onClick={() => playback.seek(index)}>
         <span>{String(index + 1).padStart(2, '0')}</span><img src={frame.url} alt="" width="44" height="33" /><span title={frame.file.name}>{frame.file.name}</span></button></li>)}</ol>}
       {result && <><label className="demo-track-selector">Selected track<select aria-label="Select upload track" value={selected ?? ''} onChange={event => setSelected(event.target.value)}>
-        {!result.tracks.length && <option value="">No tracks</option>}{result.tracks.map(track => <option key={track.track_id}>{track.track_id}</option>)}</select></label>
+        {!result.tracks.length && <option value="">No tracks</option>}{result.tracks.map(track => <option key={track.track_id} value={track.track_id}>{track.track_id} · {track.observed_count} observations</option>)}</select></label>
         {track && <><div className="t08-track-colors"><span style={{ color: trackColors(track.track_id).observed }}>● Observed</span><span style={{ color: trackColors(track.track_id).forecast }}>◌ Forecast</span></div>
+          {track.observed_count < 2 && <p className="analysis-note">This track has one observation, so there is no observed path to connect. Select a track with two or more observations.</p>}
           <TrackQualityPanel track={track} coordinateFrame={result.coordinate_frame} />
+          <TrackPathDetail track={track} frameIndex={playback.index} coordinateFrame={result.coordinate_frame} visibility={visibility} />
           <dl className="evidence-values"><div><dt>Status</dt><dd>{track.status}</dd></div><div><dt>Image-plane speed</dt><dd>{track.trajectory ? track.trajectory.speed.toFixed(3) + ' ' + track.trajectory.speed_unit : 'No fit'}</dd></div>
             <div><dt>Fit RMSE</dt><dd>{track.trajectory?.fit_rmse_px == null ? 'Not provided' : `${track.trajectory.fit_rmse_px.toFixed(3)} px`}</dd></div></dl>
           {track.warnings.map((warning, i) => <p className="analysis-note" key={i}>{warning}</p>)}</>}</>}
       {!result && <div className="local-evidence-pending"><span className="inspector-section-label">Local analysis</span><strong>{analysis.state.phase === 'idle' ? 'Not performed' : presentation.label}</strong><p>Detections, track IDs and predictions will appear only with matching backend results.</p></div>}
       <div className="identity-note"><Icon name="info" /><span>Candidate identity remains unverified.</span></div></aside></div>
     <footer className="workspace-footer"><span><Icon name="info" />Observed tracks use solid lines; predictions use dashed lines. Candidate identity is unverified.</span>
-      <div className="export-actions">{result ? <><button type="button" className="button button--primary button--small" onClick={download}><Icon name="download" />Download Report</button><a className="button button--quiet button--small" target="_blank" rel="noopener noreferrer" href={apiUrl(`/api/jobs/${result.job_id}/exports/json`)}>Backend JSON</a><a className="button button--quiet button--small" target="_blank" rel="noopener noreferrer" href={apiUrl(`/api/jobs/${result.job_id}/exports/csv`)}>Backend CSV</a></> : <span>Exports available after analysis</span>}</div></footer>
+      <div className="export-actions">{result ? <><button type="button" className="button button--primary button--small" onClick={() => download('pdf')}><Icon name="download" />Download Report (PDF)</button><button type="button" className="button button--quiet button--small" onClick={() => download('json')}>Report JSON</button><a className="button button--quiet button--small" target="_blank" rel="noopener noreferrer" href={apiUrl(`/api/jobs/${result.job_id}/exports/csv`)}>Backend CSV</a></> : <span>Exports available after analysis</span>}</div></footer>
     {result && <AnalysisResults result={result} showViewer={false} />}
   </section>;
 }
