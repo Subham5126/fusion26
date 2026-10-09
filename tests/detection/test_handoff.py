@@ -93,8 +93,9 @@ def test_final_membership_is_disjoint_deterministic_not_annotation_selected():
 
 def test_current_backend_read_only_probe_reports_absence_without_fake_tracking():
     report = handoff.integration_report()
-    assert not report["tracker_available"]
-    assert report["tracker_callables"] == {}
+    assert report["tracker_available"]
+    assert "Tracker" in report["tracker_callables"]
+    assert "extract_detection_coords" in report["tracker_callables"]
     assert report["end_to_end_tracker_test"].startswith("not_run")
     assert report["backend_detector_selection"] == "neither"
     assert report["pipeline"]["status"] == "not_implemented"
