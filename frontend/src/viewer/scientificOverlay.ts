@@ -1,6 +1,6 @@
 import type { AnalysisResult, TrackPoint } from '../types/contracts';
 import type { DemoFrame } from './demoFrames';
-import { supportsDemoFrames, verifiedDemoLayout } from './demoFrames';
+import { supportsDemoFrames } from './demoFrames';
 import { rawToDecoded } from './geometry';
 import type { Point } from './geometry';
 
@@ -14,10 +14,11 @@ export function scientificOverlay(result: AnalysisResult, frame: DemoFrame): Sci
   const empty = (warning: string): ScientificOverlayModel => ({ detections: [], tracks: [], warnings: [warning] });
   if (!supportsDemoFrames(result) || frame.source !== 'analyzed_demo' || result.job_id !== frame.job_id || frame.id !== `${result.job_id}/${frame.frame_index}`)
     return empty('Image and analysis provenance do not match; overlays are suppressed.');
-  const { header } = frame, swapped = header.orientation >= 5;
-  if (!verifiedDemoLayout.indexes.includes(frame.frame_index) || header.width !== verifiedDemoLayout.width || header.height !== verifiedDemoLayout.height ||
+  const { header, manifest } = frame, swapped = header.orientation >= 5;
+  const metadata = manifest.frames.find(entry => entry.frame_index === frame.frame_index);
+  if (manifest.job_id !== result.job_id || !metadata || header.width !== metadata.width_px || header.height !== metadata.height_px ||
     frame.width_px !== (swapped ? header.height : header.width) || frame.height_px !== (swapped ? header.width : header.height))
-    return empty('Image dimensions or frame index do not match the verified demo; overlays are suppressed.');
+    return empty('Image dimensions or frame index do not match the backend manifest; overlays are suppressed.');
   if (result.coordinate_frame !== 'raw_pixels' || !['identity', 'not_required'].includes(result.registration.status))
     return empty('A verified raw/reference transform is unavailable; overlays are suppressed.');
   const transform = (point: Point) => rawToDecoded(point, header, header.orientation);
@@ -26,10 +27,11 @@ export function scientificOverlay(result: AnalysisResult, frame: DemoFrame): Sci
     .map(point => [point.detection_id!, track.track_id] as const)));
   const matching = result.detections.filter(detection => detection.frame_index === frame.frame_index);
   for (const detection of result.detections) {
+    const source = manifest.frames.find(entry => entry.frame_index === detection.frame_index);
     const [x0, y0, x1, y1] = detection.bbox_raw_px;
-    if (!verifiedDemoLayout.indexes.includes(detection.frame_index) || x0 < 0 || y0 < 0 || x1 > header.width || y1 > header.height ||
-      detection.x_raw_px < -.5 || detection.x_raw_px >= header.width - .5 || detection.y_raw_px < -.5 || detection.y_raw_px >= header.height - .5)
-      return empty('Detection geometry is outside the verified source; overlays are suppressed.');
+    if (!source || x0 < 0 || y0 < 0 || x1 > source.width_px || y1 > source.height_px ||
+      detection.x_raw_px < -.5 || detection.x_raw_px >= source.width_px - .5 || detection.y_raw_px < -.5 || detection.y_raw_px >= source.height_px - .5)
+      return empty('Detection geometry is outside the manifest source; overlays are suppressed.');
   }
   const detections = matching.map(detection => {
     const [x0, y0, x1, y1] = detection.bbox_raw_px;
