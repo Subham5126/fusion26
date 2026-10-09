@@ -31,7 +31,7 @@ function VerifiedDemoWorkbench({ result }: { result: AnalysisResult }) {
   const number = (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 3 });
   if (!backend.manifest || !listed) return <section className="demo-workbench" aria-labelledby={`${id}-heading`} data-source="analyzed_demo" data-job-id={result.job_id}>
     <div className="demo-source-heading"><div><p className="eyebrow">Synthetic source · backend results</p><h3 id={`${id}-heading`}>Analyzed sequence</h3></div></div>
-    <p className="analysis-note">These PNGs and overlays belong to job {result.job_id}. Local Image Preview has independent images and no synthetic overlays.</p>
+    <p className="analysis-note demo-provenance-note">PNGs and overlays from this job. Local Image Preview has independent images and no synthetic overlays.</p>
     <div className="sequence-feedback" role={backend.metadata.phase === 'failed' ? 'alert' : 'status'}>
       <strong>{backend.metadata.phase === 'failed' ? 'Backend frame manifest unavailable' : 'Loading backend frame manifest…'}</strong>
       <p>{backend.metadata.error ?? 'Waiting for authoritative frame order, dimensions and acquisition timestamps.'}</p>
@@ -42,8 +42,8 @@ function VerifiedDemoWorkbench({ result }: { result: AnalysisResult }) {
   </section>;
   return <section className="demo-workbench" aria-labelledby={`${id}-heading`} data-source="analyzed_demo" data-job-id={result.job_id}>
     <div className="demo-source-heading"><div><p className="eyebrow">Synthetic source · backend results</p><h3 id={`${id}-heading`}>Analyzed sequence</h3></div>
-      <span className="workbench-stage"><span className="status-dot" />{backend.manifest.frame_count} source frames</span></div>
-    <p className="analysis-note">These PNGs and overlays belong to job {result.job_id}. Local Image Preview has independent images and no synthetic overlays.</p>
+      <span className="workbench-stage"><span className="status-dot" />{backend.manifest.frame_count} frames</span></div>
+    <p className="analysis-note demo-provenance-note">PNGs and overlays from this job. Local Image Preview has independent images and no synthetic overlays.</p>
     <div className="demo-overlay-controls" aria-label="Overlay visibility">{(['detections', 'tracks', 'predictions'] as const).map(key => <label key={key}>
       <input type="checkbox" checked={visibility[key]} onChange={event => setVisibility(current => ({ ...current, [key]: event.target.checked }))} />
       {key === 'tracks' ? 'Observed tracks' : key === 'predictions' ? 'Predictions' : 'Detection boxes & centroids'}</label>)}</div>
@@ -58,7 +58,7 @@ function VerifiedDemoWorkbench({ result }: { result: AnalysisResult }) {
           {current?.errorStatus === 404 && <p>Frames may have expired or the server restarted. Run Synthetic Demo again for a fresh job.</p>}
           {current?.phase === 'failed' && <button type="button" className="button button--secondary button--small" onClick={() => backend.select(listed.frame_index, true)}>Retry backend frame</button>}</div>} />
       <div className="frame-caption"><span>FRAME {String(playback.index + 1).padStart(2, '0')} / {backend.frames.length}</span><strong>Backend index {listed.frame_index} · {listed.width_px} × {listed.height_px} px · {ready ? 'PNG ready' : current?.phase === 'failed' ? 'Unavailable' : 'Loading'}</strong></div>
-      <p className="analysis-note">Acquisition time: {listed.timestamp_s === null ? 'Not provided' : `${String(listed.timestamp_s)} s`}</p>
+      <p className="analysis-note demo-acquisition-note">Acquisition time: {listed.timestamp_s === null ? 'Not provided' : `${String(listed.timestamp_s)} s`}</p>
       <div className="frame-timeline local-frame-timeline"><div className="timeline-controls">
         <button type="button" disabled={playback.index === 0} aria-label="Previous demo frame" title="Previous demo frame" onClick={() => playback.seek(playback.index - 1)}><Icon name="back" /></button>
         <button type="button" disabled={!ready && !playback.playing} className="timeline-play" aria-label={playback.playing ? 'Pause demo frames' : 'Play demo frames'} onClick={playback.toggle}><Icon name={playback.playing ? 'pause' : 'play'} /></button>
@@ -70,12 +70,13 @@ function VerifiedDemoWorkbench({ result }: { result: AnalysisResult }) {
       <div className="frame-slider"><input type="range" aria-label="Demo frame timeline" min="1" max={backend.frames.length} value={playback.index + 1}
         aria-valuetext={`Frame ${playback.index + 1} of ${backend.frames.length}, backend index ${listed.frame_index}`} onChange={event => playback.seek(Number(event.target.value) - 1)} />
         <div><span>01</span><span>{String(backend.frames.length).padStart(2, '0')}</span></div></div></div>
-      <div className="demo-overlay-legend" aria-label="Overlay legend"><span><i className="legend-detection" />Detection box + crosshair</span><span><i className="legend-observed" />Observed · solid cyan + filled points</span><span><i className="legend-predicted" />Predicted · dashed amber + hollow points</span></div>
+      <div className="demo-overlay-legend" aria-label="Overlay legend"><span><i className="legend-detection" />Detection box + crosshair</span><span><i className="legend-observed" />Observed · solid emerald + filled points</span><span><i className="legend-predicted" />Predicted · dashed ice blue + hollow points</span></div>
       {!!model.warnings.length && <div className="sequence-feedback sequence-feedback--error" role="alert">{model.warnings.join(' ')}</div>}
       {!model.warnings.length && ready && !model.detections.length && <p className="analysis-note">No detections in this frame. No points were added.</p>}
-      <p className="analysis-note">Forecasts appear at the last observed frame. Future points have no source images and do not count as observations.</p>
+      <p className="analysis-note demo-forecast-note">Forecasts appear at the final observed frame. Future points have no source images and are not observations.</p>
     </div><aside className="track-inspector demo-track-inspector" aria-label="Analyzed demo track inspector">
       <div className="inspector-title"><Icon name="track" /><h3>Track evidence</h3></div>
+      <button type="button" className="button button--primary button--small demo-final-forecast" onClick={() => playback.seek(backend.frames.length - 1)}><span>Inspect final frame & forecasts</span><Icon name="arrow" /></button>
       <label className="demo-track-selector">Selected track<select aria-label="Select analyzed track" value={selected ?? ''} disabled={!result.tracks.length} onChange={event => setSelected(event.target.value)}>
         {!result.tracks.length && <option value="">No tracks returned</option>}{result.tracks.map(track => <option key={track.track_id} value={track.track_id}>{track.track_id}</option>)}</select></label>
       {track ? <><p className="analysis-note">{track.candidate_label}</p><dl className="evidence-values">
@@ -84,9 +85,8 @@ function VerifiedDemoWorkbench({ result }: { result: AnalysisResult }) {
         <div><dt>Image-plane speed</dt><dd>{track.trajectory ? `${number(track.trajectory.speed)} ${track.trajectory.speed_unit}` : 'No fit'}</dd></div>
         <div><dt>Fit RMSE</dt><dd>{track.trajectory?.fit_rmse_px == null ? 'Not provided' : `${number(track.trajectory.fit_rmse_px)} px`}</dd></div>
       </dl>{!!track.warnings.length && <ul className="analysis-note">{track.warnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul>}</> : <p className="analysis-note">No tracks were returned.</p>}
-      <button type="button" className="button button--secondary button--small" onClick={() => playback.seek(backend.frames.length - 1)}>Inspect final frame & forecasts</button>
       <div className="identity-note"><Icon name="info" /><span>Image-plane candidate evidence. Identity and physical orbit remain unverified.</span></div>
     </aside></div>
-    <p className="demo-metadata-note">Frame order, dimensions and acquisition times come from this job’s backend manifest. Playback rate is a display control. Local images are preview only.</p>
+    <p className="demo-metadata-note">Backend manifest: frame order, native dimensions and acquisition times. Display rate controls playback only; local images are preview only.</p>
   </section>;
 }

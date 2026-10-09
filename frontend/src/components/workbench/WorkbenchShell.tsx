@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Icon } from '../ui/Icon';
 import { ConceptualField } from './ConceptualField';
 import { presentAnalysis, unavailableAnalysis } from '../../state/analysis';
@@ -37,8 +38,8 @@ function TrackInspector() {
   </aside>;
 }
 
-export function WorkbenchShell({ preview = false, analysis = unavailableAnalysis }: { preview?: boolean; analysis?: AnalysisState }) {
-  if (!preview) return <><LocalWorkbench /><AnalysisPanel /></>;
+export function WorkbenchShell({ preview = false, analysis = unavailableAnalysis, overview, navigation, connection }: { preview?: boolean; analysis?: AnalysisState; overview?: ReactNode; navigation?: ReactNode; connection?: ReactNode }) {
+  if (!preview) return <><LocalWorkbench overview={overview} navigation={navigation} connection={connection} /><AnalysisPanel /></>;
   const presentation = presentAnalysis(analysis);
   return <section className={`workbench-shell ${preview ? 'workbench-shell--preview' : ''}`}
     aria-label={preview ? 'Conceptual mission workbench preview' : 'Mission workbench shell'}>

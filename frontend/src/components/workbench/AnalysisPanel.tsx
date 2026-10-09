@@ -29,58 +29,58 @@ export function AnalysisResults({ result }: { result: AnalysisResult }) {
   const predictions = result.tracks.reduce((count, track) => count + (track.trajectory?.predictions.length ?? 0), 0);
   return <div className="analysis-results">
     <div className="analysis-counts" aria-label="Completed analysis counts">
-      <div><span>Detections</span><strong>{result.detections.length}</strong></div>
-      <div><span>Tracks</span><strong>{result.tracks.length}</strong></div>
-      <div><span>Predicted points</span><strong>{predictions}</strong></div>
+      <div><Icon name="scan" /><span>Detections</span><strong>{result.detections.length}</strong></div>
+      <div><Icon name="track" /><span>Tracks <small>{result.tracks.filter(track => track.status === 'confirmed').length} confirmed</small></span><strong>{result.tracks.length}</strong></div>
+      <div><Icon name="clock" /><span>Predicted points</span><strong>{predictions}</strong></div>
     </div>
     <Warnings warnings={result.warnings} /><Warnings warnings={result.registration.warnings} label="Registration warnings" />
     <DemoWorkbench result={result} />
     <p className="analysis-note">Synthetic results belong to this backend job. Local telescope observations remain a separate sequence.</p>
     <details className="analysis-details"><summary>Inspect detection tables, track history & provenance</summary>
-    <h3>Sequence metadata</h3>
-    <dl className="analysis-metadata">
-      <div><dt>Job ID</dt><dd>{result.job_id}</dd></div><div><dt>Sequence ID</dt><dd>{result.sequence_id}</dd></div>
-      <div><dt>Source / profile</dt><dd>{result.source_type} / {result.profile}</dd></div>
-      <div><dt>Schema / coordinate frame</dt><dd>{result.schema_version} / {result.coordinate_frame}</dd></div>
-      <div><dt>Time basis / registration</dt><dd>{result.time_basis} / {result.registration.status}</dd></div>
-      <div><dt>Runtime</dt><dd>{result.runtime_ms === null ? 'Not provided' : `${value(result.runtime_ms)} ms`}</dd></div>
-    </dl>
-    <h3>Detections</h3>
-    {result.detections.length ? <div className="analysis-table-scroll" role="region" aria-label="Backend detections" tabIndex={0}><table>
-      <caption>Original image coordinates · pixels · frame indexes start at zero</caption>
-      <thead><tr><th>Detection</th><th>Frame</th><th>Raw x / y (px)</th><th>Raw bounding box (px)</th><th>Kind</th><th>Heuristic quality</th></tr></thead>
-      <tbody>{result.detections.map(detection => <tr key={detection.detection_id}><td>{detection.detection_id}</td><td>{detection.frame_index}</td>
-        <td>{value(detection.x_raw_px)} / {value(detection.y_raw_px)}</td><td>{detection.bbox_raw_px.map(value).join(', ')}</td>
-        <td>{detection.kind}</td><td>{value(detection.quality_score)}</td></tr>)}</tbody>
-    </table></div> : <p className="analysis-note">No candidates found in the completed backend result.</p>}
-    <h3>Tracks & image-plane predictions</h3>
-    {!result.tracks.length && <p className="analysis-note">No tracks returned by the backend.</p>}
-    {result.tracks.map((track, index) => <details className="analysis-track" key={track.track_id} open={index === 0}>
-      <summary><strong>{track.track_id}</strong><span>{track.status} · {track.observed_count} observations</span></summary>
-      <div className="analysis-track-content"><p className="analysis-note">{track.candidate_label}</p>
-        <dl className="analysis-metadata"><div><dt>Heuristic quality</dt><dd>{value(track.quality_score)}</dd></div>
-          <div><dt>Observed support</dt><dd>{track.observed_count} actual observations</dd></div>
-          <div><dt>Image-plane speed</dt><dd>{track.trajectory ? `${value(track.trajectory.speed)} ${track.trajectory.speed_unit}` : 'No fit returned'}</dd></div>
-          <div><dt>Fit RMSE</dt><dd>{track.trajectory?.fit_rmse_px == null ? 'Not provided' : `${value(track.trajectory.fit_rmse_px)} px`}</dd></div>
-          {track.trajectory && <><div><dt>Fit model / observations used</dt><dd>{track.trajectory.model} / {track.trajectory.observations_used}</dd></div>
-            <div><dt>Velocity x / y</dt><dd>{value(track.trajectory.vx)} / {value(track.trajectory.vy)} {track.trajectory.speed_unit}</dd></div></>}
-        </dl>
-        <Warnings warnings={track.warnings} label="Track warnings" />
-        <Points points={track.points} label={`Track ${track.track_id} points`} />
-        <Points points={track.trajectory?.predictions ?? []} label={`Track ${track.track_id} extrapolated predictions`} />
-      </div>
-    </details>)}
-    <details className="analysis-provenance"><summary>Backend provenance & metrics</summary>
-      <dl className="analysis-metadata">{Object.entries(result.provenance).map(([key, entry]) => <div key={key}><dt>{key}</dt><dd>{entry ?? 'Not provided'}</dd></div>)}</dl>
-      {result.metrics === null ? <p className="analysis-note">Benchmark metrics were not provided for this run.</p> : <dl className="analysis-metadata">
-        <div><dt>Benchmark / split</dt><dd>{result.metrics.benchmark_id} / {result.metrics.split}</dd></div>
-        <div><dt>Matching gate</dt><dd>{value(result.metrics.matching_gate_px)} px</dd></div>
-        <div><dt>TP / FP / FN</dt><dd>{result.metrics.tp} / {result.metrics.fp} / {result.metrics.fn}</dd></div>
-        <div><dt>Precision / recall</dt><dd>{value(result.metrics.precision)} / {value(result.metrics.recall)}</dd></div>
-        <div><dt>Localization RMSE</dt><dd>{result.metrics.localization_rmse_px === null ? 'Not provided' : `${value(result.metrics.localization_rmse_px)} px`}</dd></div>
-        {Object.entries(result.metrics.null_reasons).map(([key, reason]) => <div key={key}><dt>{key}</dt><dd>{reason}</dd></div>)}
-      </dl>}
-    </details>
+      <h3>Sequence metadata</h3>
+      <dl className="analysis-metadata">
+        <div><dt>Job ID</dt><dd>{result.job_id}</dd></div><div><dt>Sequence ID</dt><dd>{result.sequence_id}</dd></div>
+        <div><dt>Source / profile</dt><dd>{result.source_type} / {result.profile}</dd></div>
+        <div><dt>Schema / coordinate frame</dt><dd>{result.schema_version} / {result.coordinate_frame}</dd></div>
+        <div><dt>Time basis / registration</dt><dd>{result.time_basis} / {result.registration.status}</dd></div>
+        <div><dt>Runtime</dt><dd>{result.runtime_ms === null ? 'Not provided' : `${value(result.runtime_ms)} ms`}</dd></div>
+      </dl>
+      <h3>Detections</h3>
+      {result.detections.length ? <div className="analysis-table-scroll" role="region" aria-label="Backend detections" tabIndex={0}><table>
+        <caption>Original image coordinates · pixels · frame indexes start at zero</caption>
+        <thead><tr><th>Detection</th><th>Frame</th><th>Raw x / y (px)</th><th>Raw bounding box (px)</th><th>Kind</th><th>Heuristic quality</th></tr></thead>
+        <tbody>{result.detections.map(detection => <tr key={detection.detection_id}><td>{detection.detection_id}</td><td>{detection.frame_index}</td>
+          <td>{value(detection.x_raw_px)} / {value(detection.y_raw_px)}</td><td>{detection.bbox_raw_px.map(value).join(', ')}</td>
+          <td>{detection.kind}</td><td>{value(detection.quality_score)}</td></tr>)}</tbody>
+      </table></div> : <p className="analysis-note">No candidates found in the completed backend result.</p>}
+      <h3>Tracks & image-plane predictions</h3>
+      {!result.tracks.length && <p className="analysis-note">No tracks returned by the backend.</p>}
+      {result.tracks.map((track, index) => <details className="analysis-track" key={track.track_id} open={index === 0}>
+        <summary><strong>{track.track_id}</strong><span>{track.status} · {track.observed_count} observations</span></summary>
+        <div className="analysis-track-content"><p className="analysis-note">{track.candidate_label}</p>
+          <dl className="analysis-metadata"><div><dt>Heuristic quality</dt><dd>{value(track.quality_score)}</dd></div>
+            <div><dt>Observed support</dt><dd>{track.observed_count} actual observations</dd></div>
+            <div><dt>Image-plane speed</dt><dd>{track.trajectory ? `${value(track.trajectory.speed)} ${track.trajectory.speed_unit}` : 'No fit returned'}</dd></div>
+            <div><dt>Fit RMSE</dt><dd>{track.trajectory?.fit_rmse_px == null ? 'Not provided' : `${value(track.trajectory.fit_rmse_px)} px`}</dd></div>
+            {track.trajectory && <><div><dt>Fit model / observations used</dt><dd>{track.trajectory.model} / {track.trajectory.observations_used}</dd></div>
+              <div><dt>Velocity x / y</dt><dd>{value(track.trajectory.vx)} / {value(track.trajectory.vy)} {track.trajectory.speed_unit}</dd></div></>}
+          </dl>
+          <Warnings warnings={track.warnings} label="Track warnings" />
+          <Points points={track.points} label={`Track ${track.track_id} points`} />
+          <Points points={track.trajectory?.predictions ?? []} label={`Track ${track.track_id} extrapolated predictions`} />
+        </div>
+      </details>)}
+      <details className="analysis-provenance"><summary>Backend provenance & metrics</summary>
+        <dl className="analysis-metadata">{Object.entries(result.provenance).map(([key, entry]) => <div key={key}><dt>{key}</dt><dd>{entry ?? 'Not provided'}</dd></div>)}</dl>
+        {result.metrics === null ? <p className="analysis-note">Benchmark metrics were not provided for this run.</p> : <dl className="analysis-metadata">
+          <div><dt>Benchmark / split</dt><dd>{result.metrics.benchmark_id} / {result.metrics.split}</dd></div>
+          <div><dt>Matching gate</dt><dd>{value(result.metrics.matching_gate_px)} px</dd></div>
+          <div><dt>TP / FP / FN</dt><dd>{result.metrics.tp} / {result.metrics.fp} / {result.metrics.fn}</dd></div>
+          <div><dt>Precision / recall</dt><dd>{value(result.metrics.precision)} / {value(result.metrics.recall)}</dd></div>
+          <div><dt>Localization RMSE</dt><dd>{result.metrics.localization_rmse_px === null ? 'Not provided' : `${value(result.metrics.localization_rmse_px)} px`}</dd></div>
+          {Object.entries(result.metrics.null_reasons).map(([key, reason]) => <div key={key}><dt>{key}</dt><dd>{reason}</dd></div>)}
+        </dl>}
+      </details>
     </details><p className="analysis-note">Predictions are extrapolations and do not count as observations. These estimates describe image-plane motion; candidate identity remains unverified.</p>
   </div>;
 }
