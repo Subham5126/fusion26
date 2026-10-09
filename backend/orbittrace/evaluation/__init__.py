@@ -6,6 +6,7 @@ from .evaluator import (
     evaluate_tracks,
     match_points_frame,
 )
+from .harness import run_ablation_comparison
 
 __all__ = [
     "GroundTruthPoint",
@@ -13,4 +14,5 @@ __all__ = [
     "evaluate_tracks",
     "create_sequence_splits",
     "match_points_frame",
+    "run_ablation_comparison",
 ]
