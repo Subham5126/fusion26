@@ -1,0 +1,158 @@
+{
+  "schema_version": "0.1.0",
+  "job_id": "example-job",
+  "sequence_id": "demo-fixture",
+  "source_type": "synthetic",
+  "profile": "synthetic_static_stars",
+  "status": "succeeded",
+  "time_basis": "frame",
+  "coordinate_frame": "reference_frame_0",
+  "registration": {
+    "status": "identity",
+    "warnings": []
+  },
+  "detections": [
+    {
+      "detection_id": "d0",
+      "frame_index": 0,
+      "x_raw_px": 10,
+      "y_raw_px": 12,
+      "bbox_raw_px": [
+        9,
+        11,
+        12,
+        14
+      ],
+      "kind": "compact",
+      "quality_score": 0.5,
+      "detector_name": "authored_fixture",
+      "x_reference_px": 10,
+      "y_reference_px": 12,
+      "endpoints_raw_px": null,
+      "evidence_statistics": null
+    },
+    {
+      "detection_id": "d1",
+      "frame_index": 1,
+      "x_raw_px": 14,
+      "y_raw_px": 15,
+      "bbox_raw_px": [
+        13,
+        14,
+        16,
+        17
+      ],
+      "kind": "compact",
+      "quality_score": 0.5,
+      "detector_name": "authored_fixture",
+      "x_reference_px": 14,
+      "y_reference_px": 15,
+      "endpoints_raw_px": null,
+      "evidence_statistics": null
+    },
+    {
+      "detection_id": "d2",
+      "frame_index": 2,
+      "x_raw_px": 18,
+      "y_raw_px": 18,
+      "bbox_raw_px": [
+        17,
+        17,
+        20,
+        20
+      ],
+      "kind": "compact",
+      "quality_score": 0.5,
+      "detector_name": "authored_fixture",
+      "x_reference_px": 18,
+      "y_reference_px": 18,
+      "endpoints_raw_px": null,
+      "evidence_statistics": null
+    }
+  ],
+  "tracks": [
+    {
+      "track_id": "fixture-track-1",
+      "status": "confirmed",
+      "candidate_label": "orbital-object candidate; identity unverified",
+      "points": [
+        {
+          "frame_index": 0,
+          "timestamp_s": null,
+          "x_reference_px": 10,
+          "y_reference_px": 12,
+          "x_raw_px": 10,
+          "y_raw_px": 12,
+          "point_type": "observed",
+          "detection_id": "d0",
+          "out_of_field": false
+        },
+        {
+          "frame_index": 1,
+          "timestamp_s": null,
+          "x_reference_px": 14,
+          "y_reference_px": 15,
+          "x_raw_px": 14,
+          "y_raw_px": 15,
+          "point_type": "observed",
+          "detection_id": "d1",
+          "out_of_field": false
+        },
+        {
+          "frame_index": 2,
+          "timestamp_s": null,
+          "x_reference_px": 18,
+          "y_reference_px": 18,
+          "x_raw_px": 18,
+          "y_raw_px": 18,
+          "point_type": "observed",
+          "detection_id": "d2",
+          "out_of_field": false
+        }
+      ],
+      "observed_count": 3,
+      "quality_score": 0.5,
+      "warnings": [
+        "Authored example, not measured"
+      ],
+      "trajectory": {
+        "model": "constant_velocity",
+        "coordinate_frame": "reference_frame_0",
+        "time_basis": "frame",
+        "vx": 4,
+        "vy": 3,
+        "speed": 5,
+        "speed_unit": "px/frame",
+        "fit_rmse_px": null,
+        "observations_used": 3,
+        "reference_epoch": 0,
+        "x_at_epoch_px": 10,
+        "y_at_epoch_px": 12,
+        "predictions": [
+          {
+            "frame_index": 3,
+            "timestamp_s": null,
+            "x_reference_px": 22,
+            "y_reference_px": 21,
+            "x_raw_px": null,
+            "y_raw_px": null,
+            "point_type": "extrapolated",
+            "detection_id": null,
+            "out_of_field": false
+          }
+        ]
+      }
+    }
+  ],
+  "metrics": null,
+  "runtime_ms": null,
+  "warnings": [
+    "Authored contract fixture; coordinates are illustrative, no images or measurements exist"
+  ],
+  "provenance": {
+    "input_sha256": null,
+    "config_sha256": null,
+    "code_commit": null,
+    "dataset_version": null
+  }
+}

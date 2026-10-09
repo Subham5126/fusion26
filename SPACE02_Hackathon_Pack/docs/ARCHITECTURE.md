@@ -67,14 +67,3 @@ Store detections in native image coordinates. If tracking uses an aligned refere
 ## Fallback architecture
 
 If React is not integrated by hour 12, build a minimal Streamlit viewer over saved result JSON and frames. Preserve the same pipeline and schema. If API jobs are unreliable, use CLI analysis plus report viewer. Record the changed demo mode in STATUS and DEMO_AND_JUDGING; avoid maintaining two unfinished apps.
-
-## Current repository mapping
-
-The package map above is now physically present. Only app/api/health.py,
-app/main.py, app/core/config.py and app/schemas are functional. Algorithm
-package initializers are importable; pipeline.analyze raises NotImplementedError.
-frontend/src/pages/ReadinessPage.tsx consumes live health via the Vite proxy and
-shows authored empty-result JSON, with no inference controls. T08 implements
-the real viewer; T09 adds jobs/uploads after T07. Existing generic preparation
-documents remain for history, with replaced originals under docs/preparation.
-See STATUS for verification and SETUP for executable bootstrap commands.

@@ -1,0 +1,27 @@
+{
+  "schema_version": "0.1.0",
+  "job_id": "example-job",
+  "sequence_id": "demo-fixture",
+  "source_type": "synthetic",
+  "profile": "synthetic_static_stars",
+  "status": "succeeded",
+  "time_basis": "frame",
+  "coordinate_frame": "reference_frame_0",
+  "registration": {
+    "status": "identity",
+    "warnings": []
+  },
+  "detections": [],
+  "tracks": [],
+  "metrics": null,
+  "runtime_ms": null,
+  "warnings": [
+    "Illustrative empty fixture; not a benchmark run"
+  ],
+  "provenance": {
+    "input_sha256": null,
+    "config_sha256": null,
+    "code_commit": null,
+    "dataset_version": null
+  }
+}

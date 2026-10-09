@@ -35,3 +35,35 @@ Thumbs.db
 .idea/
 
 # Keep source, dependency manifests, lockfiles, and documentation tracked.
+
+# OrbitTrace dependency caches and packaging
+.cache/
+*.egg-info/
+.ruff_cache/
+
+# Bulk scientific data, artifacts and weights. Retain docs/manifests/fixtures.
+data/raw/*
+data/external/*
+data/synthetic/*
+data/ground_truth/*
+!data/raw/README.md
+!data/external/README.md
+!data/synthetic/README.md
+!data/ground_truth/README.md
+artifacts/jobs/*
+artifacts/reports/*
+!artifacts/jobs/README.md
+!artifacts/reports/README.md
+models/*
+!models/README.md
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.fits
+*.fit
+*.pt
+*.pth
+*.onnx
+*.h5
+*.ckpt

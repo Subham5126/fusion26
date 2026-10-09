@@ -1,0 +1,36 @@
+:root { color: #e5edf7; background: #0c1423; font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.55; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 1180px; margin: auto; padding: 32px 40px; }
+header, .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+header { padding-bottom: 24px; border-bottom: 1px solid #29384c; }
+.brand { font-weight: 750; letter-spacing: .15em; }
+.brand span { display: block; font-size: 11px; font-weight: 400; color: #aab8cc; margin-top: 5px; }
+.badge { color: #80e2cc; border: 1px solid #36534e; border-radius: 20px; padding: 4px 14px; font-size: 13px; }
+.intro { max-width: 790px; padding: 45px 0 32px; }
+.eyebrow { color: #80e2cc; font-size: 13px; text-transform: uppercase; letter-spacing: .12em; }
+h1 { font-size: clamp(36px, 5vw, 60px); line-height: 1.08; letter-spacing: -.04em; font-weight: 650; margin: 16px 0 22px; }
+.lead { font-size: 18px; color: #bbcadd; max-width: 690px; }
+.notice { color: #d9c293; border-left: 2px solid #d9c293; padding-left: 14px; font-size: 14px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.panel { border: 1px solid #2b3c53; border-radius: 12px; background: #111d30; padding: 24px; }
+h2 { font-size: 19px; margin: 0 0 16px; font-weight: 600; }
+.panel-heading h2 { margin-bottom: 0; }
+button, summary { cursor: pointer; }
+button { color: #e5edf7; background: #1b2d45; border: 1px solid #526d90; border-radius: 6px; padding: 8px 12px; }
+button:hover { background: #29415f; }
+button:focus-visible, summary:focus-visible { outline: 2px solid #80e2cc; outline-offset: 4px; }
+.connected, .ready { color: #80e2cc; }
+.error { color: #ffc1af; }
+.capabilities { padding: 0; list-style: none; font-size: 14px; }
+.capabilities li { display: flex; justify-content: space-between; border-bottom: 1px solid #26364b; padding: 7px 0; text-transform: capitalize; }
+.pending, .muted { color: #aab8cc; }
+.tasks { padding-left: 22px; }
+.tasks li { margin-bottom: 19px; padding-left: 5px; }
+.tasks p { color: #bbcadd; font-size: 14px; margin: 5px 0; }
+.fixture { margin-top: 22px; }
+.fixture p, footer { color: #aab8cc; font-size: 14px; }
+summary { color: #80e2cc; padding: 8px 0; }
+pre { background: #0c1423; overflow: auto; padding: 20px; border-radius: 6px; font-size: 13px; }
+footer { padding: 26px 0 8px; }
+@media (max-width: 760px) { main { padding: 20px; } .grid { grid-template-columns: 1fr; } .panel { padding: 20px; } .panel-heading { flex-wrap: wrap; } }

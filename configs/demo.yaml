@@ -1,0 +1,13 @@
+# T02 must implement these generator settings; images and truth are separate.
+seed: 26
+width_px: 640
+height_px: 480
+frames: 12
+targets: 2
+profile: synthetic_static_stars
+star_count: 100
+read_noise_sigma: 3.0
+background_level: 20.0
+hot_pixels: 4
+isolated_flashes: 1
+camera_jitter_px: 0.0

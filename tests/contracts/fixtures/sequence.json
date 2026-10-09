@@ -1,0 +1,32 @@
+{
+  "schema_version": "0.1.0",
+  "sequence_id": "demo-fixture",
+  "source_type": "synthetic",
+  "profile": "synthetic_static_stars",
+  "dataset_id": null,
+  "dataset_version": null,
+  "input_sha256": null,
+  "frames": [
+    {
+      "frame_index": 0,
+      "image_ref": "fixture-frame-0",
+      "width_px": 64,
+      "height_px": 64,
+      "timestamp_s": null
+    },
+    {
+      "frame_index": 1,
+      "image_ref": "fixture-frame-1",
+      "width_px": 64,
+      "height_px": 64,
+      "timestamp_s": null
+    },
+    {
+      "frame_index": 2,
+      "image_ref": "fixture-frame-2",
+      "width_px": 64,
+      "height_px": 64,
+      "timestamp_s": null
+    }
+  ]
+}
