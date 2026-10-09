@@ -217,7 +217,7 @@ test('result rendering uses real supplied detections, tracks, predictions, units
   assert.match(html, /fixture-track-1/); assert.match(html, /3 observations/); assert.match(html, /5 px\/frame/);
   assert.match(html, /extrapolated/); assert.match(html, /observed/); assert.match(html, /Not provided/);
   assert.match(html, /&lt;script&gt;unsafe&lt;\/script&gt;/); assert.doesNotMatch(html, /<script>/);
-  assert.match(html, /local telescope viewer below remains a separate sequence/);
+  assert.match(html, /Local telescope observations remain a separate sequence/);
 });
 
 test('a validated empty result renders zero counts and honest missing benchmark metrics', () => {

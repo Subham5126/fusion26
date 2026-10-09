@@ -30,8 +30,8 @@ function VerifiedDemoWorkbench({ result }: { result: AnalysisResult }) {
   const track = result.tracks.find(entry => entry.track_id === selected);
   const number = (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 3 });
   if (!backend.manifest || !listed) return <section className="demo-workbench" aria-labelledby={`${id}-heading`} data-source="analyzed_demo" data-job-id={result.job_id}>
-    <div className="demo-source-heading"><div><p className="eyebrow">LIVE BACKEND IMAGES / SYNTHETIC</p><h3 id={`${id}-heading`}>Analyzed Demo</h3></div></div>
-    <p className="analysis-note">These PNGs and overlays belong to job {result.job_id}. Local Image Preview below has independent images and no demo overlays.</p>
+    <div className="demo-source-heading"><div><p className="eyebrow">Synthetic source · backend results</p><h3 id={`${id}-heading`}>Analyzed sequence</h3></div></div>
+    <p className="analysis-note">These PNGs and overlays belong to job {result.job_id}. Local Image Preview has independent images and no synthetic overlays.</p>
     <div className="sequence-feedback" role={backend.metadata.phase === 'failed' ? 'alert' : 'status'}>
       <strong>{backend.metadata.phase === 'failed' ? 'Backend frame manifest unavailable' : 'Loading backend frame manifest…'}</strong>
       <p>{backend.metadata.error ?? 'Waiting for authoritative frame order, dimensions and acquisition timestamps.'}</p>
@@ -41,9 +41,9 @@ function VerifiedDemoWorkbench({ result }: { result: AnalysisResult }) {
     </div>
   </section>;
   return <section className="demo-workbench" aria-labelledby={`${id}-heading`} data-source="analyzed_demo" data-job-id={result.job_id}>
-    <div className="demo-source-heading"><div><p className="eyebrow">LIVE BACKEND IMAGES / SYNTHETIC</p><h3 id={`${id}-heading`}>Analyzed Demo</h3></div>
+    <div className="demo-source-heading"><div><p className="eyebrow">Synthetic source · backend results</p><h3 id={`${id}-heading`}>Analyzed sequence</h3></div>
       <span className="workbench-stage"><span className="status-dot" />{backend.manifest.frame_count} source frames</span></div>
-    <p className="analysis-note">These PNGs and overlays belong to job {result.job_id}. Local Image Preview below has independent images and no demo overlays.</p>
+    <p className="analysis-note">These PNGs and overlays belong to job {result.job_id}. Local Image Preview has independent images and no synthetic overlays.</p>
     <div className="demo-overlay-controls" aria-label="Overlay visibility">{(['detections', 'tracks', 'predictions'] as const).map(key => <label key={key}>
       <input type="checkbox" checked={visibility[key]} onChange={event => setVisibility(current => ({ ...current, [key]: event.target.checked }))} />
       {key === 'tracks' ? 'Observed tracks' : key === 'predictions' ? 'Predictions' : 'Detection boxes & centroids'}</label>)}</div>
@@ -60,10 +60,10 @@ function VerifiedDemoWorkbench({ result }: { result: AnalysisResult }) {
       <div className="frame-caption"><span>FRAME {String(playback.index + 1).padStart(2, '0')} / {backend.frames.length}</span><strong>Backend index {listed.frame_index} · {listed.width_px} × {listed.height_px} px · {ready ? 'PNG ready' : current?.phase === 'failed' ? 'Unavailable' : 'Loading'}</strong></div>
       <p className="analysis-note">Acquisition time: {listed.timestamp_s === null ? 'Not provided' : `${String(listed.timestamp_s)} s`}</p>
       <div className="frame-timeline local-frame-timeline"><div className="timeline-controls">
-        <button type="button" disabled={playback.index === 0} aria-label="Previous demo frame" onClick={() => playback.seek(playback.index - 1)}><Icon name="back" /></button>
+        <button type="button" disabled={playback.index === 0} aria-label="Previous demo frame" title="Previous demo frame" onClick={() => playback.seek(playback.index - 1)}><Icon name="back" /></button>
         <button type="button" disabled={!ready && !playback.playing} className="timeline-play" aria-label={playback.playing ? 'Pause demo frames' : 'Play demo frames'} onClick={playback.toggle}><Icon name={playback.playing ? 'pause' : 'play'} /></button>
-        <button type="button" disabled={playback.index === backend.frames.length - 1} aria-label="Next demo frame" onClick={() => playback.seek(playback.index + 1)}><Icon name="next" /></button>
-        <button type="button" aria-label="Restart demo from first frame" onClick={playback.restart}><Icon name="restart" /></button>
+        <button type="button" disabled={playback.index === backend.frames.length - 1} aria-label="Next demo frame" title="Next demo frame" onClick={() => playback.seek(playback.index + 1)}><Icon name="next" /></button>
+        <button type="button" aria-label="Restart demo from first frame" title="Restart demo from first frame" onClick={playback.restart}><Icon name="restart" /></button>
         <output aria-label="Current demo frame">Frame {playback.index + 1} / {backend.frames.length}</output>
       </div><label className="playback-speed">Display rate<select aria-label="Demo playback display rate" value={playback.rate} onChange={event => playback.setRate(Number(event.target.value))}>
         {[.5, 1, 2, 4].map(rate => <option key={rate} value={rate}>{rate} frames/s</option>)}</select></label>

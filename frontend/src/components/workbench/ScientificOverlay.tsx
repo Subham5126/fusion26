@@ -22,7 +22,7 @@ export function ScientificOverlay({ model, scale, selected, select, visibility }
             role="button" tabIndex={0} aria-label={`Select track ${track.id}, observed frame ${point.frame}`} aria-pressed={selected === track.id}
             onClick={() => select(track.id)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); select(track.id); } }} />
         </g>)}
-        {!!track.observed.length && <text x={track.observed.at(-1)!.x + px(10)} y={track.observed.at(-1)!.y - px(10)} fontSize={px(11)} className="track-overlay-label">{track.id}</text>}
+        {!!track.observed.length && <text x={track.observed.at(-1)!.x + px(10)} y={track.observed.at(-1)!.y - px(10)} fontSize={px(13)} className="track-overlay-label">{track.id}</text>}
       </>}
       {visibility.predictions && !!track.predictions.length && <g className="scientific-forecast">
         <polyline points={path(track.forecast)} fill="none" strokeDasharray={`${px(5)} ${px(4)}`} strokeWidth={px(1.5)} />

@@ -33,6 +33,11 @@ export function AnalysisResults({ result }: { result: AnalysisResult }) {
       <div><span>Tracks</span><strong>{result.tracks.length}</strong></div>
       <div><span>Predicted points</span><strong>{predictions}</strong></div>
     </div>
+    <Warnings warnings={result.warnings} /><Warnings warnings={result.registration.warnings} label="Registration warnings" />
+    <DemoWorkbench result={result} />
+    <p className="analysis-note">Synthetic results belong to this backend job. Local telescope observations remain a separate sequence.</p>
+    <details className="analysis-details"><summary>Inspect detection tables, track history & provenance</summary>
+    <h3>Sequence metadata</h3>
     <dl className="analysis-metadata">
       <div><dt>Job ID</dt><dd>{result.job_id}</dd></div><div><dt>Sequence ID</dt><dd>{result.sequence_id}</dd></div>
       <div><dt>Source / profile</dt><dd>{result.source_type} / {result.profile}</dd></div>
@@ -40,9 +45,6 @@ export function AnalysisResults({ result }: { result: AnalysisResult }) {
       <div><dt>Time basis / registration</dt><dd>{result.time_basis} / {result.registration.status}</dd></div>
       <div><dt>Runtime</dt><dd>{result.runtime_ms === null ? 'Not provided' : `${value(result.runtime_ms)} ms`}</dd></div>
     </dl>
-    <Warnings warnings={result.warnings} /><Warnings warnings={result.registration.warnings} label="Registration warnings" />
-    <DemoWorkbench result={result} />
-    <p className="analysis-note">Synthetic results belong to this backend job. The local telescope viewer below remains a separate sequence.</p>
     <h3>Detections</h3>
     {result.detections.length ? <div className="analysis-table-scroll" role="region" aria-label="Backend detections" tabIndex={0}><table>
       <caption>Original image coordinates · pixels · frame indexes start at zero</caption>
@@ -79,7 +81,7 @@ export function AnalysisResults({ result }: { result: AnalysisResult }) {
         {Object.entries(result.metrics.null_reasons).map(([key, reason]) => <div key={key}><dt>{key}</dt><dd>{reason}</dd></div>)}
       </dl>}
     </details>
-    <p className="analysis-note">Predictions are extrapolations and do not count as observations. These estimates describe image-plane motion; candidate identity remains unverified.</p>
+    </details><p className="analysis-note">Predictions are extrapolations and do not count as observations. These estimates describe image-plane motion; candidate identity remains unverified.</p>
   </div>;
 }
 
@@ -91,9 +93,9 @@ export function AnalysisPanel() {
   const job = 'job' in state ? state.job : undefined;
   const jobId = state.phase === 'queued' ? state.submission.job_id : state.phase === 'cancelled' ? state.jobId : job?.job_id;
   const label = state.phase === 'idle' ? 'Ready' : state.phase === 'succeeded' ? 'Succeeded' : state.phase === 'failed' ? job?.status === 'failed' ? 'Failed' : 'Request failed' : presentation.label;
-  return <section className="workbench-shell analysis-panel" aria-labelledby={`${id}-heading`}>
+  return <section id="synthetic-analysis" className="workbench-shell analysis-panel" aria-labelledby={`${id}-heading`} data-source="synthetic">
     <header className="workbench-topbar"><div className="workbench-heading"><span className="workspace-emblem"><Icon name="activity" /></span>
-      <div><h2 id={`${id}-heading`}>Synthetic analysis demo</h2><p>BACKEND RESULTS <span>/</span> SCHEMA 0.1.0</p></div></div>
+      <div><h2 id={`${id}-heading`}>Synthetic Analysis <span className="simulation-badge">Simulated source</span></h2><p>Backend-generated sequence <span>/</span> Separate from your observations</p></div></div>
       <div className="analysis-actions"><button type="button" className="button button--primary button--small" disabled={busy} onClick={run}><Icon name="scan" />Run Synthetic Demo</button>
         {busy && <button type="button" className="button button--quiet button--small" onClick={cancel}>Stop monitoring</button>}</div>
     </header>

@@ -14,6 +14,7 @@ import { imageTransform, pixelToViewport, rawToDecoded } from '../src/viewer/geo
 import { ScientificOverlay } from '../src/components/workbench/ScientificOverlay';
 import { LocalWorkbench } from '../src/components/workbench/LocalWorkbench';
 import { DemoWorkbench } from '../src/components/workbench/DemoWorkbench';
+import { WorkbenchShell } from '../src/components/workbench/WorkbenchShell';
 
 // Authored headers and contract fixture exercise boundaries; none are live assets.
 function png(width = 64, height = 48) {
@@ -166,7 +167,17 @@ test('local and analyzed sources stay separate and arbitrary analysis remains di
   const local = renderToStaticMarkup(createElement(LocalWorkbench)); const demo = renderToStaticMarkup(createElement(DemoWorkbench, { result: result() }));
   assert.match(local, /Local Image Preview/); assert.match(local, /Analyze local images/); assert.match(local, /disabled/);
   assert.doesNotMatch(local, /data-job-id|Scientific image overlays|scientific-detection/);
-  assert.match(demo, /data-source="analyzed_demo"/); assert.match(demo, /Local Image Preview below has independent images/);
+  assert.match(demo, /data-source="analyzed_demo"/); assert.match(demo, /Local Image Preview has independent images and no synthetic overlays/);
   const unsupported = result(); unsupported.source_type = 'real'; assert.equal(supportsDemoFrames(unsupported), false);
   assert.match(renderToStaticMarkup(createElement(DemoWorkbench, { result: unsupported })), /No images or overlays are substituted/);
+});
+
+test('observation workspace precedes explicitly synthetic controls and contains no synthetic result', () => {
+  const html = renderToStaticMarkup(createElement(WorkbenchShell));
+  assert.ok(html.indexOf('id="observations"') < html.indexOf('id="synthetic-analysis"'));
+  assert.match(html, /data-source="local_preview"/);
+  assert.match(html, /data-source="synthetic"/);
+  assert.match(html, /Simulated source/);
+  assert.doesNotMatch(html, /data-job-id|scientific-detection|data-observed-frame/);
+  assert.match(html, /Not performed/);
 });

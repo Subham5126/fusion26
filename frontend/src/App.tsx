@@ -1,11 +1,12 @@
-import { useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { AppFooter } from './components/layout/AppFooter';
 import { AppNavigation } from './components/layout/AppNavigation';
-import { CustomCursor } from './components/ui/CustomCursor';
 import { useHashRoute } from './hooks/useHashRoute';
-import { LandingPage } from './pages/LandingPage';
 import { ReadinessPage } from './pages/ReadinessPage';
 import { WorkbenchPage } from './pages/WorkbenchPage';
+
+// Keep the decorative Three.js/GSAP scene out of the scientific workspace's initial bundle.
+const LandingPage = lazy(() => import('./pages/LandingPage').then(module => ({ default: module.LandingPage })));
 
 export default function App() {
   const { page, hash } = useHashRoute();
@@ -26,7 +27,6 @@ export default function App() {
   }, [page, hash]);
 
   return <>
-    <CustomCursor />
     <a className="skip-link" href="#main-content" onClick={event => {
       event.preventDefault();
       main.current?.focus();
@@ -34,7 +34,7 @@ export default function App() {
     <AppNavigation page={page} hash={hash} />
     <main id="main-content" ref={main} tabIndex={-1}>
       <div className="page-enter" key={page}>
-        {page === 'home' ? <LandingPage />
+        {page === 'home' ? <Suspense fallback={<div className="container route-loading" role="status">Loading OrbitTrace…</div>}><LandingPage /></Suspense>
           : page === 'workbench' ? <WorkbenchPage /> : <ReadinessPage />}
       </div>
     </main>

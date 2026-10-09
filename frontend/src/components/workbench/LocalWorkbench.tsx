@@ -10,17 +10,17 @@ export function LocalWorkbench() {
   const current = sequence.frames[playback.index];
   const ready = !!current && !sequence.loading && !sequence.draft.length;
   const choose = () => { playback.pause(); input.current?.click(); };
-  return <section className="workbench-shell local-workbench" aria-label="Mission image workbench">
-    <header className="workbench-topbar"><div className="workbench-heading"><span className="workspace-emblem"><Icon name="scan" /></span><div><h2>Local Image Preview</h2><p>OPTICAL SEQUENCES <span>/</span> INDEPENDENT LOCAL SOURCE</p></div></div>
-      <span className="workbench-stage"><span className={`status-dot ${current ? '' : 'status-dot--muted'}`} />{sequence.loading ? 'Validating images' : current ? 'Local preview' : 'Awaiting images'}</span></header>
+  return <section id="observations" className="workbench-shell local-workbench" aria-label="Mission image workbench" data-source="local_preview">
+    <header className="observation-toolbar" aria-label="Image selection and sequence controls">
+      <div className="observation-toolbar-heading"><Icon name="image" /><div><h2>Optical observations</h2><p>Local Image Preview · Browser only; no upload.</p></div></div>
+      <div className="source-actions" role="group" aria-label="Image selection">
+        <button className="button button--primary button--small" type="button" onClick={choose}><Icon name="plus" />{current ? 'Replace images' : 'Choose images'}</button>
+        <button className="button button--secondary button--small" type="button" aria-label="Analyze local images" disabled title="Local image analysis requires backend registration support"><Icon name="scan" /><span className="local-analysis-control-label">Analyze local images</span></button>
+        {!!(current || sequence.draft.length || sequence.loading) && <button className="button button--quiet button--small" type="button" aria-label="Clear sequence" title="Clear sequence" onClick={() => { playback.pause(); sequence.clear(); }}>Clear</button>}
+      </div>
+    </header>
     <input ref={input} className="visually-hidden" type="file" multiple accept="image/jpeg,image/png,.jpg,.jpeg,.png" aria-label="Select telescope images" tabIndex={-1}
       onChange={event => { const files = Array.from(event.currentTarget.files ?? []); event.currentTarget.value = ''; if (files.length) { playback.pause(); void sequence.select(files); } }} />
-    <div className="sequence-source"><div className="source-description"><Icon name="layers" /><div><span>Observation sequence · local preview</span><strong>{current ? `${sequence.frames.length} confirmed frames · ${current.width_px} × ${current.height_px} px` : 'No confirmed sequence'}</strong></div></div>
-      <div className="source-actions"><button className="button button--secondary button--small" type="button" onClick={choose}><Icon name="image" />{current ? 'Replace images' : 'Choose images'}</button>
-        <button className="button button--primary button--small" type="button" disabled title="Local image analysis requires backend registration support"><Icon name="scan" />Analyze local images</button></div>
-    </div>
-    <div className="local-sequence-notice"><Icon name="shield" /><span>Images stay in your browser. Acquisition timestamps are unknown. Local image analysis and overlays are pending.</span>
-      {!!(current || sequence.draft.length || sequence.loading) && <button type="button" onClick={() => { playback.pause(); sequence.clear(); }}>Clear sequence</button>}</div>
     {sequence.loading && <div className="sequence-feedback" role="status">Validating file contents, dimensions and browser decoding…</div>}
     {sequence.error && <div className="sequence-feedback sequence-feedback--error" role="alert"><Icon name="info" /><span>{sequence.error}{current ? ' Your confirmed sequence is preserved.' : ''}</span></div>}
     {!!sequence.draft.length && <section className="frame-order-editor" aria-labelledby={`${id}-order`}>
@@ -40,10 +40,10 @@ export function LocalWorkbench() {
         onToggle={() => { if (ready) playback.toggle(); }} onError={playback.pause} />
       <div className="frame-caption"><span>{current ? `FRAME ${String(playback.index + 1).padStart(2, '0')}` : 'NO FRAME SELECTED'}</span><strong title={current?.file.name}>{current?.file.name ?? 'Choose and confirm your observations'}</strong></div>
       <div className="frame-timeline local-frame-timeline"><div className="timeline-controls">
-        <button type="button" disabled={!ready || playback.index === 0} aria-label="Previous frame" onClick={() => playback.seek(playback.index - 1)}><Icon name="back" /></button>
+        <button type="button" disabled={!ready || playback.index === 0} aria-label="Previous frame" title="Previous frame" onClick={() => playback.seek(playback.index - 1)}><Icon name="back" /></button>
         <button type="button" disabled={!ready} className="timeline-play" aria-label={playback.playing ? 'Pause frames' : 'Play frames'} onClick={playback.toggle}><Icon name={playback.playing ? 'pause' : 'play'} /></button>
-        <button type="button" disabled={!ready || playback.index === sequence.frames.length - 1} aria-label="Next frame" onClick={() => playback.seek(playback.index + 1)}><Icon name="next" /></button>
-        <button type="button" disabled={!ready} aria-label="Restart from first frame" onClick={playback.restart}><Icon name="restart" /></button>
+        <button type="button" disabled={!ready || playback.index === sequence.frames.length - 1} aria-label="Next frame" title="Next frame" onClick={() => playback.seek(playback.index + 1)}><Icon name="next" /></button>
+        <button type="button" disabled={!ready} aria-label="Restart from first frame" title="Restart from first frame" onClick={playback.restart}><Icon name="restart" /></button>
         <output aria-label="Current frame">Frame {current ? playback.index + 1 : '—'} / {sequence.frames.length || '—'}</output>
       </div>
       <label className="playback-speed">Display rate<select aria-label="Playback display rate" value={playback.rate} disabled={!ready} onChange={event => playback.setRate(Number(event.target.value))}>
@@ -53,14 +53,15 @@ export function LocalWorkbench() {
         <div><span>01</span><span>{sequence.frames.length ? String(sequence.frames.length).padStart(2, '0') : '—'}</span></div></div>
       <p>Display rate only · acquisition timing unknown</p></div>
     </div><aside className="track-inspector local-sequence-inspector" aria-label="Sequence inspector">
-      <div className="inspector-title"><Icon name="layers" /><h3>Sequence inspector</h3></div><div className="local-inspector-summary"><span className="eyebrow">{current ? 'CONFIRMED ORDER' : 'WAITING FOR OBSERVATIONS'}</span>
-        <h4>{current ? `${sequence.frames.length} source frames` : 'Your images belong here.'}</h4><p>{current ? 'Select a frame to inspect it. Frame indexes describe your confirmed order.' : 'Select and confirm a local sequence to begin. No backend upload is performed.'}</p></div>
+      <div className="inspector-title"><Icon name="layers" /><h3>Sequence inspector</h3></div><div className="local-inspector-summary"><span className="inspector-section-label">Source & status</span></div>
+      <dl className="evidence-values"><div><dt>Source</dt><dd>Local images</dd></div><div><dt>Status</dt><dd>{sequence.loading ? 'Validating' : sequence.draft.length ? 'Review order' : current ? 'Ready to inspect' : 'Awaiting images'}</dd></div><div><dt>Frames</dt><dd>{sequence.frames.length || 'Not loaded'}</dd></div><div><dt>Dimensions</dt><dd>{current ? `${current.width_px} × ${current.height_px} px` : 'Not available'}</dd></div><div><dt>Timestamps</dt><dd>Unknown</dd></div></dl>
+      <span className="inspector-section-label inspector-frames-label">Frames</span>
+      {!current && <p className="inspector-empty-text">Your confirmed frame order will appear here.</p>}
       {current && <ol className="confirmed-frame-list" aria-label="Confirmed frame order">{sequence.frames.map((frame, index) => <li key={frame.id}><button type="button" disabled={sequence.loading || !!sequence.draft.length}
         aria-current={index === playback.index ? 'true' : undefined} aria-label={`Inspect frame ${index + 1}: ${frame.file.name}`} onClick={() => playback.seek(index)}>
         <span>{String(index + 1).padStart(2, '0')}</span><img src={frame.url} alt="" width="44" height="33" /><span title={frame.file.name}>{frame.file.name}</span></button></li>)}</ol>}
-      <dl className="evidence-values"><div><dt>Source</dt><dd>Local preview</dd></div><div><dt>Frames</dt><dd>{sequence.frames.length || '—'}</dd></div><div><dt>Timestamps</dt><dd>Unknown</dd></div><div><dt>Analysis</dt><dd>Not performed</dd></div></dl>
-      <div className="local-evidence-pending"><Icon name="track" /><h4>Evidence comes after analysis.</h4><p>Detections, track IDs and predictions will appear only with matching backend results.</p></div>
-      <div className="identity-note"><Icon name="info" /><span>Candidate identity remains unverified.</span></div></aside></div>
+      <div className="local-evidence-pending"><span className="inspector-section-label">Local analysis</span><strong>Not performed</strong><p>Detections and tracks are not available. Analysis of this exact sequence is pending.</p></div>
+      </aside></div>
     <footer className="workspace-footer"><span><Icon name="info" />Local viewing is ready. Local image analysis and scientific exports are pending.</span>
       <div className="export-actions"><button type="button" className="button button--quiet button--small" disabled><Icon name="download" />JSON</button><button type="button" className="button button--quiet button--small" disabled>CSV</button></div></footer>
   </section>;
