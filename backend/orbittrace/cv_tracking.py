@@ -18,7 +18,7 @@ from app.schemas.job import ApiError, JobState
 from app.schemas.result import AnalysisResult, Provenance, RegistrationResult, Track
 from app.schemas.sequence import SequenceInput
 from astrotrace.detection.baseline import BaselineConfig
-from astrotrace.detection.optimized import OptimizedConfig
+from astrotrace.detection.precision import precision_config
 from astrotrace.preprocessing.candidates import normalize_grayscale
 from astrotrace.preprocessing.registration import (
     RegistrationConfig, add_reference_coordinates, register_sequence,
@@ -105,7 +105,7 @@ def analyze_telescope_sequence(
             raise ValueError("Config profile disagrees with sequence profile")
         if method not in ("optimized", "baseline"):
             raise ValueError("Only the verified optimized and baseline OpenCV methods are available")
-        defaults = OptimizedConfig(threshold_sigma=4.5, max_context_elongation=2.0) if method == "optimized" else BaselineConfig()
+        defaults = precision_config() if method == "optimized" else BaselineConfig()
         if detector_config is not None and not isinstance(detector_config, Mapping):
             raise ValueError("detector_config must be a declared numeric mapping")
         overrides = dict(detector_config or {})

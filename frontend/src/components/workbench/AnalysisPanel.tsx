@@ -27,18 +27,18 @@ function Points({ points, label }: { points: TrackPoint[]; label: string }) {
   </table></div>;
 }
 
-export function AnalysisResults({ result, showViewer = true }: { result: AnalysisResult; showViewer?: boolean }) {
+export function AnalysisResults({ result, showViewer = true, reviewCounts }: { result: AnalysisResult; showViewer?: boolean; reviewCounts?: { tracks: number; predictions: number } }) {
   const predictions = result.tracks.reduce((count, track) => count + (track.trajectory?.predictions.length ?? 0), 0);
   return <div className="analysis-results">
     <div className="analysis-counts" aria-label="Completed analysis counts">
-      <div><span>Detections</span><strong>{result.detections.length}</strong></div>
-      <div><span>Tracks</span><strong>{result.tracks.length}</strong></div>
-      <div><span>Predicted points</span><strong>{predictions}</strong></div>
+      <div><span>{reviewCounts ? 'Candidate detections' : 'Detections'}</span><strong>{result.detections.length}</strong></div>
+      <div><span>{reviewCounts ? 'Supported tracks' : 'Tracks'}</span><strong>{reviewCounts?.tracks ?? result.tracks.length}</strong></div>
+      <div><span>{reviewCounts ? 'Forecast points shown' : 'Predicted points'}</span><strong>{reviewCounts?.predictions ?? predictions}</strong></div>
     </div>
-    <Warnings warnings={result.warnings} /><Warnings warnings={result.registration.warnings} label="Registration warnings" />
     {showViewer && <DemoWorkbench result={result} />}
     {showViewer && <p className="analysis-note">Synthetic results belong to this backend job. Local telescope observations remain a separate sequence.</p>}
     <details className="analysis-details"><summary>Inspect detection tables, track history & provenance</summary>
+    <Warnings warnings={result.warnings} /><Warnings warnings={result.registration.warnings} label="Registration warnings" />
     <h3>Sequence metadata</h3>
     <dl className="analysis-metadata">
       <div><dt>Job ID</dt><dd>{result.job_id}</dd></div><div><dt>Sequence ID</dt><dd>{result.sequence_id}</dd></div>
@@ -83,7 +83,7 @@ export function AnalysisResults({ result, showViewer = true }: { result: Analysi
         {Object.entries(result.metrics.null_reasons).map(([key, reason]) => <div key={key}><dt>{key}</dt><dd>{reason}</dd></div>)}
       </dl>}
     </details>
-    </details><p className="analysis-note">Predictions are extrapolations and do not count as observations. These estimates describe image-plane motion; candidate identity remains unverified.</p>
+    </details>
   </div>;
 }
 

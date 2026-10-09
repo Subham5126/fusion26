@@ -16,7 +16,8 @@ export function TrackPathDetail({ track, frameIndex, coordinateFrame, visibility
   const left = Math.min(...xs), top = Math.min(...ys), span = Math.max(Math.max(...xs) - left, Math.max(...ys) - top, 1);
   const pad = span * .2, viewSize = span + pad * 2, unit = viewSize / 160;
   const points = (items: typeof observed) => items.map(point => `${point.x_reference_px},${point.y_reference_px}`).join(' ');
-  const showForecast = visibility.predictions && last && frameIndex >= last.frame_index && predicted.length > 0;
+  const visiblePredictions = predicted.filter(point => point.frame_index > frameIndex && point.frame_index <= frameIndex + 1);
+  const showForecast = visibility.predictions && last && frameIndex >= last.frame_index && visiblePredictions.length > 0;
   return <section className="track-path-detail" aria-label="Enlarged selected track path">
     <strong>Selected path detail</strong>
     <p>Enlarged {coordinateFrame} coordinates · only this track’s observations are connected.</p>
@@ -29,8 +30,8 @@ export function TrackPathDetail({ track, frameIndex, coordinateFrame, visibility
         </g>)}
       </g>}
       {showForecast && <g stroke={colors.forecast} fill="none">
-        <polyline className="detail-predicted-path" points={points([last, ...predicted])} strokeWidth={unit * 1.7} strokeDasharray={`${unit * 4} ${unit * 3}`} />
-        {predicted.map(point => <circle key={point.frame_index} cx={point.x_reference_px} cy={point.y_reference_px} r={unit * 3.5} strokeWidth={unit * 1.5} />)}
+        <polyline className="detail-predicted-path" points={points([last, ...visiblePredictions])} strokeWidth={unit * 1.7} strokeDasharray={`${unit * 4} ${unit * 3}`} />
+        {visiblePredictions.map(point => <circle key={point.frame_index} cx={point.x_reference_px} cy={point.y_reference_px} r={unit * 3.5} strokeWidth={unit * 1.5} />)}
       </g>}
     </svg>
     <p>{observed.length} observed positions through frame {frameIndex + 1}. Net displacement: {evidence.displacement ? `${Math.hypot(evidence.displacement.x_px, evidence.displacement.y_px).toFixed(3)} px over the full track` : 'insufficient observations'}.</p>

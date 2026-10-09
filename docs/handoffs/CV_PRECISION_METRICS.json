@@ -1,0 +1,113 @@
+{
+  "matching_gate_px": 5,
+  "configs": {
+    "cv_t04": {
+      "denoise_sigma": 0.6,
+      "background_sigma": 8.0,
+      "noise_sigma": 12.0,
+      "threshold_sigma": 4.5,
+      "min_area_px": 3,
+      "max_area_px": 150,
+      "max_elongation": 2.5,
+      "max_candidates": 200,
+      "background_step": 1,
+      "min_aperture_snr": 0.0,
+      "max_peak_fraction": 0.55,
+      "max_context_elongation": 2.0,
+      "max_component_aspect": 20.0,
+      "min_score": 0.0
+    },
+    "precision": {
+      "denoise_sigma": 0.6,
+      "background_sigma": 8.0,
+      "noise_sigma": 12.0,
+      "threshold_sigma": 4.5,
+      "min_area_px": 3,
+      "max_area_px": 150,
+      "max_elongation": 2.5,
+      "max_candidates": 200,
+      "background_step": 1,
+      "min_aperture_snr": 4.0,
+      "max_peak_fraction": 0.45,
+      "max_context_elongation": 2.0,
+      "max_component_aspect": 20.0,
+      "min_score": 0.3
+    }
+  },
+  "membership_sha256": "9ee29f756f71028197aa503984244f23460836638293490432cbed2afb446d63",
+  "scope": "Previously used CV-T04 regression; not a fresh blind test",
+  "splits": {
+    "development": {
+      "annotation_sha256": "2727e7c21f1fef229b024dcb00952d0781057661c4ccb64937dce50f08e1fdfe",
+      "sequence_count": 24,
+      "cv_t04": {
+        "frame_count": 120,
+        "tp": 139,
+        "fp": 180,
+        "fn": 116,
+        "precision": 0.43573667711598746,
+        "recall": 0.5450980392156862,
+        "f1": 0.4843205574912892,
+        "localization_mean_px": 0.2555842130589651,
+        "localization_rmse_px": 0.3040806129598378,
+        "false_positives_per_frame": 1.5,
+        "processing_ms_total": 9064.375699788798,
+        "processing_ms_mean_per_frame": 75.53646416490665,
+        "processing_ms_p95_per_frame": 94.56075999478341,
+        "null_reasons": {}
+      },
+      "precision": {
+        "frame_count": 120,
+        "tp": 139,
+        "fp": 132,
+        "fn": 116,
+        "precision": 0.5129151291512916,
+        "recall": 0.5450980392156862,
+        "f1": 0.5285171102661597,
+        "localization_mean_px": 0.2555842130589651,
+        "localization_rmse_px": 0.3040806129598378,
+        "false_positives_per_frame": 1.1,
+        "processing_ms_total": 8970.129899622407,
+        "processing_ms_mean_per_frame": 74.75108249685339,
+        "processing_ms_p95_per_frame": 94.53714500123169,
+        "null_reasons": {}
+      }
+    },
+    "held_out": {
+      "annotation_sha256": "8c3e141fba0b5d3ed220563b458a17b17d73ec8cc762aa46abe40d1016f557f4",
+      "sequence_count": 128,
+      "cv_t04": {
+        "frame_count": 640,
+        "tp": 640,
+        "fp": 991,
+        "fn": 450,
+        "precision": 0.3923973022685469,
+        "recall": 0.5871559633027523,
+        "f1": 0.47041528849687614,
+        "localization_mean_px": 0.2860281844999026,
+        "localization_rmse_px": 0.36212875592961297,
+        "false_positives_per_frame": 1.5484375,
+        "processing_ms_total": 18937.621400342323,
+        "processing_ms_mean_per_frame": 29.59003343803488,
+        "processing_ms_p95_per_frame": 74.8827399831498,
+        "null_reasons": {}
+      },
+      "precision": {
+        "frame_count": 640,
+        "tp": 630,
+        "fp": 756,
+        "fn": 460,
+        "precision": 0.45454545454545453,
+        "recall": 0.5779816513761468,
+        "f1": 0.5088852988691438,
+        "localization_mean_px": 0.2849835839878326,
+        "localization_rmse_px": 0.3608524316942017,
+        "false_positives_per_frame": 1.18125,
+        "processing_ms_total": 18681.23970081797,
+        "processing_ms_mean_per_frame": 29.189437032528076,
+        "processing_ms_p95_per_frame": 77.55386499047744,
+        "null_reasons": {}
+      }
+    }
+  }
+}

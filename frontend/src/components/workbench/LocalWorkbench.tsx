@@ -16,6 +16,7 @@ import { TrackQualityPanel } from './TrackQualityPanel';
 import { buildTrackReport, downloadTrackReport } from '../../viewer/trackReport';
 import { downloadPdfReport } from '../../viewer/pdfReport';
 import { TrackPathDetail } from './TrackPathDetail';
+import { isSupportedTrack, reviewTracks, reviewOverlay } from '../../viewer/resultReview';
 
 export function LocalWorkbench() {
   const sequence = useLocalSequence(), playback = useFramePlayback(sequence.frames);
@@ -23,17 +24,18 @@ export function LocalWorkbench() {
   const [manifest, setManifest] = useState<SequenceInput | null>(null);
   const [diagnostics, setDiagnostics] = useState<unknown>(null), [uploadError, setUploadError] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
+  const [showCandidates, setShowCandidates] = useState(false);
   const [visibility, setVisibility] = useState({ detections: true, tracks: true, predictions: true });
   const result = analysis.state.phase === 'succeeded' ? analysis.state.result : null;
   const busy = ['submitting', 'queued', 'processing', 'awaiting_result'].includes(analysis.state.phase);
   const presentation = presentAnalysis(analysis.state);
-  useEffect(() => { analysis.reset(); setManifest(null); setDiagnostics(null); setUploadError(null); setSelected(null); }, [sequence.frames, analysis.reset]);
+  useEffect(() => { analysis.reset(); setManifest(null); setDiagnostics(null); setUploadError(null); setSelected(null); setShowCandidates(false); }, [sequence.frames, analysis.reset]);
   useEffect(() => {
     if (!result) return;
     const request = new AbortController();
     getJobDiagnostics(result.job_id, request.signal).then(setDiagnostics).catch(error => { if (!request.signal.aborted) setUploadError(String(error)); });
     // Prefer an actual multi-frame path over an unrelated single-frame candidate.
-    setSelected([...result.tracks].sort((a, b) => b.observed_count - a.observed_count)[0]?.track_id ?? null);
+    setSelected([...reviewTracks(result, false)].sort((a, b) => b.observed_count - a.observed_count)[0]?.track_id ?? null);
     return () => request.abort();
   }, [result]);
   const submit = () => {
@@ -42,7 +44,14 @@ export function LocalWorkbench() {
   };
   const input = useRef<HTMLInputElement>(null), id = useId();
   const current = sequence.frames[playback.index];
-  const model = useMemo(() => result && current && manifest ? uploadOverlay(result, current, playback.index, manifest, diagnostics) : { detections: [], tracks: [], warnings: [] }, [result, current, manifest, diagnostics, playback.index]);
+  const model = useMemo(() => result && current && manifest ? reviewOverlay(uploadOverlay(result, current, playback.index, manifest, diagnostics), result, showCandidates, playback.index) : { detections: [], tracks: [], warnings: [] }, [result, current, manifest, diagnostics, playback.index, showCandidates]);
+  const reviewedTracks = result ? reviewTracks(result, showCandidates) : [];
+  const supportedCount = result?.tracks.filter(isSupportedTrack).length ?? 0;
+  useEffect(() => {
+    if (!result) return;
+    const choices = reviewTracks(result, showCandidates);
+    if (!choices.some(track => track.track_id === selected)) setSelected([...choices].sort((a,b) => b.observed_count - a.observed_count)[0]?.track_id ?? null);
+  }, [result, showCandidates, selected]);
   const track = result?.tracks.find(track => track.track_id === selected);
   const ready = !!current && !sequence.loading && !sequence.draft.length;
   const choose = () => { playback.pause(); input.current?.click(); };
@@ -72,7 +81,8 @@ export function LocalWorkbench() {
       {busy && <><progress aria-label="Analysis progress" value={presentation.progress ?? 0} max={1} /><button type="button" onClick={analysis.cancel}>Stop monitoring</button></>}
     </div>}
     {uploadError && <div className="sequence-feedback sequence-feedback--error" role="alert">{uploadError}</div>}
-    {result && <div className="demo-overlay-controls" aria-label="Upload overlay visibility">{(['detections','tracks','predictions'] as const).map(key => <label key={key}><input type="checkbox" checked={visibility[key]} onChange={event => setVisibility(v => ({...v, [key]:event.target.checked}))} />{key}</label>)}</div>}
+    {result && <div className="demo-overlay-controls" aria-label="Upload overlay visibility">{(['detections','tracks','predictions'] as const).map(key => <label key={key}><input type="checkbox" checked={visibility[key]} onChange={event => setVisibility(v => ({...v, [key]:event.target.checked}))} />{key}</label>)}<label><input type="checkbox" checked={showCandidates} onChange={event => setShowCandidates(event.target.checked)} />Show unverified candidates</label></div>}
+    {result && <p className="analysis-note">{supportedCount} supported tracks · {result.tracks.length - supportedCount} unverified candidate tracks. Supported view requires at least 3 observations, quality ≥ 0.5 and a stable fitted path.</p>}
     {sequence.loading && <div className="sequence-feedback" role="status">Validating file contents, dimensions and browser decoding…</div>}
     {sequence.error && <div className="sequence-feedback sequence-feedback--error" role="alert"><Icon name="info" /><span>{sequence.error}{current ? ' Your confirmed sequence is preserved.' : ''}</span></div>}
     {!!sequence.draft.length && <section className="frame-order-editor" aria-labelledby={`${id}-order`}>
@@ -93,11 +103,11 @@ export function LocalWorkbench() {
         overlay={scale => <ScientificOverlay model={model} scale={scale} selected={selected} select={setSelected} visibility={visibility} currentFrame={playback.index}
           nativeSize={current ? { width: current.width_px, height: current.height_px } : undefined} />} />
       {!!model.warnings.length && <p className="analysis-note" role="status">{model.warnings.join(' ')}</p>}
-      {result && !model.warnings.length && !model.detections.length && <p className="analysis-note">No candidates in this frame.</p>}
+      {result && !model.warnings.length && !model.detections.length && <p className="analysis-note">{!showCandidates && result.detections.length ? 'No supported object in this frame. Enable Show unverified candidates to inspect the remaining detections.' : 'No candidates in this frame.'}</p>}
       {result && <p className="t08-forecast-status" data-final-frame={playback.index === sequence.frames.length - 1}>
         {playback.index === sequence.frames.length - 1 ? 'Final frame · ' : ''}
-        {model.tracks.some(t => t.predictions.length) ? `Forecast continuation · ${model.tracks.reduce((n, t) => n + t.predictions.length, 0)} backend predictions. Dashed lines and hollow dots are not observations.`
-          : result.tracks.some(t => t.trajectory?.predictions.length) ? 'Forecasts appear once the timeline reaches each track’s last observation.' : 'No backend forecasts available for these tracks.'}
+        {model.tracks.some(t => t.predictions.length) ? 'Short forecast · next frame only. Dashed lines and hollow markers.'
+          : result.tracks.some(t => t.trajectory?.predictions.length) ? 'Forecasts appear after the last observation.' : 'Not enough repeated observations for a reliable forecast.'}
         {!visibility.predictions && ' Predictions are hidden.'}</p>}
       <div className="frame-caption"><span>{current ? `FRAME ${String(playback.index + 1).padStart(2, '0')}` : 'NO FRAME SELECTED'}</span><strong title={current?.file.name}>{current?.file.name ?? 'Choose and confirm your observations'}</strong></div>
       <div className="frame-timeline local-frame-timeline"><div className="timeline-controls">
@@ -123,18 +133,18 @@ export function LocalWorkbench() {
         aria-current={index === playback.index ? 'true' : undefined} aria-label={`Inspect frame ${index + 1}: ${frame.file.name}`} onClick={() => playback.seek(index)}>
         <span>{String(index + 1).padStart(2, '0')}</span><img src={frame.url} alt="" width="44" height="33" /><span title={frame.file.name}>{frame.file.name}</span></button></li>)}</ol>}
       {result && <><label className="demo-track-selector">Selected track<select aria-label="Select upload track" value={selected ?? ''} onChange={event => setSelected(event.target.value)}>
-        {!result.tracks.length && <option value="">No tracks</option>}{result.tracks.map(track => <option key={track.track_id} value={track.track_id}>{track.track_id} · {track.observed_count} observations</option>)}</select></label>
+        {!reviewedTracks.length && <option value="">No supported tracks</option>}{reviewedTracks.map(track => <option key={track.track_id} value={track.track_id}>{track.track_id} · {track.observed_count} observations</option>)}</select></label>
         {track && <><div className="t08-track-colors"><span style={{ color: trackColors(track.track_id).observed }}>● Observed</span><span style={{ color: trackColors(track.track_id).forecast }}>◌ Forecast</span></div>
           {track.observed_count < 2 && <p className="analysis-note">This track has one observation, so there is no observed path to connect. Select a track with two or more observations.</p>}
           <TrackQualityPanel track={track} coordinateFrame={result.coordinate_frame} />
           <TrackPathDetail track={track} frameIndex={playback.index} coordinateFrame={result.coordinate_frame} visibility={visibility} />
           <dl className="evidence-values"><div><dt>Status</dt><dd>{track.status}</dd></div><div><dt>Image-plane speed</dt><dd>{track.trajectory ? track.trajectory.speed.toFixed(3) + ' ' + track.trajectory.speed_unit : 'No fit'}</dd></div>
             <div><dt>Fit RMSE</dt><dd>{track.trajectory?.fit_rmse_px == null ? 'Not provided' : `${track.trajectory.fit_rmse_px.toFixed(3)} px`}</dd></div></dl>
-          {track.warnings.map((warning, i) => <p className="analysis-note" key={i}>{warning}</p>)}</>}</>}
+          {!!track.warnings.length && <details><summary>Track notes</summary>{track.warnings.map((warning, i) => <p className="analysis-note" key={i}>{warning}</p>)}</details>}</>}</>}
       {!result && <div className="local-evidence-pending"><span className="inspector-section-label">Local analysis</span><strong>{analysis.state.phase === 'idle' ? 'Not performed' : presentation.label}</strong><p>Detections, track IDs and predictions will appear only with matching backend results.</p></div>}
       <div className="identity-note"><Icon name="info" /><span>Candidate identity remains unverified.</span></div></aside></div>
-    <footer className="workspace-footer"><span><Icon name="info" />Observed tracks use solid lines; predictions use dashed lines. Candidate identity is unverified.</span>
+    <footer className="workspace-footer"><span><Icon name="info" />Solid: observed · Dashed: forecast</span>
       <div className="export-actions">{result ? <><button type="button" className="button button--primary button--small" onClick={() => download('pdf')}><Icon name="download" />Download Report (PDF)</button><button type="button" className="button button--quiet button--small" onClick={() => download('json')}>Report JSON</button><a className="button button--quiet button--small" target="_blank" rel="noopener noreferrer" href={apiUrl(`/api/jobs/${result.job_id}/exports/csv`)}>Backend CSV</a></> : <span>Exports available after analysis</span>}</div></footer>
-    {result && <AnalysisResults result={result} showViewer={false} />}
+    {result && <AnalysisResults result={result} showViewer={false} reviewCounts={{ tracks: supportedCount, predictions: visibility.predictions ? model.tracks.reduce((n,t) => n+t.predictions.length,0) : 0 }} />}
   </section>;
 }

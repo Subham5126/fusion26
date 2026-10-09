@@ -10,6 +10,7 @@ import { TrackQualityPanel } from '../src/components/workbench/TrackQualityPanel
 import { WorkbenchShell } from '../src/components/workbench/WorkbenchShell';
 import { buildPdfReport } from '../src/viewer/pdfReport';
 import { TrackPathDetail } from '../src/components/workbench/TrackPathDetail';
+import { reviewTracks, reviewOverlay, isSupportedTrack } from '../src/viewer/resultReview';
 
 const frames: LocalFrame[] = Array.from({ length: 5 }, (_, index) => ({ id: String(index), file: new File(['test'], `frame-${index}.png`),
   url: 'blob:private-preview', width_px: 640, height_px: 480, timestamp_s: null,
@@ -109,6 +110,29 @@ test('enlarged path connects only actual past observations and keeps future fore
   assert.doesNotMatch(render(0), /detail-observed-path|detail-predicted-path/);
   assert.match(render(1), /points="10,12 14,15"/); assert.doesNotMatch(render(1), /detail-predicted-path/);
   assert.match(render(4), /points="10,12 14,15 18,18"/);
-  assert.match(render(4), /detail-predicted-path/);
+  assert.match(render(2), /detail-predicted-path/);
+  assert.doesNotMatch(render(4), /detail-predicted-path/);
   assert.doesNotMatch(render(4, 'raw_pixels'), /detail-predicted-path/);
+});
+test('supported review excludes short/weak/unstable candidates without changing scores or raw exports', () => {
+  const input = result(), supported = input.tracks[0];
+  assert.equal(isSupportedTrack(supported), true);
+  const short = { ...supported, track_id: 'short', points: supported.points.slice(0, 2) };
+  const weak = { ...supported, track_id: 'weak', quality_score: .49 };
+  const unstable = { ...supported, track_id: 'unstable', trajectory: { ...supported.trajectory!, fit_rmse_px: 4 } };
+  input.tracks.push(short, weak, unstable);
+  const before = structuredClone(input);
+  assert.deepEqual(reviewTracks(input, false).map(track => track.track_id), ['fixture-track-1']);
+  assert.equal(reviewTracks(input, true).length, 4); assert.deepEqual(input, before);
+});
+test('review overlays hide unverified raw candidates and show only the next future frame', () => {
+  const input = result(), id = input.tracks[0].track_id;
+  const model = { warnings: [], detections: [{ id: 'd0', trackId: id, center: { x: 10, y: 12 }, box: { x: 9, y: 11, width: 3, height: 3 } },
+    { id: 'unverified', center: { x: 40, y: 30 }, box: { x: 39, y: 29, width: 3, height: 3 } }],
+    tracks: [{ id, observed: [{ x: 18, y: 18, frame: 2 }], segments: [], predictions: [{ x: 22, y: 21, frame: 3 }, { x: 26, y: 24, frame: 4 }], forecast: [] }] };
+  const limited = reviewOverlay(model, input, false, 2);
+  assert.equal(limited.detections.length, 1); assert.equal(limited.tracks[0].predictions.length, 1);
+  assert.equal(limited.tracks[0].predictions[0].frame, 3); assert.equal(limited.tracks[0].forecast.length, 2);
+  assert.equal(reviewOverlay(model, input, true, 2).detections.length, 2);
+  assert.equal(reviewOverlay(model, input, false, 4).tracks[0].predictions.length, 0);
 });
