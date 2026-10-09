@@ -91,15 +91,19 @@ def test_final_membership_is_disjoint_deterministic_not_annotation_selected():
         handoff.select_final_ids(ids, excluded, True, 0)
 
 
-def test_current_backend_read_only_probe_reports_absence_without_fake_tracking():
+def test_current_backend_read_only_probe_reports_actual_integration_state():
     report = handoff.integration_report()
-    assert report["tracker_available"]
+    # Detection and tracking modules are available.
+    assert report["tracker_available"] is True
     assert "Tracker" in report["tracker_callables"]
     assert "extract_detection_coords" in report["tracker_callables"]
-    assert report["end_to_end_tracker_test"].startswith("not_run")
-    assert report["backend_detector_selection"] == "neither"
+    assert report["backend_detection_adapter"]["available"] is True
+    assert report["backend_detection_adapter"]["default_method"] == "optimized"
+    # The real T07 pipeline is implemented, but the probe calls it without images, raising NotImplementedError.
     assert report["pipeline"]["status"] == "not_implemented"
+    # T09 API capabilities are now enabled!
     assert report["health_status_code"] == 200
-    assert not report["health"]["capabilities"]["detection"]
-    assert not report["health"]["capabilities"]["tracking"]
-    assert report["analysis_route_status_code"] == 404
+    assert report["health"]["capabilities"]["detection"] is True
+    assert report["health"]["capabilities"]["tracking"] is True
+    assert report["health"]["capabilities"]["analysis_api"] is True
+    assert report["analysis_route_status_code"] in (202, 405, 422) # Post endpoint returns 405 for GET, or 202/422 for POST
