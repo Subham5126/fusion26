@@ -2,6 +2,7 @@ import { Icon } from '../ui/Icon';
 import { MagneticLink } from '../ui/MagneticLink';
 import { usePointerSurface } from '../../hooks/usePointerSurface';
 import { useAmbientVisibility } from '../../hooks/useAmbientVisibility';
+import { HeroCanvas3D } from './HeroCanvas3D';
 
 const principles = [
   { icon: 'image', label: 'Optical observations' },
@@ -14,6 +15,7 @@ export function SpaceHero() {
   const hero = usePointerSurface<HTMLElement>('hero');
   useAmbientVisibility(hero);
   return <section ref={hero} className="space-hero" aria-labelledby="hero-heading">
+    <HeroCanvas3D />
     <div className="hero-art-plane" aria-hidden="true"><img className="hero-artwork" src="/assets/orbittrace-space.webp" alt=""
       width="1536" height="1024" fetchPriority="high" draggable={false} /></div>
     <div className="hero-shade" aria-hidden="true" />

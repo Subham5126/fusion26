@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { AppFooter } from './components/layout/AppFooter';
 import { AppNavigation } from './components/layout/AppNavigation';
+import { CustomCursor } from './components/ui/CustomCursor';
 import { useHashRoute } from './hooks/useHashRoute';
 import { LandingPage } from './pages/LandingPage';
 import { ReadinessPage } from './pages/ReadinessPage';
@@ -25,6 +26,7 @@ export default function App() {
   }, [page, hash]);
 
   return <>
+    <CustomCursor />
     <a className="skip-link" href="#main-content" onClick={event => {
       event.preventDefault();
       main.current?.focus();
