@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { createDecorativeSatellite } from './createDecorativeSatellite';
 
 export function HeroCanvas3D() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -13,16 +14,18 @@ export function HeroCanvas3D() {
 
     // Scene setup
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x030712, 0.0018);
+    scene.fog = new THREE.FogExp2(0x020c11, 0.0018);
 
     const camera = new THREE.PerspectiveCamera(55, container.clientWidth / container.clientHeight, 0.1, 1000);
     camera.position.set(0, 0, 140);
 
-    const renderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance',
-    });
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'default' });
+    } catch {
+      // The landing copy, links and background remain usable without WebGL.
+      return;
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
@@ -31,28 +34,55 @@ export function HeroCanvas3D() {
     const worldGroup = new THREE.Group();
     scene.add(worldGroup);
 
-    // 1. Central Celestial Wireframe Sphere (Earth / Reference Frame)
-    const sphereGeo = new THREE.IcosahedronGeometry(24, 2);
-    const sphereMat = new THREE.MeshBasicMaterial({
-      color: 0x00f0ff,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.12,
+    // Decorative Earth shares the existing rings' center. Texture is served locally.
+    // NASA Blue Marble attribution is in earth-blue-marble.provenance.json.
+    const earthGroup = new THREE.Group();
+    earthGroup.rotation.z = THREE.MathUtils.degToRad(23.4);
+    worldGroup.add(earthGroup);
+    const earthGeo = new THREE.SphereGeometry(24, 64, 48);
+    const earthMat = new THREE.MeshPhongMaterial({
+      color: 0x2d6192, specular: 0x244363, shininess: 16,
+      emissive: 0x071a35, emissiveIntensity: 0.35,
     });
-    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
-    worldGroup.add(sphere);
-
-    // Inner glowing core
-    const coreGeo = new THREE.SphereGeometry(14, 24, 24);
-    const coreMat = new THREE.MeshBasicMaterial({
-      color: 0x3b82f6,
-      transparent: true,
-      opacity: 0.08,
+    const earth = new THREE.Mesh(earthGeo, earthMat);
+    earth.rotation.y = -Math.PI / 2;
+    earthGroup.add(earth);
+    const textureLoader = new THREE.TextureLoader();
+    let disposed = false;
+    const earthTexture = textureLoader.load('/assets/earth-blue-marble.webp', texture => {
+      if (disposed) { texture.dispose(); return; }
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+      earthMat.map = texture;
+      earthMat.color.set(0xc3ddff);
+      earthMat.needsUpdate = true;
     });
-    const core = new THREE.Mesh(coreGeo, coreMat);
-    worldGroup.add(core);
 
-    // 2. Orbital Rings (LEO, MEO, GEO track rings)
+    // Match the background's cool palette and upper-right sunlight.
+    const sun = new THREE.DirectionalLight(0xd6ebff, 2.8);
+    sun.position.set(65, 40, 100);
+    scene.add(sun);
+    scene.add(new THREE.AmbientLight(0x87b4e3, 1.6));
+
+    // Clouds sit on the surface; no atmosphere shell or outline around Earth.
+    const cloudGeo = new THREE.SphereGeometry(24.08, 64, 48);
+    const cloudMat = new THREE.MeshPhongMaterial({
+      color: 0xe5f2ff, transparent: true, opacity: 0.88,
+      depthWrite: false, specular: 0x102232, shininess: 5,
+    });
+    const clouds = new THREE.Mesh(cloudGeo, cloudMat);
+    clouds.rotation.y = earth.rotation.y;
+    clouds.visible = false;
+    earthGroup.add(clouds);
+    const cloudTexture = textureLoader.load('/assets/earth-clouds.jpg', texture => {
+      if (disposed) { texture.dispose(); return; }
+      texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+      cloudMat.alphaMap = texture;
+      cloudMat.needsUpdate = true;
+      clouds.visible = true;
+    });
+
+    // 2. Decorative orbital rings
     const ringGroup = new THREE.Group();
     worldGroup.add(ringGroup);
 
@@ -71,9 +101,9 @@ export function HeroCanvas3D() {
       return ring;
     };
 
-    const ring1 = createOrbitRing(42, 0.35, 0x00f0ff, 0.45, Math.PI / 3, 0.2);
-    const ring2 = createOrbitRing(58, 0.35, 0xa855f7, 0.4, -Math.PI / 4, 0.5);
-    const ring3 = createOrbitRing(72, 0.3, 0x38bdf8, 0.3, Math.PI / 6, -0.4);
+    const ring1 = createOrbitRing(42, 0.35, 0x12d6aa, 0.45, Math.PI / 3, 0.2);
+    const ring2 = createOrbitRing(58, 0.35, 0x39e6c7, 0.4, -Math.PI / 4, 0.5);
+    const ring3 = createOrbitRing(72, 0.3, 0x86d9f1, 0.3, Math.PI / 6, -0.4);
 
     // 3. Floating Space Debris & Star Dust Particles
     const particleCount = 1400;
@@ -83,11 +113,11 @@ export function HeroCanvas3D() {
     const sizes = new Float32Array(particleCount);
 
     const palette = [
-      new THREE.Color('#00f0ff'), // cyan
-      new THREE.Color('#38bdf8'), // sky blue
-      new THREE.Color('#a855f7'), // purple
-      new THREE.Color('#6366f1'), // indigo
-      new THREE.Color('#ffffff'), // pure white
+      new THREE.Color('#12d6aa'), // emerald
+      new THREE.Color('#39e6c7'), // neon mint
+      new THREE.Color('#86d9f1'), // ice blue
+      new THREE.Color('#a5b9c4'), // cool silver gray
+      new THREE.Color('#f4f8fa'), // soft white
     ];
 
     for (let i = 0; i < particleCount; i++) {
@@ -132,7 +162,7 @@ export function HeroCanvas3D() {
       size: 1.8,
       vertexColors: true,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.68,
       map: circleTexture,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
@@ -141,22 +171,17 @@ export function HeroCanvas3D() {
     const particles = new THREE.Points(particleGeo, particleMat);
     worldGroup.add(particles);
 
-    // 4. Moving Candidate Trajectory Indicators (Tracked Debris Nodes)
-    const candidateGroup = new THREE.Group();
-    worldGroup.add(candidateGroup);
-
-    const candidates = [
-      { radius: 42, speed: 0.018, angle: 0, rotX: Math.PI / 3, rotY: 0.2, color: 0x00f0ff },
-      { radius: 58, speed: -0.012, angle: 2, rotX: -Math.PI / 4, rotY: 0.5, color: 0xa855f7 },
-      { radius: 72, speed: 0.009, angle: 4, rotX: Math.PI / 6, rotY: -0.4, color: 0x38bdf8 },
+    // 4. One locally modeled satellite per ring, attached to its exact plane.
+    const satelliteOrbits = [
+      { ring: ring1, radius: 42, speed: 0.006, angle: 0, color: 0x12d6aa },
+      { ring: ring2, radius: 58, speed: -0.004, angle: 2, color: 0x39e6c7 },
+      { ring: ring3, radius: 72, speed: 0.003, angle: 4, color: 0x86d9f1 },
     ];
 
-    const candidateMeshes = candidates.map(c => {
-      const meshGeo = new THREE.SphereGeometry(1.4, 12, 12);
-      const meshMat = new THREE.MeshBasicMaterial({ color: c.color });
-      const mesh = new THREE.Mesh(meshGeo, meshMat);
-      candidateGroup.add(mesh);
-      return { ...c, mesh };
+    const satellites = satelliteOrbits.map(orbit => {
+      const model = createDecorativeSatellite(orbit.color);
+      orbit.ring.add(model.group);
+      return { ...orbit, model };
     });
 
     // Mouse Tracking with smooth lerp
@@ -169,8 +194,8 @@ export function HeroCanvas3D() {
       const rect = container.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-      targetX = x * 0.45;
-      targetY = y * 0.45;
+      targetX = Math.max(-1, Math.min(1, x)) * 0.2;
+      targetY = Math.max(-1, Math.min(1, y)) * 0.2;
     };
 
     window.addEventListener('mousemove', handlePointerMove, { passive: true });
@@ -180,6 +205,7 @@ export function HeroCanvas3D() {
       if (!container) return;
       const width = container.clientWidth;
       const height = container.clientHeight;
+      if (!width || !height) return;
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
@@ -206,22 +232,22 @@ export function HeroCanvas3D() {
 
       // Rotate celestial structures gently
       worldGroup.rotation.y += delta * 0.5;
-      sphere.rotation.x += delta * 0.2;
-      sphere.rotation.y += delta * 0.3;
+      earth.rotation.y += delta * 0.3;
+      clouds.rotation.y += delta * 0.32;
       ring1.rotation.z += delta * 0.8;
       ring2.rotation.z -= delta * 0.6;
       ring3.rotation.z += delta * 0.4;
       particles.rotation.y += delta * 0.2;
 
-      // Update candidate markers along their orbits
-      candidateMeshes.forEach(c => {
-        c.angle += c.speed * (prefersReducedMotion ? 0 : 1);
-        const x = Math.cos(c.angle) * c.radius;
-        const y = Math.sin(c.angle) * c.radius;
-        // Transform along the ring's orientation
-        const pos = new THREE.Vector3(x, y, 0);
-        pos.applyEuler(new THREE.Euler(c.rotX, c.rotY, 0));
-        c.mesh.position.copy(pos);
+      // Parenting retains alignment while the rings rotate and the view tilts.
+      satellites.forEach(satellite => {
+        satellite.angle += satellite.speed * (prefersReducedMotion ? 0 : 1);
+        satellite.model.group.position.set(
+          Math.cos(satellite.angle) * satellite.radius,
+          Math.sin(satellite.angle) * satellite.radius,
+          0,
+        );
+        satellite.model.group.rotation.set(-0.25, 0.2, satellite.angle + Math.PI / 2);
       });
 
       // Smooth mouse reaction interpolation
@@ -251,10 +277,18 @@ export function HeroCanvas3D() {
       }
 
       // Dispose Three.js resources
-      sphereGeo.dispose();
-      sphereMat.dispose();
-      coreGeo.dispose();
-      coreMat.dispose();
+      disposed = true;
+      earthGeo.dispose();
+      earthMat.dispose();
+      earthTexture.dispose();
+      cloudGeo.dispose();
+      cloudMat.dispose();
+      cloudTexture.dispose();
+      satellites.forEach(satellite => satellite.model.dispose());
+      [ring1, ring2, ring3].forEach(ring => {
+        ring.geometry.dispose();
+        (ring.material as THREE.Material).dispose();
+      });
       particleGeo.dispose();
       particleMat.dispose();
       circleTexture.dispose();

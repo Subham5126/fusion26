@@ -54,10 +54,10 @@ export function OpticalViewer({ frame, onSelect, onStep, onToggle, onError, onRe
   return <>
     <div className="viewer-toolbar local-viewer-toolbar"><div><span className={`status-dot ${ready ? '' : 'status-dot--muted'}`} />Optical image viewer</div>
       <div className="viewer-tools"><output aria-label="Zoom level">{Math.round(view.zoom * 100)}%</output>
-        <button type="button" disabled={!ready || view.zoom <= 1} aria-label="Zoom out" onClick={() => zoom(1 / 1.5)}><Icon name="minus" /></button>
-        <button type="button" disabled={!ready || view.zoom >= maxZoom} aria-label="Zoom in" onClick={() => zoom(1.5)}><Icon name="plus" /></button>
-        <button type="button" disabled={!ready} className="viewer-fit" onClick={reset} aria-label="Fit image to viewer"><Icon name="scan" />Fit</button>
-        <button type="button" disabled={!ready} className="viewer-fit" onClick={reset} aria-label="Reset zoom and pan">Reset</button>
+        <button type="button" disabled={!ready || view.zoom <= 1} aria-label="Zoom out" title="Zoom out (−)" onClick={() => zoom(1 / 1.5)}><Icon name="minus" /></button>
+        <button type="button" disabled={!ready || view.zoom >= maxZoom} aria-label="Zoom in" title="Zoom in (+)" onClick={() => zoom(1.5)}><Icon name="plus" /></button>
+        <button type="button" disabled={!ready} className="viewer-fit" onClick={reset} aria-label="Fit image to viewer" title="Fit image (0)"><Icon name="scan" />Fit</button>
+        <button type="button" disabled={!ready} className="viewer-fit" onClick={reset} aria-label="Reset zoom and pan" title="Reset zoom and pan (0)">Reset</button>
       </div>
     </div>
     <div ref={viewport} className={`optical-viewer local-image-viewport ${ready && view.zoom > 1 ? 'is-zoomed' : ''}`}
@@ -111,13 +111,13 @@ export function OpticalViewer({ frame, onSelect, onStep, onToggle, onError, onRe
         {!ready && <div className="viewer-empty" role="status"><Icon name="image" /><h3>{failed === frame.url ? 'This frame could not be displayed.' : 'Loading observation…'}</h3>
           {failed === frame.url && <button className="button button--secondary button--small" type="button" onClick={() => { setFailed(''); setLoaded(''); setRetry(value => value + 1); }}>Retry frame</button>}</div>}
       </> : emptyState ?? <div className="viewer-empty local-viewer-empty"><span className="viewer-reticle" aria-hidden="true" /><Icon name="image" />
-        <p className="eyebrow">YOUR OBSERVATIONS, IN FOCUS</p><h3>Start with a telescope sequence.</h3><p>Choose 3–30 JPEG or PNG images, then confirm their frame order to inspect and play them here.</p>
+        <p className="eyebrow">Observation viewer</p><h3>Bring your observations into focus.</h3><p>Choose 3–30 telescope images, confirm their frame order, and inspect the original pixels.</p>
         <button className="button button--primary button--small" type="button" onClick={onSelect}><Icon name="plus" />Choose images</button>
-        <small>Local preview · images stay in this browser</small>
+        <small>JPEG or PNG · images stay in this browser</small>
       </div>}
     </div>
     <div className="image-readout"><span>{frame ? `${frame.width_px} × ${frame.height_px} px · decoded image` : 'Original aspect ratio · native pixel geometry'}</span>
       <output aria-label="Pointer image coordinates">{cursor ? `x ${cursor.x.toFixed(1)} · y ${cursor.y.toFixed(1)} px` : 'Coordinates —'}</output></div>
-    <p className="viewer-keyboard-help" id={helpId}>+ / − zoom · 0 fit · ← / → frames · Space play/pause · Shift + arrows pan · Ctrl/⌘ + wheel zoom</p>
+    <details className="viewer-keyboard-help"><summary>Keyboard shortcuts</summary><p id={helpId}>+ / − zoom · 0 fit · ← / → frames · Space play/pause · Shift + arrows pan · Ctrl/⌘ + wheel zoom</p></details>
   </>;
 }

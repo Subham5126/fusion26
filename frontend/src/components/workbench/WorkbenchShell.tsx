@@ -38,7 +38,7 @@ function TrackInspector() {
 }
 
 export function WorkbenchShell({ preview = false, analysis = unavailableAnalysis }: { preview?: boolean; analysis?: AnalysisState }) {
-  if (!preview) return <><AnalysisPanel /><LocalWorkbench /></>;
+  if (!preview) return <><LocalWorkbench /><AnalysisPanel /></>;
   const presentation = presentAnalysis(analysis);
   return <section className={`workbench-shell ${preview ? 'workbench-shell--preview' : ''}`}
     aria-label={preview ? 'Conceptual mission workbench preview' : 'Mission workbench shell'}>
