@@ -83,6 +83,21 @@ Use originals for detection; interpolation and borders must not create proposals
    and >=60% validation ratio; validation-inlier RMSE<=0.8px; inlier span >=20%
    on both image axes; overlap>=45%. Failed records have null usable matrices.
 
+If direct alignment fails after a previous frame aligned successfully, one
+bounded retry can use that verified frame to obtain a better flow initialization.
+The neighbor-to-current pair must pass the same checks. Its composed translation
+only seeds a new **direct frame-0 fit**, with a 21px flow window; that final fit
+must independently pass the original support, validation residual, distribution,
+shift and overlap thresholds. No chained transform is returned. A false coarse
+phase peak can therefore be recovered without lowering the acceptance thresholds
+for the final transform. `neighbor_retry=0` reproduces the original direct-only
+policy; the default is 1. `retry_flow_window_px` is an odd integer in 15..35,
+default 21. Successful direct fits use the original 25px window and remain unchanged.
+
+Supplemental frame diagnostics record `initialization`, `seed_frame_index`,
+`flow_window_px` and `direct_failure_reasons`. See
+[verified real-upload follow-up](../../../docs/handoffs/T13_REGISTRATION_RECOVERY.md).
+
 The 250px/45% bounds accommodate observed large ESA field displacements. They are
 declared guardrails, not learned accuracy thresholds. No label-based tuning or
 detector threshold change occurred. Small rotation was investigated diagnostically

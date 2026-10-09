@@ -29,6 +29,8 @@ class RegistrationConfig:
     max_shift_px: float = 250.0
     min_axis_coverage: float = 0.2
     min_overlap: float = 0.45
+    neighbor_retry: int = 1
+    retry_flow_window_px: int = 21
 
     def __post_init__(self):
         for name, value in asdict(self).items():
@@ -38,6 +40,11 @@ class RegistrationConfig:
             raise ValueError("max_features must be an integer in 20..1000")
         if type(self.min_inliers) is not int or not 6 <= self.min_inliers <= self.max_features:
             raise ValueError("min_inliers must be an integer in 6..max_features")
+        if type(self.neighbor_retry) is not int or self.neighbor_retry not in (0, 1):
+            raise ValueError("neighbor_retry must be 0 or 1")
+        if (type(self.retry_flow_window_px) is not int or not 15 <= self.retry_flow_window_px <= 35
+                or self.retry_flow_window_px % 2 != 1):
+            raise ValueError("retry_flow_window_px must be an odd integer in 15..35")
         for name in ('feature_distance_px', 'feature_snr', 'forward_backward_px',
                      'inlier_radius_px', 'max_validation_rmse_px', 'max_shift_px'):
             if not 0 < getattr(self, name) <= 1000:
@@ -82,6 +89,10 @@ class FrameRegistration:
     raw_points: tuple[tuple[float, float], ...] = ()
     inlier_flags: tuple[bool, ...] = ()
     validation_flags: tuple[bool, ...] = ()
+    initialization: str = 'phase_correlation'
+    seed_frame_index: int | None = None
+    flow_window_px: int = 25
+    direct_failure_reasons: tuple[str, ...] = ()
 
     def transform_points(self, points, *, inverse=False):
         """Map finite Nx2 points; fail instead of fabricating identity on failure."""
@@ -160,8 +171,79 @@ def _matrix(shift):
     return ((1., 0., float(shift[0])), (0., 1., float(shift[1])), (0., 0., 1.))
 
 
+def _match_translation(reference, view, moving_view, coarse, width, height, config, window_px=25):
+    """Fit directly to frame 0; reserved points and all acceptance gates apply."""
+    diagnostic = dict(status='failed', raw_to_reference=None, reference_to_raw=None,
+        matched_features=0, fit_inliers=0, fit_inlier_ratio=None,
+        validation_matches=0, validation_inliers=0, validation_inlier_ratio=None,
+        fit_rmse_px=None, validation_rmse_px=None, before_rmse_px=None,
+        axis_coverage=None, overlap_fraction=None)
+    reasons = []
+    source = reference.reshape(-1, 1, 2)
+    initial = source + np.asarray(coarse, dtype=np.float32)
+    options = dict(winSize=(window_px, window_px), maxLevel=3,
+        criteria=(cv2.TERM_CRITERIA_COUNT | cv2.TERM_CRITERIA_EPS, 40, .001),
+        flags=cv2.OPTFLOW_USE_INITIAL_FLOW)
+    dest, ok, _ = cv2.calcOpticalFlowPyrLK(view, moving_view, source, initial, **options)
+    back, reverse_ok, _ = cv2.calcOpticalFlowPyrLK(moving_view, view, dest, source.copy(), **options)
+    raw = dest.reshape(-1, 2)
+    usable = ((ok.ravel() > 0) & (reverse_ok.ravel() > 0)
+        & np.isfinite(raw).all(axis=1) & np.isfinite(back.reshape(-1, 2)).all(axis=1)
+        & (np.linalg.norm(back.reshape(-1, 2)-reference, axis=1) <= config.forward_backward_px)
+        & (raw[:, 0] >= 14) & (raw[:, 0] < width-14)
+        & (raw[:, 1] >= 14) & (raw[:, 1] < height-14))
+    ref, raw = reference[usable], raw[usable]
+    diagnostic['matched_features'] = len(ref)
+    # Reserve every fifth original feature before correspondence pruning:
+    # these points never influence the robust fit.
+    validation = np.flatnonzero(usable) % 5 == 0
+    fit = ~validation
+    diagnostic['validation_matches'] = int(validation.sum())
+    if fit.sum() < config.min_inliers or validation.sum() < 4:
+        reasons.append('insufficient_verified_matches')
+    else:
+        shift, inliers = fit_translation(ref[fit], raw[fit], config.inlier_radius_px)
+        residual = np.linalg.norm(raw+shift-ref, axis=1)
+        all_inliers = residual <= config.inlier_radius_px
+        # Recheck the fit against the final transform before computing
+        # statistics; empty support is a finite failed result.
+        fit_support = fit & all_inliers
+        inlier_count = int(fit_support.sum())
+        fit_ratio = inlier_count / int(fit.sum())
+        val_inliers = all_inliers & validation
+        val_ratio = int(val_inliers.sum()) / int(validation.sum())
+        fit_rmse = float(np.sqrt(np.mean(residual[fit_support]**2))) if fit_support.any() else None
+        val_rmse = (float(np.sqrt(np.mean(residual[val_inliers]**2)))
+                    if val_inliers.any() else None)
+        before = (float(np.sqrt(np.mean(np.sum((raw[all_inliers]-ref[all_inliers])**2, axis=1))))
+                  if all_inliers.any() else None)
+        coverage = (np.ptp(ref[fit_support], axis=0) / (width, height)
+                    if fit_support.any() else np.zeros(2))
+        overlap = float(max(0., width-abs(shift[0])) * max(0., height-abs(shift[1])) / (width*height))
+        diagnostic.update(fit_inliers=inlier_count, fit_inlier_ratio=fit_ratio,
+            validation_inliers=int(val_inliers.sum()), validation_inlier_ratio=val_ratio,
+            fit_rmse_px=fit_rmse, validation_rmse_px=val_rmse,
+            before_rmse_px=before, axis_coverage=tuple(map(float, coverage)), overlap_fraction=overlap,
+            reference_points=tuple(map(tuple, ref.astype(float))), raw_points=tuple(map(tuple, raw.astype(float))),
+            inlier_flags=tuple(map(bool, all_inliers)), validation_flags=tuple(map(bool, validation)))
+        if inlier_count < config.min_inliers or fit_ratio < config.min_inlier_ratio:
+            reasons.append('weak_translation_consensus')
+        if (int(val_inliers.sum()) < 4 or val_ratio < config.min_inlier_ratio
+                or val_rmse is None or val_rmse > config.max_validation_rmse_px):
+            reasons.append('validation_residual_or_support_failed')
+        if min(coverage) < config.min_axis_coverage:
+            reasons.append('features_not_spatially_distributed')
+        if np.linalg.norm(shift) > config.max_shift_px or overlap < config.min_overlap:
+            reasons.append('shift_or_overlap_exceeds_limit')
+        if not reasons:
+            diagnostic.update(status='estimated', raw_to_reference=_matrix(shift),
+                              reference_to_raw=_matrix(-shift))
+    diagnostic['warnings'] = tuple(reasons)
+    return diagnostic
+
+
 def register_sequence(frames: Sequence[np.ndarray], config=None) -> SequenceRegistration:
-    """Estimate each frame directly against frame0; no accumulated transform drift.
+    """Fit each frame directly against frame0; a validated neighbor can seed a retry.
 
     1..30 equal native-size grayscale arrays; failures return diagnostics with
     null matrices. Invalid inputs raise ValueError. Reference geometry is identity,
@@ -189,7 +271,7 @@ def register_sequence(frames: Sequence[np.ndarray], config=None) -> SequenceRegi
         0, 0, None, 0., None, 0., None, 1.,
         preparation_ms+(perf_counter()-started)*1000,
         ('Insufficient reference features for cross-frame registration',)
-        if len(reference) < config.min_inliers+4 else ())]
+        if len(reference) < config.min_inliers+4 else (), initialization='identity')]
     window = cv2.createHanningWindow((width, height), cv2.CV_32F)
     for index, (moving, moving_view, _, prep_ms) in enumerate(normalized[1:], 1):
         started = perf_counter()
@@ -215,65 +297,30 @@ def register_sequence(frames: Sequence[np.ndarray], config=None) -> SequenceRegi
                 if np.linalg.norm(coarse) > config.max_shift_px:
                     reasons.append('coarse_shift_exceeds_limit')
             if not reasons:
-                source = reference.reshape(-1, 1, 2)
-                initial = source + np.asarray(coarse, dtype=np.float32)
-                options = dict(winSize=(25, 25), maxLevel=3,
-                    criteria=(cv2.TERM_CRITERIA_COUNT | cv2.TERM_CRITERIA_EPS, 40, .001),
-                    flags=cv2.OPTFLOW_USE_INITIAL_FLOW)
-                dest, ok, _ = cv2.calcOpticalFlowPyrLK(view, moving_view, source, initial, **options)
-                back, reverse_ok, _ = cv2.calcOpticalFlowPyrLK(moving_view, view, dest, source.copy(), **options)
-                raw = dest.reshape(-1, 2)
-                usable = ((ok.ravel() > 0) & (reverse_ok.ravel() > 0)
-                    & np.isfinite(raw).all(axis=1) & np.isfinite(back.reshape(-1, 2)).all(axis=1)
-                    & (np.linalg.norm(back.reshape(-1, 2)-reference, axis=1) <= config.forward_backward_px)
-                    & (raw[:, 0] >= 14) & (raw[:, 0] < width-14)
-                    & (raw[:, 1] >= 14) & (raw[:, 1] < height-14))
-                ref, raw = reference[usable], raw[usable]
-                diagnostic['matched_features'] = len(ref)
-                # Reserve every fifth original feature before correspondence pruning:
-                # these points never influence the robust fit.
-                validation = np.flatnonzero(usable) % 5 == 0
-                fit = ~validation
-                diagnostic['validation_matches'] = int(validation.sum())
-                if fit.sum() < config.min_inliers or validation.sum() < 4:
-                    reasons.append('insufficient_verified_matches')
-                else:
-                    shift, inliers = fit_translation(ref[fit], raw[fit], config.inlier_radius_px)
-                    residual = np.linalg.norm(raw+shift-ref, axis=1)
-                    all_inliers = residual <= config.inlier_radius_px
-                    # Recheck the fit against the final transform before computing
-                    # statistics; empty support is a finite failed result.
-                    fit_support = fit & all_inliers
-                    inlier_count = int(fit_support.sum())
-                    fit_ratio = inlier_count / int(fit.sum())
-                    val_inliers = all_inliers & validation
-                    val_ratio = int(val_inliers.sum()) / int(validation.sum())
-                    fit_rmse = float(np.sqrt(np.mean(residual[fit_support]**2))) if fit_support.any() else None
-                    val_rmse = (float(np.sqrt(np.mean(residual[val_inliers]**2)))
-                                if val_inliers.any() else None)
-                    before = (float(np.sqrt(np.mean(np.sum((raw[all_inliers]-ref[all_inliers])**2, axis=1))))
-                              if all_inliers.any() else None)
-                    coverage = (np.ptp(ref[fit_support], axis=0) / (width, height)
-                                if fit_support.any() else np.zeros(2))
-                    overlap = float(max(0., width-abs(shift[0])) * max(0., height-abs(shift[1])) / (width*height))
-                    diagnostic.update(fit_inliers=inlier_count, fit_inlier_ratio=fit_ratio,
-                        validation_inliers=int(val_inliers.sum()), validation_inlier_ratio=val_ratio,
-                        fit_rmse_px=fit_rmse, validation_rmse_px=val_rmse,
-                        before_rmse_px=before, axis_coverage=tuple(map(float, coverage)), overlap_fraction=overlap,
-                        reference_points=tuple(map(tuple, ref.astype(float))), raw_points=tuple(map(tuple, raw.astype(float))),
-                        inlier_flags=tuple(map(bool, all_inliers)), validation_flags=tuple(map(bool, validation)))
-                    if inlier_count < config.min_inliers or fit_ratio < config.min_inlier_ratio:
-                        reasons.append('weak_translation_consensus')
-                    if (int(val_inliers.sum()) < 4 or val_ratio < config.min_inlier_ratio
-                            or val_rmse is None or val_rmse > config.max_validation_rmse_px):
-                        reasons.append('validation_residual_or_support_failed')
-                    if min(coverage) < config.min_axis_coverage:
-                        reasons.append('features_not_spatially_distributed')
-                    if np.linalg.norm(shift) > config.max_shift_px or overlap < config.min_overlap:
-                        reasons.append('shift_or_overlap_exceeds_limit')
-                    if not reasons:
-                        diagnostic.update(status='estimated', raw_to_reference=_matrix(shift),
-                                          reference_to_raw=_matrix(-shift))
+                diagnostic.update(_match_translation(reference, view, moving_view, coarse,
+                    width, height, config))
+                reasons = list(diagnostic['warnings'])
+            # A phase-correlation alias can seed optical flow onto the wrong
+            # streak. Use one independently validated nearby frame only to
+            # initialize a fresh DIRECT frame-0 fit, never as the final transform.
+            if reasons and config.neighbor_retry and index > 1:
+                anchor = next((f for f in reversed(results[1:]) if f.status == 'estimated'), None)
+                if anchor is not None:
+                    pair = register_sequence([frames[anchor.frame_index], frames[index]],
+                        {**asdict(config), 'neighbor_retry': 0}).frames[1]
+                    if pair.status == 'estimated':
+                        total_shift = (np.asarray(anchor.raw_to_reference)[:2, 2]
+                                       + np.asarray(pair.raw_to_reference)[:2, 2])
+                        if np.linalg.norm(total_shift) <= config.max_shift_px:
+                            retry = _match_translation(reference, view, moving_view, -total_shift,
+                                width, height, config, config.retry_flow_window_px)
+                            if retry['status'] == 'estimated':
+                                diagnostic.update(retry,
+                                    initialization='verified_neighbor_seed_direct_fit',
+                                    seed_frame_index=anchor.frame_index,
+                                    flow_window_px=config.retry_flow_window_px,
+                                    direct_failure_reasons=tuple(reasons))
+                                reasons = []
         diagnostic.update(warnings=tuple(reasons), runtime_ms=prep_ms+(perf_counter()-started)*1000)
         results.append(FrameRegistration(**diagnostic))
     return SequenceRegistration(width, height, tuple(results), config)
