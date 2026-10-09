@@ -1,8 +1,9 @@
-import type { AnalysisResult, HealthResponse, JobState } from '../types/contracts';
+import type { AnalysisResult, HealthResponse, JobState, SequenceInput } from '../types/contracts';
 import { parseAnalysisResult, parseDemoSubmission, parseHealthResponse, parseJobId, parseJobState } from './responseValidation';
-import { postDemoJson, requestJson, requestFrameBlob } from './transport';
+import { postDemoJson, requestJson, requestFrameBlob, throwHttpError } from './transport';
 import { parseJobManifest } from './frameManifest';
 import type { JobManifest } from './frameManifest';
+import { apiUrl } from './baseUrl';
 
 export async function getHealth(signal?: AbortSignal): Promise<HealthResponse> {
   return parseHealthResponse(await requestJson('/api/health', signal));
@@ -25,4 +26,20 @@ export const getJobFrame = requestFrameBlob;
 export async function getJobManifest(jobId: string, signal?: AbortSignal): Promise<JobManifest> {
   const id = parseJobId(jobId);
   return parseJobManifest(await requestJson(`/api/jobs/${id}/manifest`, signal), id);
+}
+
+export async function runUpload(sequence: SequenceInput, files: File[], signal?: AbortSignal) {
+  const body = new FormData();
+  body.append('manifest', JSON.stringify(sequence));
+  for (const file of files) body.append('files', file, file.name);
+  const response = await fetch(apiUrl('/api/analyze/upload'), { method: 'POST', body, signal });
+  if (!response.ok) await throwHttpError(response, signal);
+  if (response.status !== 202) throw new Error('Upload was not accepted as a job');
+  return parseDemoSubmission(await response.json());
+}
+
+export async function getJobDiagnostics(jobId: string, signal?: AbortSignal): Promise<unknown> {
+  const response = await fetch(apiUrl(`/api/jobs/${parseJobId(jobId)}/diagnostics`), { signal });
+  if (!response.ok) await throwHttpError(response, signal);
+  return response.json();
 }

@@ -11,8 +11,8 @@ export function ReadinessPage() {
       <section className="panel"><h2>Application capabilities</h2>
         <ul className="application-capabilities"><li><div><strong>Local observation viewer</strong><p>Ordered images, playback, zoom, pan and pixel coordinates.</p></div><span className="ready">Implemented</span></li>
           <li><div><strong>Synthetic Analysis</strong><p>Job submission, polling, results, manifests, frames and aligned overlays. Requires the backend.</p></div><span className="ready">Integrated</span></li>
-          <li><div><strong>Local image analysis</strong><p>The frontend upload workflow and registration handling are pending.</p></div><span className="pending">Pending</span></li>
-          <li><div><strong>Scientific exports</strong><p>JSON and CSV controls remain disabled.</p></div><span className="pending">Pending</span></li></ul>
+          <li><div><strong>Local image analysis</strong><p>Five confirmed telescope images are uploaded to the local backend. Suitability and registration failures are reported; accepted results render in native image coordinates.</p></div><span className="ready">Integrated</span></li>
+          <li><div><strong>Scientific exports</strong><p>Backend JSON and CSV exports are available after a completed upload analysis.</p></div><span className="ready">Integrated</span></li></ul>
         <a className="text-link" href="#/workbench">Open Mission Workbench →</a></section></div>
     <section className="panel fixture"><h2>Illustrative schema fixture</h2>
       <p>This empty example documents the result shape. It is authored for development and is not a detector output or benchmark.</p>

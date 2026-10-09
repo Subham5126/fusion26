@@ -1,9 +1,9 @@
-import { getJob, getJobResult, runSyntheticDemo } from '../api/client';
+import { getJob, getJobResult, runSyntheticDemo, runUpload } from '../api/client';
 import { parseJobState, ResponseValidationError } from '../api/responseValidation';
 import { ApiRequestError } from '../api/transport';
 import { receiveDemoSubmission, receiveJob, receiveResult } from './analysis';
 import type { AnalysisState } from './analysis';
-import type { ApiError, JobState } from '../types/contracts';
+import type { ApiError, JobState, SequenceInput } from '../types/contracts';
 
 export const jobPollIntervalMs = 750;
 
@@ -44,14 +44,14 @@ export function createAnalysisJobController(publish: (state: AnalysisState) => v
   const current = (request: AbortController) => !disposed && active === request && !request.signal.aborted;
   const update = (next: AnalysisState) => { state = next; publish(next); };
 
-  async function start() {
+  async function start(sequence?: SequenceInput, files?: File[]) {
     if (disposed) return;
     active?.abort();
     const request = new AbortController(); active = request; jobId = null;
-    update({ phase: 'submitting', demo: true });
+    update(sequence ? { phase: 'submitting', sequence } : { phase: 'submitting', demo: true });
     let lastJob: JobState | undefined;
     try {
-      const submission = await services.submit(request.signal);
+      const submission = sequence ? await runUpload(sequence, files ?? [], request.signal) : await services.submit(request.signal);
       if (!current(request)) return;
       const accepted = receiveDemoSubmission(state, submission); update(accepted);
       if (accepted.phase !== 'queued') return;
@@ -87,5 +87,6 @@ export function createAnalysisJobController(publish: (state: AnalysisState) => v
   }
 
   function dispose() { disposed = true; active?.abort(); active = null; }
-  return { start, cancel, dispose };
+  function reset() { active?.abort(); active = null; jobId = null; if (!disposed) update({ phase: 'idle' }); }
+  return { start, cancel, reset, dispose };
 }

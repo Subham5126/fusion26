@@ -11,7 +11,7 @@ export type AnalysisState =
   | { phase: 'idle' }
   | { phase: 'validating'; sequence: SequenceInput }
   | ({ phase: 'submitting' } & AnalysisContext)
-  | { phase: 'queued'; demo: true; submission: DemoSubmission }
+  | ({ phase: 'queued'; submission: DemoSubmission } & AnalysisContext)
   | ({ phase: 'processing' | 'awaiting_result'; job: JobState } & AnalysisContext)
   | ({ phase: 'succeeded'; result: AnalysisResult; job?: JobState } & AnalysisContext)
   | { phase: 'failed'; error: ApiError; job?: JobState }
@@ -27,8 +27,9 @@ function failed(cause: unknown, job?: JobState): AnalysisState {
 }
 
 export function receiveDemoSubmission(state: AnalysisState, response: unknown): AnalysisState {
-  if (state.phase !== 'submitting' || !('demo' in state)) return state;
-  try { return { phase: 'queued', demo: true, submission: parseDemoSubmission(response) }; }
+  if (state.phase !== 'submitting') return state;
+  const context: AnalysisContext = 'sequence' in state ? { sequence: state.sequence } : { demo: true };
+  try { return { phase: 'queued', ...context, submission: parseDemoSubmission(response) }; }
   catch (cause) { return failed(cause); }
 }
 

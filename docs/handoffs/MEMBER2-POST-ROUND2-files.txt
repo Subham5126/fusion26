@@ -1,0 +1,6 @@
+docs/handoffs/MEMBER2-POST-ROUND2-AUDIT.md
+docs/handoffs/MEMBER2-POST-ROUND2-files.txt
+docs/handoffs/MEMBER2-POST-ROUND2.md
+src/astrotrace/datasets/FITS.md
+src/astrotrace/datasets/fits.py
+tests/detection/test_fits.py

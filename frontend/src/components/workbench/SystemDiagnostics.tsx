@@ -120,16 +120,16 @@ export function SystemDiagnostics({ isOpen = true, onClose }: SystemDiagnosticsP
             <li>
               <div>
                 <strong>Local image analysis</strong>
-                <p>The frontend upload workflow and registration handling are pending.</p>
+                <p>Five confirmed telescope images can be analyzed by the backend. Suitability and registration failures remain visible.</p>
               </div>
-              <span className="pending">Pending</span>
+              <span className="ready">Integrated</span>
             </li>
             <li>
               <div>
                 <strong>Scientific exports</strong>
-                <p>JSON and CSV downloads are not connected yet.</p>
+                <p>Backend JSON and CSV downloads are available after completed local-image analysis.</p>
               </div>
-              <span className="pending">Pending</span>
+              <span className="ready">Integrated</span>
             </li>
           </ul>
         </div>

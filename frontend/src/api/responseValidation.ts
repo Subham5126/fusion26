@@ -77,7 +77,7 @@ export function parseJobId(value: unknown): string {
 export function parseHealthResponse(value: unknown): HealthResponse {
   const data = record(value, ['status', 'service', 'readiness', 'schema_version', 'capabilities'], 'health');
   choice(data.status, ['ok'], 'health.status'); choice(data.service, ['OrbitTrace'], 'health.service');
-  choice(data.readiness, ['bootstrap_only'], 'health.readiness'); choice(data.schema_version, ['0.1.0'], 'schema_version');
+  choice(data.readiness, ['bootstrap_only', 'local_prototype'], 'health.readiness'); choice(data.schema_version, ['0.1.0'], 'schema_version');
   const flags = record(data.capabilities, ['schemas', 'synthetic_generation', 'detection', 'tracking', 'trajectory', 'evaluation', 'analysis_api', 'uploads', 'exports'], 'capabilities');
   Object.values(flags).forEach(flag => requireValue(typeof flag === 'boolean', 'capabilities'));
   return value as HealthResponse;

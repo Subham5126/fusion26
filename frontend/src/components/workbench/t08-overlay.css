@@ -1,0 +1,11 @@
+.t08-overlay .t08-track { cursor: pointer; }
+.t08-overlay [data-track-control] { pointer-events: all; cursor: pointer; }
+.t08-overlay .t08-glow { filter: drop-shadow(0 0 2px currentColor); }
+.t08-overlay .t08-neon-box { stroke-linejoin: round; }
+.t08-overlay .t08-observed-segment { stroke-linecap: round; }
+.t08-overlay .t08-forecast { stroke-linecap: round; }
+.t08-overlay .t08-box-label { pointer-events: auto; cursor: pointer; }
+.t08-overlay .t08-box-label text { font-family: var(--font-mono, monospace); font-weight: 600; }
+.t08-overlay [data-track-control]:focus-visible { outline: none; stroke: white; stroke-width: 1px; }
+.t08-forecast-status { margin: 12px 0; padding: 10px 14px; border-left: 2px solid #ffad45; background: #ffad450b; color: #e9bd82; font-size: 12px; }
+.t08-track-colors { display: flex; gap: 16px; font: 12px var(--font-mono, monospace); margin: 12px 0; }

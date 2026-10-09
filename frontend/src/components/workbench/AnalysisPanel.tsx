@@ -25,7 +25,7 @@ function Points({ points, label }: { points: TrackPoint[]; label: string }) {
   </table></div>;
 }
 
-export function AnalysisResults({ result }: { result: AnalysisResult }) {
+export function AnalysisResults({ result, showViewer = true }: { result: AnalysisResult; showViewer?: boolean }) {
   const predictions = result.tracks.reduce((count, track) => count + (track.trajectory?.predictions.length ?? 0), 0);
   return <div className="analysis-results">
     <div className="analysis-counts" aria-label="Completed analysis counts">
@@ -34,8 +34,8 @@ export function AnalysisResults({ result }: { result: AnalysisResult }) {
       <div><Icon name="clock" /><span>Predicted points</span><strong>{predictions}</strong></div>
     </div>
     <Warnings warnings={result.warnings} /><Warnings warnings={result.registration.warnings} label="Registration warnings" />
-    <DemoWorkbench result={result} />
-    <p className="analysis-note">Synthetic results belong to this backend job. Local telescope observations remain a separate sequence.</p>
+    {showViewer && <DemoWorkbench result={result} />}
+    {showViewer && <p className="analysis-note">Synthetic results belong to this backend job. Local telescope observations remain a separate sequence.</p>}
     <details className="analysis-details"><summary>Inspect detection tables, track history & provenance</summary>
       <h3>Sequence metadata</h3>
       <dl className="analysis-metadata">

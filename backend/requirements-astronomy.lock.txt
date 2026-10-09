@@ -1,0 +1,5 @@
+# Optional FITS test/runtime dependencies verified on Windows CPython 3.12.
+# Install after requirements.lock.txt; no trained-model dependencies included.
+astropy==8.0.1
+astropy-iers-data==0.2026.10.5.1.0.7
+pyerfa==2.0.1.5

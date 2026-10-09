@@ -1,0 +1,8 @@
+# Template only; prepare.py generates verified absolute config in ignored cache.
+path: ../../.cache/cv_t15/dataset
+train: train.txt
+val: validation.txt
+test: test.txt
+nc: 1
+names:
+  0: streak

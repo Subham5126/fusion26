@@ -135,3 +135,8 @@ Bounded YAML/config models are in backend/app/core/config.py. Upload byte quotas
 storage paths and concurrency are planned behavior, not enforced upload-service
 claims. A/D review the concrete freeze candidate before worker implementation;
 record incompatible schema changes in DECISIONS and update both languages.
+
+
+## T19 original Fusion live integration — 10 October2026
+
+AnalysisResult0.1.0 source is unchanged. Bounded upload accepts exactly five native ordered grayscale PNG/JPEG images (10MiB/file,50MiB aggregate,51MiB request envelope,4million decoded pixels/frame). Polling/results/native frames/manifest/diagnostics/JSON-CSV exports are actually implemented and HTTP-tested on8000 through frontend5173. JobManifest supplements native frame metadata; diagnostics supply accepted transforms. Unsupported/uncertain suitability or registration failure fails the job; supported empty succeeds. Unknown upload timestamps remain null. See handoffs/T19_ORIGINAL_INTEGRATION.md.

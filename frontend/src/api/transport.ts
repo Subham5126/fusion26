@@ -1,5 +1,6 @@
 import type { ApiError } from '../types/contracts';
 import { parseApiError, parseJobId, ResponseValidationError } from './responseValidation';
+import { apiUrl } from './baseUrl';
 
 // Job/result routes were inspected at 9e292f9; manifest at 026a0c8
 // on review/member-integration. No arbitrary API routes are enabled.
@@ -28,7 +29,7 @@ export function postDemoJson(signal?: AbortSignal): Promise<unknown> {
 
 async function exchangeJson(endpoint: string, method: 'GET' | 'POST', expectedStatus: number, signal?: AbortSignal): Promise<unknown> {
   signal?.throwIfAborted();
-  const response = await fetch(endpoint, { method, signal, headers: { Accept: 'application/json' } });
+  const response = await fetch(apiUrl(endpoint), { method, signal, headers: { Accept: 'application/json' } });
   signal?.throwIfAborted();
   if (!response.ok) await throwHttpError(response, signal);
   if (response.status !== expectedStatus) throw new ResponseValidationError(`HTTP ${response.status}; expected ${expectedStatus}`);
@@ -39,7 +40,7 @@ async function exchangeJson(endpoint: string, method: 'GET' | 'POST', expectedSt
   }
 }
 
-async function throwHttpError(response: Response, signal?: AbortSignal): Promise<never> {
+export async function throwHttpError(response: Response, signal?: AbortSignal): Promise<never> {
   let error: ApiError = { code: 'http_error', message: `Backend request failed (HTTP ${response.status})`, details: null };
   try {
     const body: unknown = await response.json();
@@ -57,7 +58,7 @@ export async function requestFrameBlob(jobId: string, frameIndex: number, signal
   const id = parseJobId(jobId);
   if (!Number.isInteger(frameIndex) || frameIndex < 0 || frameIndex >= 30) throw new Error('Invalid frame index');
   signal?.throwIfAborted();
-  const response = await fetch(`/api/jobs/${id}/frames/${frameIndex}`, { method: 'GET', signal, headers: { Accept: 'image/png' } });
+  const response = await fetch(apiUrl(`/api/jobs/${id}/frames/${frameIndex}`), { method: 'GET', signal, headers: { Accept: 'image/png' } });
   if (!response.ok) await throwHttpError(response, signal);
   if (response.status !== 200) throw new ResponseValidationError(`HTTP ${response.status}; expected 200`);
   if (response.headers.get('Content-Type')?.split(';')[0].trim().toLowerCase() !== 'image/png') throw new Error('Backend frame must be image/png');

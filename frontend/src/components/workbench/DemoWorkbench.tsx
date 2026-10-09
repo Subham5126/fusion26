@@ -7,6 +7,7 @@ import { scientificOverlay } from '../../viewer/scientificOverlay';
 import { Icon } from '../ui/Icon';
 import { OpticalViewer } from './OpticalViewer';
 import { ScientificOverlay } from './ScientificOverlay';
+import { trackColors } from '../../viewer/trackColors';
 
 export function DemoWorkbench({ result }: { result: AnalysisResult }) {
   if (!supportsDemoFrames(result)) return <p className="analysis-note">Frame metadata for this source has not been verified. No images or overlays are substituted.</p>;
@@ -50,7 +51,8 @@ function VerifiedDemoWorkbench({ result }: { result: AnalysisResult }) {
     <div className="workspace-body"><div className="observation-area">
       <OpticalViewer frame={frame} nativeSize={{ width: listed.width_px, height: listed.height_px }} onSelect={() => {}} onStep={direction => playback.seek(playback.index + direction)}
         onToggle={() => { if (ready || playback.playing) playback.toggle(); }} onError={playback.pause} onReady={setDisplayedUrl}
-        overlay={scale => <ScientificOverlay model={model} scale={scale} selected={selected} select={setSelected} visibility={visibility} />}
+        overlay={scale => <ScientificOverlay model={model} scale={scale} selected={selected} select={setSelected} visibility={visibility}
+          nativeSize={{ width: listed.width_px, height: listed.height_px }} />}
         emptyState={<div className="viewer-empty" role={current?.phase === 'failed' ? 'alert' : 'status'}><Icon name="image" />
           <h3>{current?.phase === 'failed' ? 'Backend frame unavailable' : 'Loading backend PNG…'}</h3>
           <p>{current?.phase === 'failed' ? current.error : `Frame ${playback.index + 1} of ${backend.frames.length} · index ${listed.frame_index}`}</p>
@@ -70,7 +72,12 @@ function VerifiedDemoWorkbench({ result }: { result: AnalysisResult }) {
       <div className="frame-slider"><input type="range" aria-label="Demo frame timeline" min="1" max={backend.frames.length} value={playback.index + 1}
         aria-valuetext={`Frame ${playback.index + 1} of ${backend.frames.length}, backend index ${listed.frame_index}`} onChange={event => playback.seek(Number(event.target.value) - 1)} />
         <div><span>01</span><span>{String(backend.frames.length).padStart(2, '0')}</span></div></div></div>
-      <div className="demo-overlay-legend" aria-label="Overlay legend"><span><i className="legend-detection" />Detection box + crosshair</span><span><i className="legend-observed" />Observed · solid emerald + filled points</span><span><i className="legend-predicted" />Predicted · dashed ice blue + hollow points</span></div>
+      <div className="demo-overlay-legend" aria-label="Overlay legend"><span><i className="legend-detection" />Neon current detection</span><span><i className="legend-observed" />Observed · solid track color + filled points</span><span><i className="legend-predicted" />Forecast · contrasting dashed line + hollow points</span></div>
+      <p className="t08-forecast-status" data-final-frame={playback.index === backend.frames.length - 1}>
+        {playback.index === backend.frames.length - 1 ? 'Final frame · ' : ''}
+        {model.tracks.some(t => t.predictions.length) ? `Forecast continuation · ${model.tracks.reduce((n,t) => n+t.predictions.length,0)} backend predictions. Dashed lines and hollow dots are not observations.`
+          : result.tracks.some(t => t.trajectory?.predictions.length) ? 'Forecasts appear once the timeline reaches each track’s last observation.' : 'No backend forecasts available for these tracks.'}
+        {!visibility.predictions && ' Predictions are hidden.'}</p>
       {!!model.warnings.length && <div className="sequence-feedback sequence-feedback--error" role="alert">{model.warnings.join(' ')}</div>}
       {!model.warnings.length && ready && !model.detections.length && <p className="analysis-note">No detections in this frame. No points were added.</p>}
       <p className="analysis-note demo-forecast-note">Forecasts appear at the final observed frame. Future points have no source images and are not observations.</p>
@@ -79,14 +86,17 @@ function VerifiedDemoWorkbench({ result }: { result: AnalysisResult }) {
       <button type="button" className="button button--primary button--small demo-final-forecast" onClick={() => playback.seek(backend.frames.length - 1)}><span>Inspect final frame & forecasts</span><Icon name="arrow" /></button>
       <label className="demo-track-selector">Selected track<select aria-label="Select analyzed track" value={selected ?? ''} disabled={!result.tracks.length} onChange={event => setSelected(event.target.value)}>
         {!result.tracks.length && <option value="">No tracks returned</option>}{result.tracks.map(track => <option key={track.track_id} value={track.track_id}>{track.track_id}</option>)}</select></label>
-      {track ? <><p className="analysis-note">{track.candidate_label}</p><dl className="evidence-values">
+      {track ? <><p className="analysis-note">{track.candidate_label}</p>
+        <div className="t08-track-colors"><span style={{ color: trackColors(track.track_id).observed }}>● Observed</span><span style={{ color: trackColors(track.track_id).forecast }}>◌ Forecast</span></div>
+        <dl className="evidence-values">
         <div><dt>Status</dt><dd>{track.status}</dd></div><div><dt>Actual observations</dt><dd>{track.observed_count}</dd></div>
         <div><dt>Heuristic quality</dt><dd>{number(track.quality_score)}</dd></div>
         <div><dt>Image-plane speed</dt><dd>{track.trajectory ? `${number(track.trajectory.speed)} ${track.trajectory.speed_unit}` : 'No fit'}</dd></div>
         <div><dt>Fit RMSE</dt><dd>{track.trajectory?.fit_rmse_px == null ? 'Not provided' : `${number(track.trajectory.fit_rmse_px)} px`}</dd></div>
       </dl>{!!track.warnings.length && <ul className="analysis-note">{track.warnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul>}</> : <p className="analysis-note">No tracks were returned.</p>}
+
       <div className="identity-note"><Icon name="info" /><span>Image-plane candidate evidence. Identity and physical orbit remain unverified.</span></div>
     </aside></div>
-    <p className="demo-metadata-note">Backend manifest: frame order, native dimensions and acquisition times. Display rate controls playback only; local images are preview only.</p>
+    <p className="demo-metadata-note">Frame order, dimensions and acquisition times come from this job’s backend manifest. Playback rate is a display control. Local observations have independent upload jobs.</p>
   </section>;
 }
