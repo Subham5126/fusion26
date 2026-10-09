@@ -2,7 +2,7 @@ import cv2
 from fastapi import APIRouter, HTTPException, status, Response
 from fastapi.responses import JSONResponse
 
-from app.schemas.job import JobState
+from app.schemas.job import JobState, JobManifest
 from app.services.job_manager import job_manager
 
 router = APIRouter()
@@ -60,3 +60,10 @@ def get_job_frame(job_id: str, frame_index: int):
         )
 
     return Response(content=encoded.tobytes(), media_type="image/png")
+
+
+@router.get("/api/jobs/{job_id}/manifest", response_model=JobManifest)
+def get_job_manifest(job_id: str):
+    if job_id not in job_manager.manifests:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found or evicted")
+    return job_manager.manifests[job_id]
