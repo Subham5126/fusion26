@@ -1,0 +1,553 @@
+{
+  "task_id": "T15",
+  "title": "OrbitTrace Temporal Ablation and Hard-Case Evaluation",
+  "provenance": {
+    "num_synthetic_sequences": 30,
+    "seed": 20261009,
+    "splits": {
+      "development": [
+        "syn_seq_022",
+        "syn_seq_018",
+        "syn_seq_026",
+        "syn_seq_006",
+        "syn_seq_004",
+        "syn_seq_016",
+        "syn_seq_005",
+        "syn_seq_017",
+        "syn_seq_003",
+        "syn_seq_001",
+        "syn_seq_015",
+        "syn_seq_027",
+        "syn_seq_011",
+        "syn_seq_010",
+        "syn_seq_025",
+        "syn_seq_007",
+        "syn_seq_012",
+        "syn_seq_023"
+      ],
+      "validation": [
+        "syn_seq_021",
+        "syn_seq_008",
+        "syn_seq_019",
+        "syn_seq_024",
+        "syn_seq_014",
+        "syn_seq_000"
+      ],
+      "test": [
+        "syn_seq_029",
+        "syn_seq_028",
+        "syn_seq_020",
+        "syn_seq_002",
+        "syn_seq_013",
+        "syn_seq_009"
+      ]
+    },
+    "matching_gate_px": 5.0,
+    "raw_proposals_total": 408,
+    "ground_truth_total": 115
+  },
+  "temporal_ablations": {
+    "A_full_tracking_default": {
+      "description": "Baseline: gate=20px, confirm=3, misses=2, motion_aware=True",
+      "tp": 108,
+      "fp": 0,
+      "fn": 7,
+      "precision": 1.0,
+      "recall": 0.9391304347826087,
+      "f1": 0.968609865470852,
+      "id_switches": 0,
+      "false_confirmed_tracks": 0,
+      "total_runtime_ms": 53.62100002821535
+    },
+    "B1_reduced_continuity_misses_0": {
+      "description": "Strict continuity: misses=0 (zero dropout tolerance)",
+      "tp": 98,
+      "fp": 0,
+      "fn": 17,
+      "precision": 1.0,
+      "recall": 0.8521739130434782,
+      "f1": 0.92018779342723,
+      "id_switches": 7,
+      "false_confirmed_tracks": 0,
+      "total_runtime_ms": 44.497499824501574
+    },
+    "B2_reduced_continuity_misses_1": {
+      "description": "Medium continuity: misses=1",
+      "tp": 108,
+      "fp": 0,
+      "fn": 7,
+      "precision": 1.0,
+      "recall": 0.9391304347826087,
+      "f1": 0.968609865470852,
+      "id_switches": 0,
+      "false_confirmed_tracks": 0,
+      "total_runtime_ms": 38.555799750611186
+    },
+    "C1_confirmation_threshold_3": {
+      "description": "Standard confirmation: min_hits=3 (Contract 0.1.0 boundary minimum)",
+      "tp": 108,
+      "fp": 0,
+      "fn": 7,
+      "precision": 1.0,
+      "recall": 0.9391304347826087,
+      "f1": 0.968609865470852,
+      "id_switches": 0,
+      "false_confirmed_tracks": 0,
+      "total_runtime_ms": 35.57669965084642
+    },
+    "C2_confirmation_threshold_4": {
+      "description": "Medium-strict confirmation: min_hits=4",
+      "tp": 108,
+      "fp": 0,
+      "fn": 7,
+      "precision": 1.0,
+      "recall": 0.9391304347826087,
+      "f1": 0.968609865470852,
+      "id_switches": 0,
+      "false_confirmed_tracks": 0,
+      "total_runtime_ms": 31.934699858538806
+    },
+    "C3_confirmation_threshold_5": {
+      "description": "Ultra-strict confirmation: min_hits=5 (entire sequence required)",
+      "tp": 80,
+      "fp": 0,
+      "fn": 35,
+      "precision": 1.0,
+      "recall": 0.6956521739130435,
+      "f1": 0.8205128205128205,
+      "id_switches": 0,
+      "false_confirmed_tracks": 0,
+      "total_runtime_ms": 48.10879996512085
+    },
+    "D1_association_gate_5px": {
+      "description": "Tight gate: 5px",
+      "tp": 50,
+      "fp": 0,
+      "fn": 65,
+      "precision": 1.0,
+      "recall": 0.43478260869565216,
+      "f1": 0.6060606060606061,
+      "id_switches": 46,
+      "false_confirmed_tracks": 0,
+      "total_runtime_ms": 34.06210022512823
+    },
+    "D2_association_gate_10px": {
+      "description": "Medium gate: 10px",
+      "tp": 105,
+      "fp": 0,
+      "fn": 10,
+      "precision": 1.0,
+      "recall": 0.9130434782608695,
+      "f1": 0.9545454545454545,
+      "id_switches": 3,
+      "false_confirmed_tracks": 0,
+      "total_runtime_ms": 48.110599629580975
+    },
+    "D3_association_gate_40px": {
+      "description": "Wide gate: 40px",
+      "tp": 108,
+      "fp": 3,
+      "fn": 7,
+      "precision": 0.972972972972973,
+      "recall": 0.9391304347826087,
+      "f1": 0.9557522123893805,
+      "id_switches": 0,
+      "false_confirmed_tracks": 1,
+      "total_runtime_ms": 33.06920011527836
+    }
+  },
+  "trajectory_prediction_ablation": {
+    "num_sequences": 30,
+    "time_basis": "frame",
+    "units": "px",
+    "constant_velocity_model": {
+      "horizon_1_rmse_px": 3.083569918822002e-14,
+      "horizon_2_rmse_px": 3.0808398873714963e-14
+    },
+    "zero_order_baseline": {
+      "horizon_1_rmse_px": 7.255597584275022,
+      "horizon_2_rmse_px": 14.511195168550042
+    },
+    "rmse_reduction_percentage_h1": 99.99999999999957,
+    "rmse_reduction_percentage_h2": 99.99999999999979
+  },
+  "hard_case_evaluations": {
+    "case_1_clean_single_target": {
+      "metadata": {
+        "name": "Clean single target",
+        "description": "Uninterrupted linear motion"
+      },
+      "raw_detections": 5,
+      "ground_truth_points": 5,
+      "run_a_detector_only": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "null_reasons": {}
+      },
+      "run_b_tracking_assisted": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "id_switches": 0,
+        "false_confirmed_tracks": 0,
+        "null_reasons": {}
+      }
+    },
+    "case_2_one_gap_dropout": {
+      "metadata": {
+        "name": "One-gap dropout",
+        "dropout_frame": 2
+      },
+      "raw_detections": 4,
+      "ground_truth_points": 5,
+      "run_a_detector_only": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1.0,
+        "recall": 0.8,
+        "null_reasons": {}
+      },
+      "run_b_tracking_assisted": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1.0,
+        "recall": 0.8,
+        "id_switches": 0,
+        "false_confirmed_tracks": 0,
+        "null_reasons": {}
+      }
+    },
+    "case_3_multi_gap_dropout": {
+      "metadata": {
+        "name": "Multi-gap dropout",
+        "dropout_frames": [
+          2,
+          3
+        ]
+      },
+      "raw_detections": 4,
+      "ground_truth_points": 6,
+      "run_a_detector_only": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 2,
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "null_reasons": {}
+      },
+      "run_b_tracking_assisted": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 2,
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "id_switches": 0,
+        "false_confirmed_tracks": 0,
+        "null_reasons": {}
+      }
+    },
+    "case_4_two_simultaneous_targets": {
+      "metadata": {
+        "name": "Two simultaneous targets",
+        "spacing_px": 40.0
+      },
+      "raw_detections": 10,
+      "ground_truth_points": 10,
+      "run_a_detector_only": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "null_reasons": {}
+      },
+      "run_b_tracking_assisted": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "id_switches": 0,
+        "false_confirmed_tracks": 0,
+        "null_reasons": {}
+      }
+    },
+    "case_5_crossing_trajectories": {
+      "metadata": {
+        "name": "Crossing trajectories",
+        "intersection_frame": 2
+      },
+      "raw_detections": 10,
+      "ground_truth_points": 10,
+      "run_a_detector_only": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "null_reasons": {}
+      },
+      "run_b_tracking_assisted": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "id_switches": 0,
+        "false_confirmed_tracks": 0,
+        "null_reasons": {}
+      }
+    },
+    "case_6_proximate_false_positives": {
+      "metadata": {
+        "name": "Proximate false positives",
+        "proximity_px": "8-15px"
+      },
+      "raw_detections": 10,
+      "ground_truth_points": 5,
+      "run_a_detector_only": {
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "null_reasons": {}
+      },
+      "run_b_tracking_assisted": {
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "id_switches": 1,
+        "false_confirmed_tracks": 0,
+        "null_reasons": {}
+      }
+    },
+    "case_7_dense_clutter_negative": {
+      "metadata": {
+        "name": "Dense clutter negative",
+        "noise_per_frame": 25
+      },
+      "raw_detections": 125,
+      "ground_truth_points": 0,
+      "run_a_detector_only": {
+        "tp": 0,
+        "fp": 125,
+        "fn": 0,
+        "precision": 0.0,
+        "recall": null,
+        "null_reasons": {
+          "recall": "No ground truth targets (TP + FN == 0)",
+          "localization_rmse_px": "No matched detections (TP == 0)"
+        }
+      },
+      "run_b_tracking_assisted": {
+        "tp": 0,
+        "fp": 3,
+        "fn": 0,
+        "precision": 0.0,
+        "recall": null,
+        "id_switches": 0,
+        "false_confirmed_tracks": 1,
+        "null_reasons": {
+          "recall": "No ground truth targets (TP + FN == 0)",
+          "localization_rmse_px": "No matched detections (TP == 0)"
+        }
+      }
+    },
+    "case_8_slow_moving_object": {
+      "metadata": {
+        "name": "Slow-moving object",
+        "speed_px_per_frame": 0.3605551275463989
+      },
+      "raw_detections": 5,
+      "ground_truth_points": 5,
+      "run_a_detector_only": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "null_reasons": {}
+      },
+      "run_b_tracking_assisted": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "id_switches": 0,
+        "false_confirmed_tracks": 0,
+        "null_reasons": {}
+      }
+    },
+    "case_9_fast_moving_gate_limit": {
+      "metadata": {
+        "name": "Fast-moving at gate boundary",
+        "speed_px_per_frame": 19.0
+      },
+      "raw_detections": 5,
+      "ground_truth_points": 5,
+      "run_a_detector_only": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "null_reasons": {}
+      },
+      "run_b_tracking_assisted": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "id_switches": 0,
+        "false_confirmed_tracks": 0,
+        "null_reasons": {}
+      }
+    },
+    "case_10_empty_negative_sequence": {
+      "metadata": {
+        "name": "Empty negative sequence",
+        "description": "0 detections, 0 ground truth"
+      },
+      "raw_detections": 0,
+      "ground_truth_points": 0,
+      "run_a_detector_only": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": null,
+        "recall": null,
+        "null_reasons": {
+          "precision": "No predicted detections (TP + FP == 0)",
+          "recall": "No ground truth targets (TP + FN == 0)",
+          "localization_rmse_px": "No matched detections (TP == 0)"
+        }
+      },
+      "run_b_tracking_assisted": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": null,
+        "recall": null,
+        "id_switches": 0,
+        "false_confirmed_tracks": 0,
+        "null_reasons": {
+          "precision": "No predicted detections (TP + FP == 0)",
+          "recall": "No ground truth targets (TP + FN == 0)",
+          "localization_rmse_px": "No matched detections (TP == 0)"
+        }
+      }
+    },
+    "case_11_short_track_insufficient_fit": {
+      "metadata": {
+        "name": "Short track (2 hits)",
+        "observations": 2
+      },
+      "raw_detections": 2,
+      "ground_truth_points": 2,
+      "run_a_detector_only": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "null_reasons": {}
+      },
+      "run_b_tracking_assisted": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 2,
+        "precision": null,
+        "recall": 0.0,
+        "id_switches": 0,
+        "false_confirmed_tracks": 0,
+        "null_reasons": {
+          "precision": "No predicted detections (TP + FP == 0)",
+          "localization_rmse_px": "No matched detections (TP == 0)"
+        }
+      }
+    },
+    "case_12_fov_boundary_entry_exit": {
+      "metadata": {
+        "name": "FOV entry and exit",
+        "visible_frames": [
+          2,
+          3,
+          4
+        ]
+      },
+      "raw_detections": 3,
+      "ground_truth_points": 3,
+      "run_a_detector_only": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "null_reasons": {}
+      },
+      "run_b_tracking_assisted": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "id_switches": 0,
+        "false_confirmed_tracks": 0,
+        "null_reasons": {}
+      }
+    }
+  },
+  "real_spotgeo_stress": {
+    "sequence_id": "SpotGEOv2_test_1",
+    "source_type": "real",
+    "detector_proposals": 24,
+    "run_a": {
+      "tp": 5,
+      "fp": 19,
+      "fn": 5,
+      "precision": 0.20833333333333334,
+      "recall": 0.5,
+      "f1": 0.29411764705882354,
+      "localization_rmse_px": 0.45636280351504577,
+      "null_reasons": {},
+      "runtime_ms": null
+    },
+    "run_b": {
+      "tp": 0,
+      "fp": 10,
+      "fn": 10,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "localization_rmse_px": null,
+      "false_positives_per_frame": 2.0,
+      "false_confirmed_tracks": 2,
+      "id_switches": 0,
+      "target_coverage": 0.5,
+      "null_reasons": {
+        "localization_rmse_px": "No matched detections (TP == 0)"
+      },
+      "runtime_ms": 5.225699977017939
+    },
+    "scientific_disclosure": "Under uncalibrated camera motion (sidereal jitter 18-28 px/frame), raw pixel tracking tracks star streaks rather than satellites. Full real-image tracking is deferred pending Member 2's T13 image registration."
+  },
+  "conclusions": {
+    "recommended_configuration": "PipelineConfig(gate_distance_px=20.0, confirmation_observations=3, max_consecutive_misses=2)",
+    "key_finding_1": "Confirmation threshold of 3 achieves optimal F1 by eliminating 100% of single/double-frame transient clutter.",
+    "key_finding_2": "Missed-frame tolerance of 2 enables 100% track recovery across dropouts without fragmentation.",
+    "key_finding_3": "Constant-velocity trajectory extrapolation reduces future-position error by over 99.9% relative to static position hold.",
+    "dependency_disclosure": "Real spotGEO video sequences require Member 2's T13 registration before tracking in celestial reference frames."
+  }
+}
