@@ -6,7 +6,8 @@ import fixture from '../../tests/contracts/fixtures/track-result.json';
 import { getJobFrame } from '../src/api/client';
 import { ApiRequestError } from '../src/api/transport';
 import { parseAnalysisResult } from '../src/api/responseValidation';
-import { createDemoFrameController, verifiedDemoLayout, supportsDemoFrames } from '../src/viewer/demoFrames';
+import { createDemoFrameController, supportsDemoFrames } from '../src/viewer/demoFrames';
+import type { JobManifest } from '../src/api/frameManifest';
 import type { DemoFrame, DemoFrameServices, DemoFrameState } from '../src/viewer/demoFrames';
 import { scientificOverlay } from '../src/viewer/scientificOverlay';
 import { imageTransform, pixelToViewport, rawToDecoded } from '../src/viewer/geometry';
@@ -24,9 +25,12 @@ function result() {
   const input = structuredClone(fixture); input.coordinate_frame = 'raw_pixels'; input.tracks[0].trajectory.coordinate_frame = 'raw_pixels';
   return parseAnalysisResult(input);
 }
+function manifest(jobId = 'example-job'): JobManifest {
+  return { job_id: jobId, frame_count: 5, frames: [0, 1, 2, 3, 4].map(frame_index => ({ frame_index, width_px: 64, height_px: 48, timestamp_s: null })) };
+}
 function frame(index = 0, overrides: Partial<DemoFrame> = {}): DemoFrame {
   return { id: `example-job/${index}`, source: 'analyzed_demo', job_id: 'example-job', frame_index: index, url: 'blob:test',
-    label: 'Test demo', width_px: 64, height_px: 48, timestamp_s: null, header: { width: 64, height: 48, orientation: 1, format: 'image/png' }, ...overrides };
+    manifest: manifest(), label: 'Test demo', width_px: 64, height_px: 48, timestamp_s: null, header: { width: 64, height: 48, orientation: 1, format: 'image/png' }, ...overrides };
 }
 function deferred<T>() { let resolve!: (value: T) => void; const promise = new Promise<T>(done => { resolve = done; }); return { resolve, promise }; }
 function harness(overrides: Partial<DemoFrameServices> = {}, jobId = 'example-job') {
@@ -34,7 +38,7 @@ function harness(overrides: Partial<DemoFrameServices> = {}, jobId = 'example-jo
   const resources: DemoFrameServices = { fetch: async (id, index) => { assert.equal(id, jobId); fetched.push(index); return png(); },
     createUrl: () => { const url = `blob:${jobId}/${created.length}`; created.push(url); return url; },
     revokeUrl: url => revoked.push(url), decode: async () => ({ width: 64, height: 48 }), ...overrides };
-  const controller = createDemoFrameController(jobId, state => states.push(state), resources);
+  const controller = createDemoFrameController(manifest(jobId), state => states.push(state), resources);
   return { controller, states, revoked, fetched, created, latest: () => states.at(-1)! };
 }
 async function usingFetch(stub: typeof fetch, check: () => Promise<void>) { const saved = globalThis.fetch; globalThis.fetch = stub; try { await check(); } finally { globalThis.fetch = saved; } }
@@ -66,9 +70,9 @@ test('unsafe job IDs, invalid frame indexes and an aborted caller never send a f
     await assert.rejects(getJobFrame('../job', 0)); await assert.rejects(getJobFrame('example-job', 0, abort.signal), { name: 'AbortError' }); assert.equal(requests, 0);
   });
 });
-test('decoded demo frames use source-confirmed order and geometry, without manufactured timestamps', async () => {
+test('decoded demo frames use manifest-confirmed order and geometry, without manufactured timestamps', async () => {
   const h = harness(); await h.controller.select(4);
-  assert.deepEqual(verifiedDemoLayout.indexes, [0, 1, 2, 3, 4]); assert.equal(h.latest().phase, 'ready');
+  assert.deepEqual(h.latest().frame?.manifest.frames.map(frame => frame.frame_index), [0, 1, 2, 3, 4]); assert.equal(h.latest().phase, 'ready');
   assert.equal(h.latest().frame?.frame_index, 4); assert.equal(h.latest().frame?.timestamp_s, null); assert.equal(h.latest().frame?.source, 'analyzed_demo'); h.controller.dispose();
 });
 test('three-frame LRU cache reuses URLs, evicts old frames and revokes every owned URL once', async () => {
@@ -92,7 +96,7 @@ test('expired frame errors retain backend code and status for recovery guidance'
   const h = harness({ fetch: async () => { throw new ApiRequestError(404, { code: 'not_found', message: 'Job frames evicted', details: null }); } });
   await h.controller.select(0); assert.equal(h.latest().errorStatus, 404); assert.equal(h.latest().errorCode, 'not_found'); assert.equal(h.latest().frame, undefined); h.controller.dispose();
 });
-test('frame indexes beyond the demo range do not trigger guessed endpoint scans', async () => {
+test('frame indexes absent from the manifest do not trigger guessed endpoint scans', async () => {
   const h = harness(); await h.controller.select(5); assert.equal(h.latest().phase, 'failed'); assert.deepEqual(h.fetched, []); h.controller.dispose();
 });
 test('rapid seeking aborts and ignores stale network responses even when a transport ignores abort', async () => {
