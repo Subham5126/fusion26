@@ -192,3 +192,28 @@ def test_job_frame_retrieval_and_errors():
     # Test invalid job id
     frame_resp_missing = client.get("/api/jobs/missing_job/frames/0")
     assert frame_resp_missing.status_code == 404
+
+def test_manifest_endpoint():
+    # Submit demo to get a job id
+    response = client.post("/api/analyze/demo")
+    assert response.status_code == 202
+    job_id = response.json()["job_id"]
+
+    # Test valid manifest
+    manifest_resp = client.get(f"/api/jobs/{job_id}/manifest")
+    assert manifest_resp.status_code == 200
+    manifest = manifest_resp.json()
+
+    assert manifest["job_id"] == job_id
+    assert manifest["frame_count"] == 5
+    assert len(manifest["frames"]) == 5
+
+    for i, frame in enumerate(manifest["frames"]):
+        assert frame["frame_index"] == i
+        assert frame["width_px"] == 64
+        assert frame["height_px"] == 48
+        assert frame["timestamp_s"] == float(i)
+
+    # Test missing job manifest
+    missing_manifest_resp = client.get("/api/jobs/missing_job/manifest")
+    assert missing_manifest_resp.status_code == 404

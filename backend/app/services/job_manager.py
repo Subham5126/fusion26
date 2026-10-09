@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Dict
 
 from app.core.config import PipelineConfig
-from app.schemas.job import JobState, ApiError
+from app.schemas.job import JobState, ApiError, JobManifest, ManifestFrame
 from app.schemas.result import AnalysisResult
 from app.schemas.sequence import SequenceInput
 from orbittrace.pipeline import analyze
@@ -18,6 +18,7 @@ class JobManager:
         self.jobs: Dict[str, JobState] = {}
         self.results: Dict[str, AnalysisResult] = {}
         self.frames: Dict[str, list] = {}
+        self.manifests: Dict[str, JobManifest] = {}
         self.executor = ThreadPoolExecutor(max_workers=max_concurrent)
         self.active_count = 0
         self.lock = threading.RLock()
@@ -47,9 +48,22 @@ class JobManager:
                 self.jobs.pop(oldest, None)
                 self.results.pop(oldest, None)
                 self.frames.pop(oldest, None)
+                self.manifests.pop(oldest, None)
 
         job_id = self.generate_id()
         self.frames[job_id] = frame_pixels
+        self.manifests[job_id] = JobManifest(
+            job_id=job_id,
+            frame_count=len(sequence.frames),
+            frames=[
+                ManifestFrame(
+                    frame_index=f.frame_index,
+                    timestamp_s=f.timestamp_s,
+                    width_px=f.width_px,
+                    height_px=f.height_px
+                ) for f in sequence.frames
+            ]
+        )
         job_state = JobState(
             job_id=job_id,
             status="queued",
