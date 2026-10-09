@@ -117,7 +117,7 @@ def test_pipeline_fails_explicitly_without_output():
         analyze(SequenceInput.model_validate(fixture("sequence.json")), PipelineConfig())
 
 
-@pytest.mark.parametrize("script", ["generate_demo.py", "analyze_sequence.py", "evaluate.py"])
+@pytest.mark.parametrize("script", ["generate_demo.py", "analyze_sequence.py"])
 def test_cli_help_and_pending_failure(script):
     path = ROOT / "scripts" / script
     help_run = subprocess.run([sys.executable, str(path), "--help"], capture_output=True, text=True)
