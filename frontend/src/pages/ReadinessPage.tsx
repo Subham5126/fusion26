@@ -2,11 +2,9 @@ import { HealthPanel } from '../components/HealthPanel';
 import { emptyResult } from '../fixtures/empty-result';
 
 export function ReadinessPage() {
-  return <main>
-    <header><div className="brand">ORBITTRACE <span>FUSION 2K26 · SPACE-02</span></div>
-      <span className="badge">Bootstrap</span></header>
-    <section className="intro"><p className="eyebrow">Telescope sequence workbench</p>
-      <h1>Evidence behind<br />every candidate.</h1>
+  return <div className="container readiness-page">
+    <section className="readiness-intro"><div className="readiness-heading"><p className="eyebrow">SYSTEM READINESS</p><span className="badge">Bootstrap</span></div>
+      <h1>Evidence behind<br /><span>every candidate.</span></h1>
       <p className="lead">The foundation is ready. Detection, tracking, and short image-plane trajectories are the next implementation tasks.</p>
       <p className="notice">No analysis has been performed. Object identity remains unverified; performance has not been measured.</p></section>
     <div className="grid"><HealthPanel />
@@ -18,6 +16,6 @@ export function ReadinessPage() {
     <section className="panel fixture"><h2>Illustrative schema fixture</h2>
       <p>This empty example documents the result shape. It is authored for development and is not a detector output or benchmark.</p>
       <details><summary>Inspect example JSON · schema 0.1.0</summary><pre>{JSON.stringify(emptyResult, null, 2)}</pre></details></section>
-    <footer>CPU first · Native image coordinates · Pixels/frame when timestamps are unknown</footer>
-  </main>;
+    <p className="readiness-footnote">CPU first · Native image coordinates · Pixels/frame when timestamps are unknown</p>
+  </div>;
 }
