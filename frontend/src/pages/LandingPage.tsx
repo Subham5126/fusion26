@@ -3,9 +3,11 @@ import { SpaceHero } from '../components/landing/SpaceHero';
 import { Icon } from '../components/ui/Icon';
 import { WorkbenchShell } from '../components/workbench/WorkbenchShell';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import { useGsapScrollTrigger } from '../hooks/useGsapScrollTrigger';
 
 export function LandingPage() {
   const revealRoot = useScrollReveal();
+  useGsapScrollTrigger(revealRoot);
   return <div ref={revealRoot} className="landing-page"><SpaceHero />
     <div className="container dashboard-preview scroll-reveal"><div className="preview-depth"><WorkbenchShell preview /></div></div>
     <CapabilitySection />
