@@ -1,24 +1,13 @@
-import { useEffect, useState } from 'react';
-import { getHealth } from '../api/client';
-import type { HealthResponse } from '../types/contracts';
+import { useHealthConnection } from '../hooks/useHealthConnection';
 
 export function HealthPanel() {
-  const [health, setHealth] = useState<HealthResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => {
-    const controller = new AbortController();
-    setHealth(null); setError(null);
-    getHealth(controller.signal).then(setHealth).catch((cause: unknown) => {
-      if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Health request failed');
-    });
-    return () => controller.abort();
-  }, [attempt]);
+  const { connection, refresh } = useHealthConnection();
+  const health = connection.status === 'connected' ? connection.health : null;
   return <section className="panel" aria-labelledby="health-heading">
     <div className="panel-heading"><h2 id="health-heading">Local service</h2>
-      <button onClick={() => setAttempt(value => value + 1)}>Refresh health</button></div>
+      <button onClick={refresh} disabled={connection.status === 'loading'}>Refresh health</button></div>
     <div role="status" aria-live="polite">
-      {error ? <p className="error">Backend unavailable. Start the local backend, then refresh. {error}</p>
+      {connection.status === 'failed' ? <p className="error">Backend unavailable. Start the local backend, then refresh. {connection.message}</p>
         : health ? <p className="connected">Connected · schema {health.schema_version} · bootstrap only</p>
         : <p>Checking backend…</p>}
     </div>

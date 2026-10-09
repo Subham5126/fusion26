@@ -1,0 +1,51 @@
+/* Cursor light moves as a small composited layer; the gradient itself is fixed. */
+.reactive-light { position: absolute; top: 0; left: 0; width: 340px; height: 340px; border-radius: 50%; background: radial-gradient(circle, rgb(66 213 244 / 10%), transparent 68%); opacity: 0; pointer-events: none; transform: translate3d(calc(var(--pointer-x, 0px) - 170px), calc(var(--pointer-y, 0px) - 170px), 0); transition: opacity 240ms; }
+.hero-art-plane { position: absolute; z-index: -3; inset: 0; transition: transform 700ms var(--ease-out); }
+.hero-artwork { z-index: auto; }
+.hero-light { z-index: -1; width: 500px; height: 500px; transform: translate3d(calc(var(--pointer-x, 0px) - 250px), calc(var(--pointer-y, 0px) - 250px), 0); }
+.hero-atmosphere { position: absolute; z-index: -1; width: min(650px, 65vw); height: 320px; right: 5%; top: 15%; background: radial-gradient(ellipse, rgb(57 169 227 / 10%), transparent 68%); pointer-events: none; animation: atmosphere-drift 24s ease-in-out infinite alternate; animation-play-state: paused; }
+.hero-stars { position: absolute; z-index: -1; inset: 0; pointer-events: none; }
+.hero-stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: var(--color-accent-bright); opacity: .25; animation: star-light 16s ease-in-out infinite alternate; animation-play-state: paused; }
+.hero-stars i:nth-child(1) { left: 48%; top: 12%; }
+.hero-stars i:nth-child(2) { left: 74%; top: 27%; animation-duration: 21s; animation-delay: -7s; }
+.hero-stars i:nth-child(3) { left: 58%; top: 42%; animation-duration: 19s; animation-delay: -4s; }
+.space-hero[data-ambient-running='true'] .hero-atmosphere, .space-hero[data-ambient-running='true'] .hero-stars i { animation-play-state: running; }
+.capability-frame { min-width: 0; perspective: 1000px; }
+.capability-card { position: relative; }
+.capability-card summary, .capability-detail { position: relative; z-index: 1; }
+.card-light { width: 280px; height: 280px; background: radial-gradient(circle, rgb(66 213 244 / 8%), transparent 70%); transform: translate3d(calc(var(--pointer-x, 0px) - 140px), calc(var(--pointer-y, 0px) - 140px), 0); }
+.card-rim-light { position: absolute; top: 0; left: 0; width: 96px; height: 1px; background: linear-gradient(90deg, transparent, var(--color-accent-bright), transparent); transform: translateX(calc(var(--pointer-x, 0px) - 48px)); opacity: 0; transition: opacity 240ms; pointer-events: none; }
+.preview-depth { position: relative; perspective: 1800px; }
+.preview-depth::after { content: ''; position: absolute; z-index: -1; inset: 20px 12px -8px; border: 1px solid rgb(66 213 244 / 12%); border-radius: var(--radius-hero); background: var(--color-surface); box-shadow: 0 24px 70px rgb(0 0 0 / 35%); pointer-events: none; }
+.magnetic-button { position: relative; overflow: hidden; isolation: isolate; }
+.magnetic-label { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: var(--space-3); transition: transform 280ms var(--ease-out); }
+.button-sheen { position: absolute; top: 0; left: 0; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgb(255 255 255 / 25%), transparent 68%); opacity: 0; pointer-events: none; transform: translate3d(calc(var(--pointer-x, 0px) - 60px), calc(var(--pointer-y, 0px) - 60px), 0); transition: opacity 180ms; }
+.button:active:not(:disabled) { transform: translateY(1px) scale(.985); }
+.inspector-tabs button:active { opacity: .8; }
+.primary-navigation > a:not(.button):not([aria-current]):hover::after { transform: scaleX(.6); }
+.scroll-reveal { opacity: 1; }
+.scroll-reveal.is-revealing { animation: scroll-reveal 600ms var(--ease-out) both; }
+.capability-frame:nth-child(2).is-revealing { animation-delay: 70ms; }
+.capability-frame:nth-child(3).is-revealing { animation-delay: 140ms; }
+.capability-frame:nth-child(4).is-revealing { animation-delay: 210ms; }
+@keyframes scroll-reveal { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes atmosphere-drift { from { transform: translate3d(0, 0, 0); opacity: .55; } to { transform: translate3d(-16px, 12px, 0); opacity: .95; } }
+@keyframes star-light { from { opacity: .15; } to { opacity: .6; } }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .space-hero[data-pointer-active='true'] .hero-light, .capability-frame[data-pointer-active='true'] .reactive-light, .capability-frame[data-pointer-active='true'] .card-rim-light, .magnetic-button[data-pointer-active='true'] .button-sheen { opacity: 1; }
+  .hero-art-plane { transform: translate3d(var(--parallax-x, 0px), var(--parallax-y, 0px), 0) scale(1.025); }
+  .space-hero[data-pointer-active='true'] .hero-art-plane { transition-duration: 180ms; }
+  .capability-frame[data-pointer-active='true'] .capability-card { transform: translateY(-3px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); }
+  .capability-frame[data-pointer-active='true'] .capability-card { transition-duration: 180ms; }
+  .magnetic-button[data-pointer-active='true'] .magnetic-label { transform: translate3d(var(--magnet-x, 0px), var(--magnet-y, 0px), 0); transition-duration: 160ms; }
+  .dashboard-preview .workbench-shell--preview { transform: rotateX(.6deg); transform-origin: center top; }
+}
+@media (hover: none), (pointer: coarse) {
+  .reactive-light, .card-rim-light, .button-sheen { display: none; }
+  .capability-card:hover { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reactive-light, .card-rim-light, .button-sheen { display: none; }
+  .hero-art-plane, .magnetic-label, .capability-card:hover, .capability-card:focus-within, .button:hover, .button:active:not(:disabled), .text-link:hover .icon { transform: none; }
+  .hero-atmosphere, .hero-stars i, .scroll-reveal.is-revealing { animation: none; }
+}
