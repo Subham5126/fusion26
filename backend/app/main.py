@@ -4,10 +4,14 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException
 
-from app.api.health import router
+from app.api.health import router as health_router
+from app.api.analyze import router as analyze_router
+from app.api.jobs import router as jobs_router
 
 app = FastAPI(title="OrbitTrace bootstrap", version="0.1.0")
-app.include_router(router)
+app.include_router(health_router)
+app.include_router(analyze_router)
+app.include_router(jobs_router)
 
 
 @app.exception_handler(HTTPException)
