@@ -65,7 +65,7 @@ def test_retry_config_is_bounded(config):
         register_sequence(create_registration_fixture().frames, config)
 
 
-@pytest.mark.parametrize('sequence_id', ['138', '1003'])
+@pytest.mark.parametrize('sequence_id', ['3', '138', '1003'])
 def test_requested_real_sequences_are_consumed_by_actual_pipeline(sequence_id):
     folder = Path(__file__).resolve().parents[2] / 'data/raw/SpotGEOv2/test' / sequence_id
     if not folder.is_dir():
@@ -83,3 +83,53 @@ def test_requested_real_sequences_are_consumed_by_actual_pipeline(sequence_id):
         recovered = diagnostics['registration']['frames'][4]
         assert recovered['seed_frame_index'] == 3 and recovered['validation_inliers'] >= 4
         assert recovered['validation_rmse_px'] <= .8
+    if sequence_id == '3':
+        assert register_sequence(frames, {'neighbor_retry':0}).status == 'failed'
+        recovered = diagnostics['registration']['frames'][4]
+        assert recovered['flow_window_px'] == 17
+        assert recovered['fit_inliers'] >= 12 and recovered['validation_inliers'] >= 4
+        assert recovered['validation_rmse_px'] <= .8
+        np.testing.assert_allclose(np.asarray(recovered['raw_to_reference'])[:2, 2],
+                                   [178.8, -69.6], atol=1.)
+
+
+@pytest.mark.parametrize('retry_failure, expected_status', [
+    ('weak_translation_consensus', 'estimated'),
+    ('validation_residual_or_support_failed', 'failed'),
+])
+def test_smaller_window_retries_fit_support_but_not_reserved_validation(
+        monkeypatch, retry_failure, expected_status):
+    import astrotrace.preprocessing.registration as module
+    original = module._match_translation
+    original_phase = cv2.phaseCorrelate
+    phase_calls = 0
+    windows = []
+
+    def wrong_last_seed(*args, **kwargs):
+        nonlocal phase_calls
+        phase_calls += 1
+        return ((190., 0.), .5) if phase_calls == 4 else original_phase(*args, **kwargs)
+
+    def fail_reserved_points(*args, **kwargs):
+        window = args[7] if len(args) > 7 else 25
+        windows.append(window)
+        diagnostic = original(*args, **kwargs)
+        if window == 21:
+            diagnostic.update(status='failed', raw_to_reference=None, reference_to_raw=None,
+                              warnings=(retry_failure,))
+        return diagnostic
+
+    monkeypatch.setattr(cv2, 'phaseCorrelate', wrong_last_seed)
+    monkeypatch.setattr(module, '_match_translation', fail_reserved_points)
+    result = register_sequence(create_registration_fixture().frames)
+    assert result.status == expected_status
+    assert 21 in windows
+    assert (17 in windows) == (expected_status == 'estimated')
+    assert result.frames[3].status == 'estimated'
+    recovered = result.frames[4]
+    if expected_status == 'estimated':
+        assert recovered.flow_window_px == 17
+        np.testing.assert_allclose(np.asarray(recovered.raw_to_reference)[:2, 2],
+            -create_registration_fixture().camera_shifts_xy[4], atol=.12)
+    else:
+        assert recovered.raw_to_reference is None

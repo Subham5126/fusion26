@@ -314,11 +314,23 @@ def register_sequence(frames: Sequence[np.ndarray], config=None) -> SequenceRegi
                         if np.linalg.norm(total_shift) <= config.max_shift_px:
                             retry = _match_translation(reference, view, moving_view, -total_shift,
                                 width, height, config, config.retry_flow_window_px)
+                            # A smaller flow neighborhood can retain thin streak
+                            # correspondences lost by the 21px retry. Try it only
+                            # for insufficient FIT support, never to search for
+                            # a transform that passes reserved validation points.
+                            # Keep the original feature partition and all gates.
+                            if (config.retry_flow_window_px > 17
+                                    and retry['warnings'] == ('weak_translation_consensus',)):
+                                retry = _match_translation(reference, view, moving_view, -total_shift,
+                                    width, height, config, 17)
+                                retry_window = 17
+                            else:
+                                retry_window = config.retry_flow_window_px
                             if retry['status'] == 'estimated':
                                 diagnostic.update(retry,
                                     initialization='verified_neighbor_seed_direct_fit',
                                     seed_frame_index=anchor.frame_index,
-                                    flow_window_px=config.retry_flow_window_px,
+                                    flow_window_px=retry_window,
                                     direct_failure_reasons=tuple(reasons))
                                 reasons = []
         diagnostic.update(warnings=tuple(reasons), runtime_ms=prep_ms+(perf_counter()-started)*1000)
