@@ -1,0 +1,12 @@
+{
+  "asset": "orbittrace-space.webp",
+  "origin": "Original artwork generated with OpenAI image_gen built-in tool",
+  "date": "2026-10-09",
+  "purpose": "Decorative landing-page Earth and satellite illustration; not observation data",
+  "source_sha256": "33dc5c22232f73da59dbb6c73754117ab8fe52f3353c66c4483c7e24865fcee0",
+  "asset_sha256": "d5ca543085cf67ea76a802be8379c9c6163870ab1427cdaea6a760de8d12a262",
+  "processing": "WebP encoding only; original composition and dimensions retained",
+  "reference": "User-supplied frontpage.webp used as art-direction inspiration, not copied or included",
+  "external_assets": "None downloaded",
+  "icons": "Locally authored SVG line icons and orbital brand mark"
+}
