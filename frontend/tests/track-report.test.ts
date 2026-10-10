@@ -11,6 +11,7 @@ import { WorkbenchShell } from '../src/components/workbench/WorkbenchShell';
 import { buildPdfReport } from '../src/viewer/pdfReport';
 import { TrackPathDetail } from '../src/components/workbench/TrackPathDetail';
 import { reviewTracks, reviewOverlay, isSupportedTrack } from '../src/viewer/resultReview';
+import { candidateAssessment } from '../src/viewer/candidateAssessment';
 
 const frames: LocalFrame[] = Array.from({ length: 5 }, (_, index) => ({ id: String(index), file: new File(['test'], `frame-${index}.png`),
   url: 'blob:private-preview', width_px: 640, height_px: 480, timestamp_s: null,
@@ -19,6 +20,36 @@ const manifest: SequenceInput = { schema_version: '0.1.0', sequence_id: fixture.
   frames: frames.map((frame, frame_index) => ({ frame_index, image_ref: frame.file.name, width_px: 640, height_px: 480, timestamp_s: null })),
   dataset_id: null, dataset_version: null, input_sha256: null };
 const result = () => structuredClone(fixture) as AnalysisResult;
+
+test('optional AI assessment requires matching provenance, finite scores and actual candidate ownership', () => {
+  const input=result(), d=input.detections[0];
+  const diagnostic={sequence:manifest,candidate_assessment:{status:'experimental',model_name:'candidate-logistic-v1',
+    candidates:[{detection_id:d.detection_id,frame_index:d.frame_index,score:.62}]}};
+  assert.equal(candidateAssessment(input,diagnostic).candidates[0].category,'medium');
+  assert.equal(candidateAssessment(input,{...diagnostic,sequence:{...manifest,sequence_id:'stale'}}).status,'unavailable');
+  for (const score of [NaN,Infinity,-1,1.01]) {
+    diagnostic.candidate_assessment.candidates[0].score=score;
+    assert.equal(candidateAssessment(input,diagnostic).status,'unavailable');
+  }
+  diagnostic.candidate_assessment.candidates[0].score=.8;
+  diagnostic.candidate_assessment.candidates[0].frame_index=999;
+  assert.equal(candidateAssessment(input,diagnostic).status,'unavailable');
+});
+
+test('report retains missing frame indices and detection boxes without changing shared result',()=>{
+  const input=result(), track=input.tracks[0];
+  const report=buildTrackReport(input,manifest,frames,track.track_id);
+  assert.deepEqual(report.selected_track!.missing_observation_frames,[3,4]);
+  assert.deepEqual(report.selected_track!.detections[0].bbox_raw_px,input.detections[0].bbox_raw_px);
+  assert.equal(report.candidate_assessment.status,'unavailable');
+  assert.equal(report.analysis_result,input);
+});
+
+test('stationary repeat detections are not presented as supported moving tracks',()=>{
+  const track=result().tracks[0];track.quality_score=1;
+  track.points=track.points.map(p=>({...p,x_reference_px:15,y_reference_px:15}));
+  assert.equal(isSupportedTrack(track),false);
+});
 
 test('report preserves backend result, exact raw/reference positions, upload metadata and null timestamps', () => {
   const input = result(), before = structuredClone(input);

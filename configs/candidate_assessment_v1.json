@@ -1,0 +1,72 @@
+{
+  "version": "candidate-logistic-v1",
+  "features": [
+    "peak_snr_heuristic",
+    "area_px",
+    "elongation",
+    "aperture_snr_heuristic",
+    "raw_peak_fraction",
+    "context_elongation",
+    "context_area_px",
+    "component_aspect",
+    "local_noise_normalized",
+    "local_contrast_normalized"
+  ],
+  "detector_name": "opencv_context_filtered_v2",
+  "detector_config": {
+    "denoise_sigma": 0.6,
+    "background_sigma": 8.0,
+    "noise_sigma": 12.0,
+    "threshold_sigma": 4.5,
+    "min_area_px": 3,
+    "max_area_px": 150,
+    "max_elongation": 2.5,
+    "max_candidates": 200,
+    "background_step": 1,
+    "min_aperture_snr": 4.0,
+    "max_peak_fraction": 0.45,
+    "max_context_elongation": 2.0,
+    "max_component_aspect": 20.0,
+    "min_score": 0.3
+  },
+  "training_source": "ESA spotGEO v2 point annotations; candidate match within 5 raw pixels",
+  "status": "experimental; uncalibrated; no automated filtering",
+  "mean": [
+    2.3926515405677224,
+    2.0902016183046745,
+    0.8580603063981477,
+    2.654986103724917,
+    0.18680115532398672,
+    0.8931464415028925,
+    2.5728556728970586,
+    0.7790734076965933,
+    0.010121475457201521,
+    0.08855092350425595
+  ],
+  "scale": [
+    0.5838917274733073,
+    0.6430796167201789,
+    0.1061864444037129,
+    0.7570929597399831,
+    0.03945949155261631,
+    0.11082334332021476,
+    0.7240353800611896,
+    0.11508145497199648,
+    0.01521919333786011,
+    0.08778652139222576
+  ],
+  "coef": [
+    0.491628123940671,
+    -0.03217233995263821,
+    -0.6364550247438732,
+    -0.13646574865580535,
+    0.8089386541980023,
+    -0.5783432979124589,
+    0.7447420972207479,
+    0.001154462483741885,
+    -0.16764998419437516,
+    -0.25075637580590127
+  ],
+  "intercept": -0.5056861794179979,
+  "review_threshold": 0.2
+}

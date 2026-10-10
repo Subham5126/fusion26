@@ -54,6 +54,18 @@ test('demo uses the verified bodyless POST, exact HTTP 202 envelope and caller a
   }, async () => { assert.deepEqual(await runSyntheticDemo(signal), { job_id: acceptedId, status: 'queued' }); });
 });
 
+test('selected synthetic preset reaches the backend while remaining bodyless', async () => {
+  await usingFetch(async (url, options) => {
+    assert.equal(url, '/api/analyze/demo?preset=3');
+    assert.equal(options?.method, 'POST'); assert.equal(options?.body, undefined);
+    return json({ job_id: acceptedId, status: 'queued' }, 202);
+  }, async () => { await runSyntheticDemo(undefined, '3'); });
+  let selected: unknown;
+  const h = serviceHarness({ submit: async (_signal, preset) => { selected=preset; return { job_id:acceptedId,status:'queued' }; } });
+  await h.controller.start(undefined,undefined,'standard','4');
+  assert.equal(selected,'4'); assert.equal(h.latest().phase,'succeeded'); h.controller.dispose();
+});
+
 test('submission rejects missing, malformed, extra or nonqueued fields and unexpected success status', async () => {
   for (const response of [{ status: 'queued' }, { job_id: '../other', status: 'queued' }, { job_id: '', status: 'queued' },
     { job_id: acceptedId, status: 'running' }, { job_id: acceptedId, status: 'queued', sequence: {} }]) {

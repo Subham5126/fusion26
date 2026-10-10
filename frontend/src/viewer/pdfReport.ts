@@ -44,6 +44,8 @@ export function buildPdfReport(report: Report): Uint8Array<ArrayBuffer> {
   paragraph(`Sequence: ${report.source.sequence_id}`);
   paragraph(`Generated: ${report.generated_at} | Source: ${report.source.source_type}`);
   paragraph(`${report.source.frame_count} frames | ${report.counts.detections} detections | ${report.counts.tracks} tracks | ${report.counts.observations} actual observations`);
+  paragraph(`Detections by frame: ${report.detection_summary.per_frame.map(f => `${f.frame_index + 1}: ${f.count}`).join('; ')}.`);
+  paragraph(`Association confirmed: ${report.detection_summary.association_confirmed}; tentative: ${report.detection_summary.tentative}; ended: ${report.detection_summary.ended}. Supported motion tracks: ${report.detection_summary.supported_motion_tracks}; uncertain candidate tracks: ${report.detection_summary.uncertain_candidate_tracks}. These do not establish identity.`);
   heading('Uploaded frames');
   for (const frame of report.source.frames) paragraph(`Frame ${frame.frame_index + 1}: ${frame.filename} | ${frame.width_px} x ${frame.height_px} px | timestamp: ${frame.timestamp_s ?? 'unknown'}`);
   const track = report.selected_track;
@@ -60,10 +62,20 @@ export function buildPdfReport(report: Report): Uint8Array<ArrayBuffer> {
     heading('Observed coordinates');
     paragraph('Frame | reference x, y (px) | raw x, y (px) | timestamp (s)');
     for (const point of track.observations) paragraph(`${point.frame_index + 1} | ${number(point.x_reference_px)}, ${number(point.y_reference_px)} | ${number(point.x_raw_px)}, ${number(point.y_raw_px)} | ${number(point.timestamp_s)}`);
+    paragraph(`Missing observations (one-based frames): ${track.missing_observation_frames.map(i => i + 1).join(', ') || 'none'}. No invented points.`);
+    heading('Linked detections');
+    for (const d of track.detections) paragraph(`Frame ${d.frame_index + 1} | ${d.detector_name} | raw box [${d.bbox_raw_px.map(v => number(v)).join(', ')}] | heuristic ${number(d.quality_score)}. Upper box limits exclusive.`);
     heading('Predicted coordinates (not observations)');
+    paragraph(`Model: ${track.prediction_model ?? 'unavailable'}. Prediction uncertainty: unavailable. The viewer shows at most the next frame; this report retains all backend forecasts.`);
     if (!track.predictions.length) paragraph('No backend forecasts available for this track.');
     for (const point of track.predictions) paragraph(`Frame ${point.frame_index + 1} | ${number(point.x_reference_px)}, ${number(point.y_reference_px)} px | out of field: ${point.out_of_field ?? 'unknown'}`);
   } else paragraph('No selected track. Empty completed results have no invented confidence or forecasts.');
+  heading('AI candidate assessment');
+  paragraph(`${report.candidate_assessment.status} | ${report.candidate_assessment.model_name ?? 'No compatible model enabled'}`);
+  paragraph(report.candidate_assessment.interpretation);
+  for (const score of report.candidate_assessment.candidates.filter(s => track?.detections.some(d => d.detection_id === s.detection_id)))
+    paragraph(`Frame ${score.frame_index + 1} | ${score.detection_id} | ML score ${number(score.score)} (${score.category}).`);
+  if (report.original_candidates_before_motion_mode.length) paragraph(`${report.original_candidates_before_motion_mode.length} original Standard candidates retained in Report JSON for comparison with experimental Motion mode.`);
   heading('Analysis warnings and limitations');
   for (const warning of [...report.analysis_result.warnings, ...report.analysis_result.registration.warnings,
     ...(track ? report.analysis_result.tracks.find(item => item.track_id === track.track_id)?.warnings ?? [] : []), ...report.limitations]) paragraph(warning);

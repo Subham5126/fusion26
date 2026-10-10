@@ -127,9 +127,10 @@ test('forecasts use only returned future points and are never counted as observa
   const html = renderToStaticMarkup(createElement(ScientificOverlay, { model, scale: 4, selected: 'fixture-track-1', select: () => {}, visibility: { detections: true, tracks: true, predictions: true } }));
   assert.match(html, /stroke-dasharray="1.25 1"/); assert.match(html, /class="predicted-point"[^>]*fill="none"/); assert.match(html, /data-observed-frame/); assert.match(html, /not observed/);
 });
-test('missing observations are not interpolated into a solid observed track', () => {
+test('available observations connect across a missed frame without inventing an observation', () => {
   const payload = result(); payload.tracks[0].points.splice(1, 1); payload.tracks[0].observed_count = 2;
-  const model = scientificOverlay(payload, frame(2)); assert.equal(model.tracks[0].observed.length, 2); assert.equal(model.tracks[0].segments.length, 0);
+  const model = scientificOverlay(payload, frame(2)); assert.equal(model.tracks[0].observed.length, 2); assert.equal(model.tracks[0].segments.length, 1);
+  assert.deepEqual(model.tracks[0].observed.map(p=>p.frame),[0,2]);
 });
 test('empty frames keep honest empty detection sets while preserving actual history', () => {
   const model = scientificOverlay(result(), frame(4)); assert.equal(model.detections.length, 0); assert.equal(model.tracks[0].observed.length, 3);

@@ -1,6 +1,7 @@
 """Bounded defaults; planned algorithm thresholds are not validated constants."""
 from pathlib import Path
 from typing import Annotated
+from typing import Literal
 
 import yaml
 from pydantic import Field, model_validator
@@ -25,6 +26,7 @@ class UploadLimits(ContractModel):
 
 
 class PipelineConfig(ContractModel):
+    analysis_mode: Literal['standard', 'temporal'] = 'standard'
     profile: Profile = "synthetic_static_stars"
     threshold_sigma: Annotated[float, Field(gt=0, le=20, allow_inf_nan=False)] = 5.0
     candidate_cap: Annotated[int, Field(ge=1, le=1000)] = 200

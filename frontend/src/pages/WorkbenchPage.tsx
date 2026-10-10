@@ -22,11 +22,6 @@ export function WorkbenchPage({ initialDiagnosticsOpen = false }: { initialDiagn
       <span className="workbench-title-emblem" aria-hidden="true"><Icon name="scan" /></span>
       <div><h1>Mission Workbench</h1><p>Inspect frames and candidate evidence.</p></div>
     </div></div>} navigation={<nav className="workspace-section-navigation" aria-label="Workbench sections">
-      <button type="button" aria-label="Optical observations" onClick={() => document.getElementById('observations')?.scrollIntoView({ block: 'start' })}>
-        <Icon name="image" />
-        <span className="workspace-nav-full">Optical observations</span>
-        <span className="workspace-nav-compact">Observations</span>
-      </button>
       <button
         type="button"
         className={`workspace-readiness-toggle ${diagnosticsOpen ? 'is-active' : ''}`}

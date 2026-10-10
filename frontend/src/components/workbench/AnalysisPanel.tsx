@@ -99,7 +99,7 @@ export function AnalysisPanel() {
   return <section id="synthetic-analysis" className="workbench-shell analysis-panel" aria-labelledby={`${id}-heading`} data-source="synthetic">
     <header className="workbench-topbar"><div className="workbench-heading"><span className="workspace-emblem"><Icon name="activity" /></span>
       <div><h2 id={`${id}-heading`}>Synthetic Analysis <span className="simulation-badge">Simulated source</span></h2><p>Backend-generated sequence <span>/</span> Separate from your observations</p></div></div>
-      <div className="analysis-actions"><button type="button" className="button button--primary button--small" disabled={busy} onClick={run}><Icon name="scan" />Run Synthetic Demo</button>
+      <div className="analysis-actions"><button type="button" className="button button--primary button--small" disabled={busy} onClick={() => run()}><Icon name="scan" />Run Synthetic Demo</button>
         {busy && <button type="button" className="button button--quiet button--small" onClick={cancel}>Stop monitoring</button>}</div>
     </header>
     <div className="analysis-status" role={state.phase === 'failed' ? 'alert' : 'status'} aria-live="polite" aria-atomic="true">

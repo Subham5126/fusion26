@@ -1,6 +1,7 @@
 import type { AnalysisResult, HealthResponse, JobState, SequenceInput } from '../types/contracts';
 import { parseAnalysisResult, parseDemoSubmission, parseHealthResponse, parseJobId, parseJobState } from './responseValidation';
 import { postDemoJson, requestJson, requestFrameBlob, throwHttpError } from './transport';
+import type { DemoPreset } from './transport';
 import { parseJobManifest } from './frameManifest';
 import type { JobManifest } from './frameManifest';
 import { apiUrl } from './baseUrl';
@@ -9,8 +10,8 @@ export async function getHealth(signal?: AbortSignal): Promise<HealthResponse> {
   return parseHealthResponse(await requestJson('/api/health', signal));
 }
 
-export async function runSyntheticDemo(signal?: AbortSignal) {
-  return parseDemoSubmission(await postDemoJson(signal));
+export async function runSyntheticDemo(signal?: AbortSignal, preset?: DemoPreset) {
+  return parseDemoSubmission(await postDemoJson(signal, preset));
 }
 
 export async function getJob(jobId: string, signal?: AbortSignal): Promise<JobState> {
@@ -28,9 +29,10 @@ export async function getJobManifest(jobId: string, signal?: AbortSignal): Promi
   return parseJobManifest(await requestJson(`/api/jobs/${id}/manifest`, signal), id);
 }
 
-export async function runUpload(sequence: SequenceInput, files: File[], signal?: AbortSignal) {
+export async function runUpload(sequence: SequenceInput, files: File[], signal?: AbortSignal, mode: 'standard' | 'temporal' = 'standard') {
   const body = new FormData();
   body.append('manifest', JSON.stringify(sequence));
+  body.append('analysis_mode', mode);
   for (const file of files) body.append('files', file, file.name);
   const response = await fetch(apiUrl('/api/analyze/upload'), { method: 'POST', body, signal });
   if (!response.ok) await throwHttpError(response, signal);

@@ -6,6 +6,7 @@ import type { Point } from './geometry';
 
 export interface OverlayDetection { id: string; center: Point; box: { x: number; y: number; width: number; height: number }; trackId?: string }
 export interface OverlayTrack { id: string; observed: (Point & { frame: number })[]; segments: Point[][];
+  estimated?: (Point & { frame: number })[];
   predictions: (Point & { frame: number })[]; forecast: Point[] }
 export interface ScientificOverlayModel { detections: OverlayDetection[]; tracks: OverlayTrack[]; warnings: string[] }
 
@@ -50,7 +51,7 @@ export function scientificOverlay(result: AnalysisResult, frame: DemoFrame): Sci
     });
     if (!safe) { warnings.push(`Track ${track.track_id}: observation coordinates do not match detections; track overlay suppressed.`); return { id: track.track_id, observed: [], segments: [], predictions: [], forecast: [] }; }
     const observed = observedAll.filter(point => point.frame_index <= frame.frame_index).map(point => ({ ...position(point), frame: point.frame_index }));
-    const segments = observed.flatMap((point, index) => index && point.frame === observed[index - 1].frame + 1 ? [[observed[index - 1], point]] : []);
+    const segments = observed.flatMap((point, index) => index ? [[observed[index - 1], point]] : []);
     const last = observedAll.at(-1);
     const trajectory = track.trajectory;
     const predictions = last && frame.frame_index >= last.frame_index && trajectory?.coordinate_frame === 'raw_pixels'

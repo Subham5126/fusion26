@@ -12,6 +12,7 @@ from app.schemas.result import AnalysisResult
 from app.schemas.sequence import SequenceInput
 from orbittrace.pipeline import analyze
 from orbittrace.cv_tracking import TelescopeAnalysisError
+from app.services.candidate_assessment import assess_result
 
 
 class JobManager:
@@ -106,6 +107,7 @@ class JobManager:
             )
             # Override job_id in result to match the API assigned one
             result.job_id = job_id
+            self.diagnostics[job_id]['candidate_assessment'] = assess_result(result, self.diagnostics[job_id])
             self.results[job_id] = result
             job.status = "succeeded"
             job.progress_stage = "completed"

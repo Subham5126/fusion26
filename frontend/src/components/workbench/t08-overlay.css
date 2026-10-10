@@ -26,3 +26,13 @@
 .track-path-detail p { font-size: 11px; line-height: 1.5; color: #a6bdc6; margin: 8px 0; }
 .track-path-detail svg { display: block; width: 100%; height: 180px; }
 .track-path-detail polyline { stroke-linejoin: round; stroke-linecap: round; }
+.t08-detection:not(.is-selected) .t08-box-label { opacity: 0; transition: opacity 150ms; }
+.t08-detection:hover .t08-box-label, .t08-detection:focus-within .t08-box-label { opacity: 1; }
+.analysis-mode-control { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 24px; font-size: 12px; }
+.analysis-mode-control select { max-width: 100%; padding: 9px; color: #dffbf3; background: #0a2429; border: 1px solid #2c6465; border-radius: 8px; }
+.track-confidence-bar span { transition: width 250ms ease; }
+.local-sequence-notice { padding: 8px 24px; font-size: 12px; line-height: 1.6; }
+.local-workbench > .analysis-note { margin: 10px 24px; }
+@media (prefers-reduced-motion: reduce) {
+  .track-confidence-bar span, .t08-detection .t08-box-label { transition: none; }
+}

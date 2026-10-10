@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createAnalysisJobController } from '../state/analysisJob';
 import type { AnalysisState } from '../state/analysis';
 import type { SequenceInput } from '../types/contracts';
+import type { DemoPreset } from '../api/transport';
 
 export function useAnalysisJob() {
   const [state, setState] = useState<AnalysisState>({ phase: 'idle' });
@@ -12,9 +13,9 @@ export function useAnalysisJob() {
   }, []);
   return {
     state,
-    run: useCallback(() => { void controller.current?.start(); }, []),
+    run: useCallback((preset?: DemoPreset) => { void controller.current?.start(undefined, undefined, 'standard', preset); }, []),
     cancel: useCallback(() => controller.current?.cancel(), []),
     reset: useCallback(() => controller.current?.reset(), []),
-    upload: useCallback((sequence: SequenceInput, files: File[]) => { void controller.current?.start(sequence, files); }, []),
+    upload: useCallback((sequence: SequenceInput, files: File[], mode: 'standard' | 'temporal' = 'standard') => { void controller.current?.start(sequence, files, mode); }, []),
   };
 }

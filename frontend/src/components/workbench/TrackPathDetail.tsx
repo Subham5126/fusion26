@@ -7,10 +7,11 @@ export function TrackPathDetail({ track, frameIndex, coordinateFrame, visibility
   visibility: { tracks: boolean; predictions: boolean };
 }) {
   const evidence = trackEvidence(track), colors = trackColors(track.track_id);
-  const observed = evidence.observations.filter(point => point.frame_index <= frameIndex);
+  const observed = evidence.observations.filter(point => point.frame_index <= frameIndex).map(point => coordinateFrame === 'per_frame_raw_pixels'
+    ? { ...point, x_reference_px: point.x_raw_px!, y_reference_px: point.y_raw_px! } : point);
   const last = evidence.observations.at(-1);
   const predicted = track.trajectory?.coordinate_frame === coordinateFrame ? evidence.predictions : [];
-  const all = [...evidence.observations, ...predicted];
+  const all = [...observed, ...(last && frameIndex >= last.frame_index ? predicted.filter(p=>p.frame_index<=frameIndex+1) : [])];
   if (!all.length) return null;
   const xs = all.map(point => point.x_reference_px), ys = all.map(point => point.y_reference_px);
   const left = Math.min(...xs), top = Math.min(...ys), span = Math.max(Math.max(...xs) - left, Math.max(...ys) - top, 1);
@@ -34,6 +35,6 @@ export function TrackPathDetail({ track, frameIndex, coordinateFrame, visibility
         {visiblePredictions.map(point => <circle key={point.frame_index} cx={point.x_reference_px} cy={point.y_reference_px} r={unit * 3.5} strokeWidth={unit * 1.5} />)}
       </g>}
     </svg>
-    <p>{observed.length} observed positions through frame {frameIndex + 1}. Net displacement: {evidence.displacement ? `${Math.hypot(evidence.displacement.x_px, evidence.displacement.y_px).toFixed(3)} px over the full track` : 'insufficient observations'}.</p>
+    <p>{observed.length} observed positions through frame {frameIndex + 1}. Net displacement: {observed.length > 1 ? `${Math.hypot(observed.at(-1)!.x_reference_px-observed[0].x_reference_px, observed.at(-1)!.y_reference_px-observed[0].y_reference_px).toFixed(3)} px through the current frame` : 'insufficient observations'}.</p>
   </section>;
 }

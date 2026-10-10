@@ -1,11 +1,16 @@
 import type { AnalysisResult, SequenceInput, Track } from '../types/contracts';
 import type { LocalFrame } from './localSequence';
+import { candidateAssessment, originalCandidates } from './candidateAssessment';
+import { isSupportedTrack } from './resultReview';
 
-export function trackEvidence(track: Track) {
+export function trackEvidence(track: Track, history: 'registered' | 'original' = 'registered') {
   const observations = track.points.filter(point => point.point_type === 'observed').sort((a, b) => a.frame_index - b.frame_index);
   const first = observations[0], last = observations.at(-1);
   const displacement = first && last && observations.length > 1
-    ? { x_px: last.x_reference_px - first.x_reference_px, y_px: last.y_reference_px - first.y_reference_px } : null;
+    ? history === 'original'
+      ? first.x_raw_px !== null && last.x_raw_px !== null && first.y_raw_px !== null && last.y_raw_px !== null
+        ? { x_px:last.x_raw_px-first.x_raw_px, y_px:last.y_raw_px-first.y_raw_px } : null
+      : { x_px: last.x_reference_px - first.x_reference_px, y_px: last.y_reference_px - first.y_reference_px } : null;
   const directions = ['right', 'lower right', 'down', 'lower left', 'left', 'upper left', 'up', 'upper right'];
   const direction = !displacement ? 'Insufficient observations'
     : Math.hypot(displacement.x_px, displacement.y_px) < 1e-6 ? 'No net displacement'
@@ -18,23 +23,37 @@ export function trackEvidence(track: Track) {
 
 // A separate report envelope: the shared AnalysisResult 0.1.0 is preserved verbatim.
 // Reference positions are deliberately not relabeled as displayed raw pixels.
-export function buildTrackReport(result: AnalysisResult, manifest: SequenceInput, frames: LocalFrame[], selected: string | null) {
+export function buildTrackReport(result: AnalysisResult, manifest: SequenceInput, frames: LocalFrame[], selected: string | null, diagnostics: unknown = null) {
   if (manifest.sequence_id !== result.sequence_id || frames.length !== manifest.frames.length) throw new Error('Report sequence does not match the analysis.');
   const track = selected ? result.tracks.find(item => item.track_id === selected) : undefined;
   if (selected && !track) throw new Error('Selected track is absent from this analysis.');
   const evidence = track ? trackEvidence(track) : null;
   return {
-    report_version: '1.0', generated_at: new Date().toISOString(),
+    report_version: '1.1', generated_at: new Date().toISOString(),
+    candidate_assessment: candidateAssessment(result, diagnostics),
+    original_candidates_before_motion_mode: originalCandidates(result, diagnostics),
     source: { source_type: result.source_type, sequence_id: result.sequence_id, job_id: result.job_id,
       frame_count: frames.length, frames: frames.map((frame, index) => ({ frame_index: index, filename: frame.file.name,
         width_px: frame.width_px, height_px: frame.height_px, timestamp_s: manifest.frames[index].timestamp_s })) },
     counts: { detections: result.detections.length, tracks: result.tracks.length,
       observations: result.tracks.reduce((count, item) => count + item.points.filter(point => point.point_type === 'observed').length, 0) },
+    detection_summary: {
+      per_frame: manifest.frames.map(frame => ({ frame_index: frame.frame_index,
+        count: result.detections.filter(d => d.frame_index === frame.frame_index).length })),
+      association_confirmed: result.tracks.filter(t => t.status === 'confirmed').length,
+      tentative: result.tracks.filter(t => t.status === 'tentative').length,
+      ended: result.tracks.filter(t => t.status === 'ended').length,
+      supported_motion_tracks: result.tracks.filter(isSupportedTrack).length,
+      uncertain_candidate_tracks: result.tracks.filter(t => !isSupportedTrack(t)).length,
+    },
     selected_track: track && evidence ? { track_id: track.track_id, status: track.status,
       heuristic_quality: track.quality_score, quality_band: evidence.qualityBand,
       observed_count: evidence.observations.length, linked_detection_count: evidence.observations.filter(point => point.detection_id !== null).length,
+      missing_observation_frames: manifest.frames.filter(frame => !evidence.observations.some(p => p.frame_index === frame.frame_index)).map(frame => frame.frame_index),
+      detections: result.detections.filter(d => evidence.observations.some(p => p.detection_id === d.detection_id)),
       observed_coordinate_frame: result.coordinate_frame, raw_coordinate_frame: 'per_frame_raw_pixels',
       predicted_coordinate_frame: track.trajectory?.coordinate_frame ?? null, units: 'px',
+      prediction_model: track.trajectory?.model ?? null, prediction_uncertainty: null,
       observations: evidence.observations, predictions: evidence.predictions,
       displacement: evidence.displacement, direction: evidence.direction,
       summary: `${track.track_id}: ${evidence.observations.length} observed positions across frames ${evidence.observations.map(point => point.frame_index + 1).join(', ')}. `
@@ -42,6 +61,8 @@ export function buildTrackReport(result: AnalysisResult, manifest: SequenceInput
         + `${evidence.predictions.length} future positions supplied by the backend; predictions are not observations.` } : null,
     limitations: ['Quality is a heuristic support score, not a calibrated probability of debris identity.',
       'Motion is in image-plane pixels; no physical orbit or speed is established.',
+      'Unknown timestamps and absent image calibration prevent physical-speed estimates.',
+      'False positives and missed detections remain possible. Predictions are conditional model estimates; uncertainty is unavailable.',
       'Frame indices in data are zero-based. Summary frame numbers are one-based. Missing observations are not filled in.'],
     analysis_result: result,
   };

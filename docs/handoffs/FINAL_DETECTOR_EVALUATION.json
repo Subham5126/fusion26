@@ -1,0 +1,1964 @@
+{
+  "rows": [
+    {
+      "name": "01_single_bright",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 3,
+            "fp": 594,
+            "fn": 2,
+            "precision": 0.005025125628140704,
+            "recall": 0.6,
+            "f1": 0.009966777408637873,
+            "localization_mean_px": 0.05309969852777053,
+            "localization_rmse_px": 0.05795874220087517,
+            "false_positives_per_frame": 118.8,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 444.62969998130575,
+          "timings_ms": {
+            "input_validation": 3.210199996829033,
+            "suitability": 91.89869998954237,
+            "detection": 202.903299999889,
+            "registration": 112.66540002543479,
+            "coordinate_bridge_and_tracking": 22.847099986393005,
+            "trajectory": 6.364300032146275
+          },
+          "detections": 597,
+          "confirmed_tracks": 120
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 5,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "localization_mean_px": 0.059009667678619634,
+            "localization_rmse_px": 0.06814653919197416,
+            "false_positives_per_frame": 0.0,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 583.4364999900572,
+          "timings_ms": {
+            "input_validation": 3.1830999650992453,
+            "suitability": 92.47459995094687,
+            "detection": 194.00740001583472,
+            "registration": 106.95460002170876,
+            "temporal_detection": 181.9398999796249,
+            "coordinate_bridge_and_tracking": 0.3350999904796481,
+            "trajectory": 0.07290003122761846
+          },
+          "detections": 5,
+          "confirmed_tracks": 1
+        }
+      }
+    },
+    {
+      "name": "02_single_faint",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 4,
+            "fp": 543,
+            "fn": 1,
+            "precision": 0.007312614259597806,
+            "recall": 0.8,
+            "f1": 0.014492753623188406,
+            "localization_mean_px": 0.3810355684053603,
+            "localization_rmse_px": 0.4337992580333635,
+            "false_positives_per_frame": 108.6,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 424.323600018397,
+          "timings_ms": {
+            "input_validation": 3.377899993211031,
+            "suitability": 91.81489999173209,
+            "detection": 196.72989996615797,
+            "registration": 104.11090002162382,
+            "coordinate_bridge_and_tracking": 19.22980003291741,
+            "trajectory": 4.585199989378452
+          },
+          "detections": 547,
+          "confirmed_tracks": 110
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 4,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.8,
+            "f1": 0.8888888888888888,
+            "localization_mean_px": 0.3210346187440841,
+            "localization_rmse_px": 0.34478338647482537,
+            "false_positives_per_frame": 0.0,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 577.1462999982759,
+          "timings_ms": {
+            "input_validation": 2.987799991387874,
+            "suitability": 89.40860000438988,
+            "detection": 193.02259996766225,
+            "registration": 106.57510004239157,
+            "temporal_detection": 180.4740999941714,
+            "coordinate_bridge_and_tracking": 0.30129996594041586,
+            "trajectory": 0.06940000457689166
+          },
+          "detections": 4,
+          "confirmed_tracks": 1
+        }
+      }
+    },
+    {
+      "name": "03_multiple_targets",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 14,
+            "fp": 534,
+            "fn": 0,
+            "precision": 0.025547445255474453,
+            "recall": 1.0,
+            "f1": 0.0498220640569395,
+            "localization_mean_px": 0.05999739369594677,
+            "localization_rmse_px": 0.06911028646413178,
+            "false_positives_per_frame": 106.8,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 428.0117000453174,
+          "timings_ms": {
+            "input_validation": 3.28770000487566,
+            "suitability": 94.1587999695912,
+            "detection": 191.72449997859076,
+            "registration": 109.6842999686487,
+            "coordinate_bridge_and_tracking": 19.870400021318346,
+            "trajectory": 4.523199982941151
+          },
+          "detections": 548,
+          "confirmed_tracks": 107
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 14,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "localization_mean_px": 0.0887064720247149,
+            "localization_rmse_px": 0.10224466738038954,
+            "false_positives_per_frame": 0.0,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 591.3465999765322,
+          "timings_ms": {
+            "input_validation": 3.413400030694902,
+            "suitability": 89.96850001858547,
+            "detection": 196.44870003685355,
+            "registration": 107.66340000554919,
+            "temporal_detection": 187.4952000216581,
+            "coordinate_bridge_and_tracking": 0.6880000000819564,
+            "trajectory": 0.166199984960258
+          },
+          "detections": 14,
+          "confirmed_tracks": 3
+        }
+      }
+    },
+    {
+      "name": "04_trails_and_artifacts",
+      "modes": {
+        "standard": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "1, 2, 4"
+            }
+          }
+        },
+        "temporal": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "1, 2, 4"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "05_negative_no_target",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 552,
+            "fn": 0,
+            "precision": 0.0,
+            "recall": null,
+            "f1": 0.0,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 110.4,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "recall": "zero denominator",
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 445.90140000218526,
+          "timings_ms": {
+            "input_validation": 3.0655000009573996,
+            "suitability": 93.8495000009425,
+            "detection": 198.11850000405684,
+            "registration": 109.42360002081841,
+            "coordinate_bridge_and_tracking": 32.71519998088479,
+            "trajectory": 4.399599973112345
+          },
+          "detections": 552,
+          "confirmed_tracks": 108
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 17,
+            "fn": 0,
+            "precision": 0.0,
+            "recall": null,
+            "f1": 0.0,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 3.4,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "recall": "zero denominator",
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 584.6880999743007,
+          "timings_ms": {
+            "input_validation": 3.354899992700666,
+            "suitability": 94.05140002490953,
+            "detection": 191.37830002000555,
+            "registration": 106.05140001280233,
+            "temporal_detection": 184.0492999763228,
+            "coordinate_bridge_and_tracking": 1.1608999921008945,
+            "trajectory": 0.05420000525191426
+          },
+          "detections": 17,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-704",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 11,
+            "fn": 0,
+            "precision": 0.0,
+            "recall": null,
+            "f1": 0.0,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 2.2,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "recall": "zero denominator",
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 300.0774999964051,
+          "timings_ms": {
+            "input_validation": 2.9895000043325126,
+            "suitability": 87.80010003829375,
+            "detection": 107.69189998973161,
+            "registration": 98.87559997150674,
+            "coordinate_bridge_and_tracking": 0.7941999938338995,
+            "trajectory": 0.09720004163682461
+          },
+          "detections": 11,
+          "confirmed_tracks": 1
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 118,
+            "fn": 0,
+            "precision": 0.0,
+            "recall": null,
+            "f1": 0.0,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 23.6,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "recall": "zero denominator",
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 643.2271999656223,
+          "timings_ms": {
+            "input_validation": 3.7221000529825687,
+            "suitability": 84.77770001627505,
+            "detection": 109.654399973806,
+            "registration": 99.13490002509207,
+            "temporal_detection": 334.9646999849938,
+            "coordinate_bridge_and_tracking": 8.659699989948422,
+            "trajectory": 0.3933999687433243
+          },
+          "detections": 118,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-695",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 6,
+            "fn": 0,
+            "precision": 0.0,
+            "recall": null,
+            "f1": 0.0,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 1.2,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "recall": "zero denominator",
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 287.4633999890648,
+          "timings_ms": {
+            "input_validation": 3.1305999727919698,
+            "suitability": 82.91959995403886,
+            "detection": 105.40659999242052,
+            "registration": 93.76780001912266,
+            "coordinate_bridge_and_tracking": 0.4813999985344708,
+            "trajectory": 0.01969997538253665
+          },
+          "detections": 6,
+          "confirmed_tracks": 0
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 0.0,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "precision": "zero denominator",
+              "recall": "zero denominator",
+              "f1": "zero denominator",
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 455.5199000169523,
+          "timings_ms": {
+            "input_validation": 3.1239999807439744,
+            "suitability": 82.3569999774918,
+            "detection": 103.72369998367503,
+            "registration": 92.20930002629757,
+            "temporal_detection": 172.26829996798187,
+            "coordinate_bridge_and_tracking": 0.024100008886307478,
+            "trajectory": 0.001400010660290718
+          },
+          "detections": 0,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-1908",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.0,
+            "recall": null,
+            "f1": 0.0,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 0.4,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "recall": "zero denominator",
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 286.3033000030555,
+          "timings_ms": {
+            "input_validation": 3.186299989465624,
+            "suitability": 84.52119998401031,
+            "detection": 101.43690003314987,
+            "registration": 95.37159994943067,
+            "coordinate_bridge_and_tracking": 0.2348999842070043,
+            "trajectory": 0.009400013368576765
+          },
+          "detections": 2,
+          "confirmed_tracks": 0
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 3,
+            "fn": 0,
+            "precision": 0.0,
+            "recall": null,
+            "f1": 0.0,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 0.6,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "recall": "zero denominator",
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 461.34779998101294,
+          "timings_ms": {
+            "input_validation": 2.987199986819178,
+            "suitability": 84.53829999780282,
+            "detection": 101.20029997779056,
+            "registration": 95.6239000079222,
+            "temporal_detection": 175.13899999903515,
+            "coordinate_bridge_and_tracking": 0.31050003599375486,
+            "trajectory": 0.013199984095990658
+          },
+          "detections": 3,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-1630",
+      "modes": {
+        "standard": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "3, 4"
+            }
+          }
+        },
+        "temporal": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "3, 4"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "esa-test-3249",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 5,
+            "fp": 12,
+            "fn": 5,
+            "precision": 0.29411764705882354,
+            "recall": 0.5,
+            "f1": 0.37037037037037035,
+            "localization_mean_px": 0.2537972080530538,
+            "localization_rmse_px": 0.26037930165754863,
+            "false_positives_per_frame": 2.4,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 312.9129000008106,
+          "timings_ms": {
+            "input_validation": 3.382899973075837,
+            "suitability": 88.53890001773834,
+            "detection": 118.91969997668639,
+            "registration": 98.77909999340773,
+            "coordinate_bridge_and_tracking": 1.1685999925248325,
+            "trajectory": 0.05570001667365432
+          },
+          "detections": 17,
+          "confirmed_tracks": 0
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 5,
+            "fp": 14,
+            "fn": 5,
+            "precision": 0.2631578947368421,
+            "recall": 0.5,
+            "f1": 0.3448275862068966,
+            "localization_mean_px": 0.303747248541226,
+            "localization_rmse_px": 0.3638088191369697,
+            "false_positives_per_frame": 2.8,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 658.0288999830373,
+          "timings_ms": {
+            "input_validation": 3.059400012716651,
+            "suitability": 88.94009998766705,
+            "detection": 118.08390001533553,
+            "registration": 96.73849999671802,
+            "temporal_detection": 348.0750999879092,
+            "coordinate_bridge_and_tracking": 1.1038000229746103,
+            "trajectory": 0.06210000719875097
+          },
+          "detections": 19,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-3918",
+      "modes": {
+        "standard": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "3"
+            }
+          }
+        },
+        "temporal": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "3"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "esa-test-4809",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 3,
+            "fp": 7,
+            "fn": 2,
+            "precision": 0.3,
+            "recall": 0.6,
+            "f1": 0.4,
+            "localization_mean_px": 0.39524769257853415,
+            "localization_rmse_px": 0.4252445645950185,
+            "false_positives_per_frame": 1.4,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 350.18199996557087,
+          "timings_ms": {
+            "input_validation": 3.1258000526577234,
+            "suitability": 86.37609996367246,
+            "detection": 115.10570003883913,
+            "registration": 142.5551999709569,
+            "coordinate_bridge_and_tracking": 1.0130000300705433,
+            "trajectory": 0.03679998917505145
+          },
+          "detections": 10,
+          "confirmed_tracks": 0
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 5,
+            "fp": 31,
+            "fn": 0,
+            "precision": 0.1388888888888889,
+            "recall": 1.0,
+            "f1": 0.24390243902439024,
+            "localization_mean_px": 0.37937748169714725,
+            "localization_rmse_px": 0.44595515845210554,
+            "false_positives_per_frame": 6.2,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 544.448500033468,
+          "timings_ms": {
+            "input_validation": 3.1190000008791685,
+            "suitability": 85.1177999866195,
+            "detection": 117.65649996232241,
+            "registration": 139.70709999557585,
+            "temporal_detection": 194.2566999932751,
+            "coordinate_bridge_and_tracking": 1.9162999815307558,
+            "trajectory": 0.17980003030970693
+          },
+          "detections": 36,
+          "confirmed_tracks": 1
+        }
+      }
+    },
+    {
+      "name": "esa-test-4528",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 10,
+            "fp": 4,
+            "fn": 0,
+            "precision": 0.7142857142857143,
+            "recall": 1.0,
+            "f1": 0.8333333333333334,
+            "localization_mean_px": 0.2362793824651858,
+            "localization_rmse_px": 0.2464921456920917,
+            "false_positives_per_frame": 0.8,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 292.6589000271633,
+          "timings_ms": {
+            "input_validation": 2.86539999069646,
+            "suitability": 85.6202999711968,
+            "detection": 109.14260003482923,
+            "registration": 91.80940000806004,
+            "coordinate_bridge_and_tracking": 0.8506999583914876,
+            "trajectory": 0.13930001296103
+          },
+          "detections": 14,
+          "confirmed_tracks": 2
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 10,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.9090909090909091,
+            "recall": 1.0,
+            "f1": 0.9523809523809523,
+            "localization_mean_px": 0.2006272043244944,
+            "localization_rmse_px": 0.2208781804002464,
+            "false_positives_per_frame": 0.2,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 477.2613000241108,
+          "timings_ms": {
+            "input_validation": 3.075100015848875,
+            "suitability": 84.25989997340366,
+            "detection": 109.59469998488203,
+            "registration": 92.1121999854222,
+            "temporal_detection": 184.94149995967746,
+            "coordinate_bridge_and_tracking": 0.9875000105239451,
+            "trajectory": 0.12959999730810523
+          },
+          "detections": 11,
+          "confirmed_tracks": 2
+        }
+      }
+    },
+    {
+      "name": "esa-test-3822",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.0,
+            "recall": null,
+            "f1": 0.0,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 0.4,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "recall": "zero denominator",
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 298.57139999512583,
+          "timings_ms": {
+            "input_validation": 3.12920002033934,
+            "suitability": 85.09930002037436,
+            "detection": 110.3117999737151,
+            "registration": 97.88119996665046,
+            "coordinate_bridge_and_tracking": 0.3130999975837767,
+            "trajectory": 0.01079996582120657
+          },
+          "detections": 2,
+          "confirmed_tracks": 0
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 3,
+            "fn": 0,
+            "precision": 0.0,
+            "recall": null,
+            "f1": 0.0,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 0.6,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "recall": "zero denominator",
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 496.0964000201784,
+          "timings_ms": {
+            "input_validation": 3.082800016272813,
+            "suitability": 86.54799999203533,
+            "detection": 111.33039998821914,
+            "registration": 101.91959998337552,
+            "temporal_detection": 190.74759999057278,
+            "coordinate_bridge_and_tracking": 0.26270002126693726,
+            "trajectory": 0.010499963536858559
+          },
+          "detections": 3,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-106",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 20,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.9523809523809523,
+            "recall": 1.0,
+            "f1": 0.975609756097561,
+            "localization_mean_px": 0.19257182463318295,
+            "localization_rmse_px": 0.22426441054121823,
+            "false_positives_per_frame": 0.2,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 306.51169997872785,
+          "timings_ms": {
+            "input_validation": 2.991700021084398,
+            "suitability": 85.47320001525804,
+            "detection": 113.29519998980686,
+            "registration": 100.58859997661784,
+            "coordinate_bridge_and_tracking": 1.9880000036209822,
+            "trajectory": 0.06649998249486089
+          },
+          "detections": 21,
+          "confirmed_tracks": 0
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 20,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.9090909090909091,
+            "recall": 1.0,
+            "f1": 0.9523809523809523,
+            "localization_mean_px": 0.27975635723415904,
+            "localization_rmse_px": 0.45213880978876214,
+            "false_positives_per_frame": 0.4,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 495.7931999815628,
+          "timings_ms": {
+            "input_validation": 3.312499960884452,
+            "suitability": 85.22430004086345,
+            "detection": 109.38129998976365,
+            "registration": 100.77459999592975,
+            "temporal_detection": 193.38329997844994,
+            "coordinate_bridge_and_tracking": 1.3915000017732382,
+            "trajectory": 0.06900000153109431
+          },
+          "detections": 22,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-2421",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 5,
+            "fp": 6,
+            "fn": 0,
+            "precision": 0.45454545454545453,
+            "recall": 1.0,
+            "f1": 0.625,
+            "localization_mean_px": 0.2619344316106804,
+            "localization_rmse_px": 0.26940396328293065,
+            "false_positives_per_frame": 1.2,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 298.7864000024274,
+          "timings_ms": {
+            "input_validation": 2.8864999767392874,
+            "suitability": 86.38569997856393,
+            "detection": 110.07180000888184,
+            "registration": 96.79540002252907,
+            "coordinate_bridge_and_tracking": 0.9509000228717923,
+            "trajectory": 0.040000013541430235
+          },
+          "detections": 11,
+          "confirmed_tracks": 0
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 4,
+            "fp": 77,
+            "fn": 1,
+            "precision": 0.04938271604938271,
+            "recall": 0.8,
+            "f1": 0.09302325581395349,
+            "localization_mean_px": 0.26808643184392666,
+            "localization_rmse_px": 0.29862546389879363,
+            "false_positives_per_frame": 15.4,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 750.9370999759994,
+          "timings_ms": {
+            "input_validation": 3.0698999762535095,
+            "suitability": 85.0946000427939,
+            "detection": 110.32239999622107,
+            "registration": 97.62799995951355,
+            "temporal_detection": 449.1376999649219,
+            "coordinate_bridge_and_tracking": 3.584299993235618,
+            "trajectory": 0.30120002338662744
+          },
+          "detections": 81,
+          "confirmed_tracks": 1
+        }
+      }
+    },
+    {
+      "name": "esa-test-4764",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 7,
+            "fp": 8,
+            "fn": 23,
+            "precision": 0.4666666666666667,
+            "recall": 0.23333333333333334,
+            "f1": 0.3111111111111111,
+            "localization_mean_px": 0.3439055550243461,
+            "localization_rmse_px": 0.3609379658596896,
+            "false_positives_per_frame": 1.6,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 302.060000016354,
+          "timings_ms": {
+            "input_validation": 2.999700023792684,
+            "suitability": 81.31239999784157,
+            "detection": 115.14810001244769,
+            "registration": 99.53370003495365,
+            "coordinate_bridge_and_tracking": 1.0873000137507915,
+            "trajectory": 0.04899996565654874
+          },
+          "detections": 15,
+          "confirmed_tracks": 0
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 11,
+            "fp": 30,
+            "fn": 19,
+            "precision": 0.2682926829268293,
+            "recall": 0.36666666666666664,
+            "f1": 0.30985915492957744,
+            "localization_mean_px": 0.3263205484475548,
+            "localization_rmse_px": 0.36136759362448717,
+            "false_positives_per_frame": 6.0,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 535.0802000029944,
+          "timings_ms": {
+            "input_validation": 2.9704999760724604,
+            "suitability": 80.1919000223279,
+            "detection": 114.16979995556176,
+            "registration": 96.94389998912811,
+            "temporal_detection": 236.53439996996894,
+            "coordinate_bridge_and_tracking": 2.139699994586408,
+            "trajectory": 0.1944000250659883
+          },
+          "detections": 41,
+          "confirmed_tracks": 1
+        }
+      }
+    },
+    {
+      "name": "esa-test-3012",
+      "modes": {
+        "standard": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "4"
+            }
+          }
+        },
+        "temporal": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "4"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "esa-test-3417",
+      "modes": {
+        "standard": {
+          "status": "failed",
+          "error": {
+            "code": "uncertain_observation",
+            "message": "Observation requires review: Too few high-contrast features to establish suitability; this does not establish absence of objects.",
+            "details": {
+              "reason_codes": "low_feature_evidence"
+            }
+          }
+        },
+        "temporal": {
+          "status": "failed",
+          "error": {
+            "code": "uncertain_observation",
+            "message": "Observation requires review: Too few high-contrast features to establish suitability; this does not establish absence of objects.",
+            "details": {
+              "reason_codes": "low_feature_evidence"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "esa-test-240",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 15,
+            "fp": 3,
+            "fn": 5,
+            "precision": 0.8333333333333334,
+            "recall": 0.75,
+            "f1": 0.7894736842105263,
+            "localization_mean_px": 0.26075342031962034,
+            "localization_rmse_px": 0.3641911488022185,
+            "false_positives_per_frame": 0.6,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 299.066599982325,
+          "timings_ms": {
+            "input_validation": 3.2333999988622963,
+            "suitability": 85.00060002552345,
+            "detection": 107.92169999331236,
+            "registration": 99.7320000315085,
+            "coordinate_bridge_and_tracking": 1.11109996214509,
+            "trajectory": 0.11270004324615002
+          },
+          "detections": 18,
+          "confirmed_tracks": 1
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 15,
+            "fp": 2,
+            "fn": 5,
+            "precision": 0.8823529411764706,
+            "recall": 0.75,
+            "f1": 0.8108108108108109,
+            "localization_mean_px": 0.24676746879559025,
+            "localization_rmse_px": 0.2668506929863291,
+            "false_positives_per_frame": 0.4,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 483.3443000097759,
+          "timings_ms": {
+            "input_validation": 2.948499983176589,
+            "suitability": 87.30419998755679,
+            "detection": 106.69899999629706,
+            "registration": 99.46589998435229,
+            "temporal_detection": 183.9487999677658,
+            "coordinate_bridge_and_tracking": 1.05489999987185,
+            "trajectory": 0.04610000178217888
+          },
+          "detections": 17,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-4003",
+      "modes": {
+        "standard": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "2, 3, 4"
+            }
+          }
+        },
+        "temporal": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "2, 3, 4"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "esa-test-3838",
+      "modes": {
+        "standard": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "3, 4"
+            }
+          }
+        },
+        "temporal": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "3, 4"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "esa-test-223",
+      "modes": {
+        "standard": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "2, 3, 4"
+            }
+          }
+        },
+        "temporal": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "2, 3, 4"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "esa-test-790",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 6,
+            "fp": 6,
+            "fn": 4,
+            "precision": 0.5,
+            "recall": 0.6,
+            "f1": 0.5454545454545454,
+            "localization_mean_px": 0.30539930305292656,
+            "localization_rmse_px": 0.35902214845150715,
+            "false_positives_per_frame": 1.2,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 305.0224999897182,
+          "timings_ms": {
+            "input_validation": 2.93960003182292,
+            "suitability": 82.48450001701713,
+            "detection": 119.8306999867782,
+            "registration": 96.45650000311434,
+            "coordinate_bridge_and_tracking": 0.9743999689817429,
+            "trajectory": 0.040300015825778246
+          },
+          "detections": 12,
+          "confirmed_tracks": 0
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 7,
+            "fp": 6,
+            "fn": 3,
+            "precision": 0.5384615384615384,
+            "recall": 0.7,
+            "f1": 0.6086956521739131,
+            "localization_mean_px": 0.29407835983091896,
+            "localization_rmse_px": 0.32643917182954496,
+            "false_positives_per_frame": 1.2,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 494.44619996938854,
+          "timings_ms": {
+            "input_validation": 3.375499974936247,
+            "suitability": 84.13180004572496,
+            "detection": 117.22010001540184,
+            "registration": 98.25489996001124,
+            "temporal_detection": 188.3075999794528,
+            "coordinate_bridge_and_tracking": 0.9316999930888414,
+            "trajectory": 0.04449998959898949
+          },
+          "detections": 13,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-3677",
+      "modes": {
+        "standard": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "3, 4"
+            }
+          }
+        },
+        "temporal": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "3, 4"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "esa-test-117",
+      "modes": {
+        "standard": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "4"
+            }
+          }
+        },
+        "temporal": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "4"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "esa-test-540",
+      "modes": {
+        "standard": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "4"
+            }
+          }
+        },
+        "temporal": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "4"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "esa-test-1253",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 18,
+            "fp": 0,
+            "fn": 7,
+            "precision": 1.0,
+            "recall": 0.72,
+            "f1": 0.8372093023255814,
+            "localization_mean_px": 0.3837753931678155,
+            "localization_rmse_px": 0.40289098137953394,
+            "false_positives_per_frame": 0.0,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 342.8273999597877,
+          "timings_ms": {
+            "input_validation": 2.8871999820694327,
+            "suitability": 83.66980002028868,
+            "detection": 109.48409995762631,
+            "registration": 143.48849997622892,
+            "coordinate_bridge_and_tracking": 1.2824000441469252,
+            "trajectory": 0.060100050177425146
+          },
+          "detections": 18,
+          "confirmed_tracks": 0
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 16,
+            "fp": 2,
+            "fn": 9,
+            "precision": 0.8888888888888888,
+            "recall": 0.64,
+            "f1": 0.7441860465116279,
+            "localization_mean_px": 0.40859019249905393,
+            "localization_rmse_px": 0.45084569275359176,
+            "false_positives_per_frame": 0.4,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 527.7016999898478,
+          "timings_ms": {
+            "input_validation": 3.1802000012248755,
+            "suitability": 81.71009999932721,
+            "detection": 110.32229999545962,
+            "registration": 141.95530000142753,
+            "temporal_detection": 187.36390001140535,
+            "coordinate_bridge_and_tracking": 1.263400015886873,
+            "trajectory": 0.0591999851167202
+          },
+          "detections": 18,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-3241",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 16,
+            "fp": 5,
+            "fn": 4,
+            "precision": 0.7619047619047619,
+            "recall": 0.8,
+            "f1": 0.7804878048780488,
+            "localization_mean_px": 0.37648624488693316,
+            "localization_rmse_px": 0.430259746860489,
+            "false_positives_per_frame": 1.0,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 308.67230001604185,
+          "timings_ms": {
+            "input_validation": 3.2257999991998076,
+            "suitability": 83.47199996933341,
+            "detection": 114.99789997469634,
+            "registration": 103.17349998513237,
+            "coordinate_bridge_and_tracking": 1.5163999632932246,
+            "trajectory": 0.06940000457689166
+          },
+          "detections": 21,
+          "confirmed_tracks": 0
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 8,
+            "fp": 4,
+            "fn": 12,
+            "precision": 0.6666666666666666,
+            "recall": 0.4,
+            "f1": 0.5,
+            "localization_mean_px": 0.3994828355514416,
+            "localization_rmse_px": 0.45201687435859816,
+            "false_positives_per_frame": 0.8,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 490.3702999581583,
+          "timings_ms": {
+            "input_validation": 3.120100009255111,
+            "suitability": 82.72239996585995,
+            "detection": 113.08229999849573,
+            "registration": 101.631700003054,
+            "temporal_detection": 186.31409999215975,
+            "coordinate_bridge_and_tracking": 1.1624000035226345,
+            "trajectory": 0.044599990360438824
+          },
+          "detections": 12,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-4045",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 4,
+            "fn": 0,
+            "precision": 0.0,
+            "recall": null,
+            "f1": 0.0,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 0.8,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "recall": "zero denominator",
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 302.8592999908142,
+          "timings_ms": {
+            "input_validation": 2.913600008469075,
+            "suitability": 85.69350000470877,
+            "detection": 109.81140000512823,
+            "registration": 101.91540000960231,
+            "coordinate_bridge_and_tracking": 0.3875000402331352,
+            "trajectory": 0.08539995178580284
+          },
+          "detections": 4,
+          "confirmed_tracks": 1
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 3,
+            "fn": 0,
+            "precision": 0.0,
+            "recall": null,
+            "f1": 0.0,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 0.6,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "recall": "zero denominator",
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 486.98399995919317,
+          "timings_ms": {
+            "input_validation": 2.990800014231354,
+            "suitability": 84.45279998704791,
+            "detection": 109.26300002029166,
+            "registration": 102.3646000539884,
+            "temporal_detection": 185.63059996813536,
+            "coordinate_bridge_and_tracking": 0.2313000150024891,
+            "trajectory": 0.013699987903237343
+          },
+          "detections": 3,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-606",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 3,
+            "fp": 7,
+            "fn": 2,
+            "precision": 0.3,
+            "recall": 0.6,
+            "f1": 0.4,
+            "localization_mean_px": 0.125110172075092,
+            "localization_rmse_px": 0.13914010562089682,
+            "false_positives_per_frame": 1.4,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 301.8292000051588,
+          "timings_ms": {
+            "input_validation": 3.1908000237308443,
+            "suitability": 87.91740000015125,
+            "detection": 110.74530001496896,
+            "registration": 97.38469996955246,
+            "coordinate_bridge_and_tracking": 0.7556999917142093,
+            "trajectory": 0.03649998689070344
+          },
+          "detections": 10,
+          "confirmed_tracks": 0
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 18,
+            "fn": 5,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 3.6,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 581.5796999959275,
+          "timings_ms": {
+            "input_validation": 2.9369000112637877,
+            "suitability": 87.93330000480637,
+            "detection": 110.37330003455281,
+            "registration": 97.17929997714236,
+            "temporal_detection": 280.06969997659326,
+            "coordinate_bridge_and_tracking": 1.2561000185087323,
+            "trajectory": 0.05819997750222683
+          },
+          "detections": 18,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-816",
+      "modes": {
+        "standard": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "1, 2, 3, 4"
+            }
+          }
+        },
+        "temporal": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "1, 2, 3, 4"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "esa-test-2727",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 4,
+            "fp": 8,
+            "fn": 1,
+            "precision": 0.3333333333333333,
+            "recall": 0.8,
+            "f1": 0.47058823529411764,
+            "localization_mean_px": 0.05320769069118266,
+            "localization_rmse_px": 0.06642485273237483,
+            "false_positives_per_frame": 1.6,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 297.5802000146359,
+          "timings_ms": {
+            "input_validation": 2.887600043322891,
+            "suitability": 85.46800003387034,
+            "detection": 107.14789998019114,
+            "registration": 99.14639999624342,
+            "coordinate_bridge_and_tracking": 0.8697999874129891,
+            "trajectory": 0.10140001541003585
+          },
+          "detections": 12,
+          "confirmed_tracks": 1
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 4,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.8,
+            "f1": 0.8888888888888888,
+            "localization_mean_px": 0.05023333956746391,
+            "localization_rmse_px": 0.05808543268232661,
+            "false_positives_per_frame": 0.0,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 486.0653000068851,
+          "timings_ms": {
+            "input_validation": 2.929300011601299,
+            "suitability": 88.8857000390999,
+            "detection": 107.57059999741614,
+            "registration": 101.19439999107271,
+            "temporal_detection": 183.09000000590459,
+            "coordinate_bridge_and_tracking": 0.513700011651963,
+            "trajectory": 0.018899969290941954
+          },
+          "detections": 4,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-904",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 3,
+            "fp": 11,
+            "fn": 2,
+            "precision": 0.21428571428571427,
+            "recall": 0.6,
+            "f1": 0.3157894736842105,
+            "localization_mean_px": 0.22101958803598132,
+            "localization_rmse_px": 0.2314595502954717,
+            "false_positives_per_frame": 2.2,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 336.5046000108123,
+          "timings_ms": {
+            "input_validation": 2.9260999872349203,
+            "suitability": 85.89760004542768,
+            "detection": 137.12539995322004,
+            "registration": 107.27000003680587,
+            "coordinate_bridge_and_tracking": 1.1903000413440168,
+            "trajectory": 0.04849996184930205
+          },
+          "detections": 14,
+          "confirmed_tracks": 0
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 4,
+            "fp": 2,
+            "fn": 1,
+            "precision": 0.6666666666666666,
+            "recall": 0.8,
+            "f1": 0.7272727272727273,
+            "localization_mean_px": 0.2530977144307551,
+            "localization_rmse_px": 0.2936154417338787,
+            "false_positives_per_frame": 0.4,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 518.6551000224426,
+          "timings_ms": {
+            "input_validation": 3.341200004797429,
+            "suitability": 89.18660000199452,
+            "detection": 119.34469995321706,
+            "registration": 106.81269998895004,
+            "temporal_detection": 196.88559998758137,
+            "coordinate_bridge_and_tracking": 0.5846999702043831,
+            "trajectory": 0.026300025638192892
+          },
+          "detections": 6,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-3523",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 4,
+            "fn": 0,
+            "precision": 0.0,
+            "recall": null,
+            "f1": 0.0,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 0.8,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "recall": "zero denominator",
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 316.1297999904491,
+          "timings_ms": {
+            "input_validation": 3.75579996034503,
+            "suitability": 91.73989994451404,
+            "detection": 113.30210004234686,
+            "registration": 104.71750004217029,
+            "coordinate_bridge_and_tracking": 0.4686999600380659,
+            "trajectory": 0.0817000400274992
+          },
+          "detections": 4,
+          "confirmed_tracks": 1
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "f1": null,
+            "localization_mean_px": null,
+            "localization_rmse_px": null,
+            "false_positives_per_frame": 0.0,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {
+              "precision": "zero denominator",
+              "recall": "zero denominator",
+              "f1": "zero denominator",
+              "localization": "no matched predictions"
+            }
+          },
+          "runtime_ms": 512.3140999930911,
+          "timings_ms": {
+            "input_validation": 3.3931999932974577,
+            "suitability": 87.91269996436313,
+            "detection": 116.53220001608133,
+            "registration": 107.92490001767874,
+            "temporal_detection": 194.26099996780977,
+            "coordinate_bridge_and_tracking": 0.025300018023699522,
+            "trajectory": 0.0013999524526298046
+          },
+          "detections": 0,
+          "confirmed_tracks": 0
+        }
+      }
+    },
+    {
+      "name": "esa-test-4401",
+      "modes": {
+        "standard": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "3"
+            }
+          }
+        },
+        "temporal": {
+          "status": "failed",
+          "error": {
+            "code": "registration_failed",
+            "message": "Registration failed; tracking blocked for the whole sequence.",
+            "details": {
+              "failed_frames": "3"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "esa-test-3455",
+      "modes": {
+        "standard": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 3,
+            "fp": 7,
+            "fn": 2,
+            "precision": 0.3,
+            "recall": 0.6,
+            "f1": 0.4,
+            "localization_mean_px": 0.15450525857748904,
+            "localization_rmse_px": 0.17762328399267482,
+            "false_positives_per_frame": 1.4,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 318.026099994313,
+          "timings_ms": {
+            "input_validation": 2.9510000022128224,
+            "suitability": 91.1630000337027,
+            "detection": 119.20149996876717,
+            "registration": 100.82839999813586,
+            "coordinate_bridge_and_tracking": 0.8690999820828438,
+            "trajectory": 0.13230001786723733
+          },
+          "detections": 10,
+          "confirmed_tracks": 2
+        },
+        "temporal": {
+          "status": "succeeded",
+          "metrics": {
+            "frame_count": 5,
+            "tp": 4,
+            "fp": 4,
+            "fn": 1,
+            "precision": 0.5,
+            "recall": 0.8,
+            "f1": 0.6153846153846154,
+            "localization_mean_px": 0.2109048334818936,
+            "localization_rmse_px": 0.21453940556555973,
+            "false_positives_per_frame": 0.8,
+            "processing_ms_total": 0.0,
+            "processing_ms_mean_per_frame": null,
+            "processing_ms_p95_per_frame": null,
+            "null_reasons": {}
+          },
+          "runtime_ms": 504.4478999916464,
+          "timings_ms": {
+            "input_validation": 2.9491999885067344,
+            "suitability": 90.41399997659028,
+            "detection": 121.71889998717234,
+            "registration": 98.78100000787526,
+            "temporal_detection": 187.71169998217374,
+            "coordinate_bridge_and_tracking": 0.5744000081904233,
+            "trajectory": 0.033699965570122004
+          },
+          "detections": 8,
+          "confirmed_tracks": 0
+        }
+      }
+    }
+  ],
+  "annotation_sha256": "8c3e141fba0b5d3ed220563b458a17b17d73ec8cc762aa46abe40d1016f557f4",
+  "matching_gate_px": 5,
+  "note": "Supplied synthetic QA and ESA are separate validation paths. Metrics absent on rejected registration; compare only mutually successful sequences."
+}

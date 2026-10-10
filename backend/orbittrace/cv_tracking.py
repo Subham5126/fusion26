@@ -19,6 +19,7 @@ from app.schemas.result import AnalysisResult, Provenance, RegistrationResult, T
 from app.schemas.sequence import SequenceInput
 from astrotrace.detection.baseline import BaselineConfig
 from astrotrace.detection.precision import precision_config
+from astrotrace.detection.temporal import detect_temporal_sequence
 from astrotrace.preprocessing.candidates import normalize_grayscale
 from astrotrace.preprocessing.registration import (
     RegistrationConfig, add_reference_coordinates, register_sequence,
@@ -105,6 +106,8 @@ def analyze_telescope_sequence(
             raise ValueError("Config profile disagrees with sequence profile")
         if method not in ("optimized", "baseline"):
             raise ValueError("Only the verified optimized and baseline OpenCV methods are available")
+        if cfg.analysis_mode == 'temporal' and method != 'optimized':
+            raise ValueError('Temporal mode requires the optimized detector; standard supports both existing detectors')
         defaults = precision_config() if method == "optimized" else BaselineConfig()
         if detector_config is not None and not isinstance(detector_config, Mapping):
             raise ValueError("detector_config must be a declared numeric mapping")
@@ -143,6 +146,15 @@ def analyze_telescope_sequence(
     if registration.status == "failed":
         reject("registration_failed", "Registration failed; tracking blocked for the whole sequence.",
                {"failed_frames": ", ".join(str(f.frame_index) for f in registration.frames if f.status == "failed")})
+    if cfg.analysis_mode == 'temporal':
+        stage_started = perf_counter()
+        diagnostic['original_detections'] = diagnostic['detections']
+        raw = detect_temporal_sequence(frames, registration, sequence_id=sequence.sequence_id,
+            profile=sequence.profile, timestamps_s=expected_times, config=declared.to_dict())
+        diagnostic['detections'] = [d.model_dump(mode='json') for d in raw]
+        diagnostic['detection_mode'] = {'name': 'temporal', 'experimental': True,
+            'description': 'Registered temporal median subtraction; slow/stationary targets may be suppressed. Original candidates retained in diagnostics.'}
+        timings['temporal_detection'] = (perf_counter()-stage_started)*1000
     stage_started = perf_counter()
     detections = add_reference_coordinates(raw, registration)
     frame_times = {f.frame_index: f.timestamp_s for f in sequence.frames if f.timestamp_s is not None}
@@ -157,6 +169,8 @@ def analyze_telescope_sequence(
         prediction_horizon=cfg.prediction_horizon_frames, frame_dimensions=(width, height), frame_timestamps=frame_times or None)
     timings["trajectory"] = (perf_counter()-stage_started)*1000
     notices = [str(w.message) for w in emitted]
+    if cfg.analysis_mode == 'temporal':
+        notices.append('Experimental temporal background subtraction. Slow/stationary targets and low-overlap borders may be suppressed; standard mode preserves original proposals.')
     if frame_times:
         notices.append("Future prediction timestamps use the fitter cadence estimate when unavailable; they are not measured timestamps.")
         times = list(frame_times.values())
