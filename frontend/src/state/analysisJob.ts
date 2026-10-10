@@ -1,6 +1,7 @@
 import { getJob, getJobResult, runSyntheticDemo, runUpload } from '../api/client';
 import { parseJobState, ResponseValidationError } from '../api/responseValidation';
 import { ApiRequestError } from '../api/transport';
+import type { DemoPreset } from '../api/transport';
 import { receiveDemoSubmission, receiveJob, receiveResult } from './analysis';
 import type { AnalysisState } from './analysis';
 import type { ApiError, JobState, SequenceInput } from '../types/contracts';
@@ -17,7 +18,7 @@ export function waitForJobPoll(milliseconds: number, signal: AbortSignal): Promi
 }
 
 export interface AnalysisJobServices {
-  submit: (signal: AbortSignal) => Promise<unknown>;
+  submit: (signal: AbortSignal, preset?: DemoPreset) => Promise<unknown>;
   job: (jobId: string, signal: AbortSignal) => Promise<unknown>;
   result: (jobId: string, signal: AbortSignal) => Promise<unknown>;
   wait: (milliseconds: number, signal: AbortSignal) => Promise<void>;
@@ -44,14 +45,14 @@ export function createAnalysisJobController(publish: (state: AnalysisState) => v
   const current = (request: AbortController) => !disposed && active === request && !request.signal.aborted;
   const update = (next: AnalysisState) => { state = next; publish(next); };
 
-  async function start(sequence?: SequenceInput, files?: File[]) {
+  async function start(sequence?: SequenceInput, files?: File[], mode: 'standard' | 'temporal' = 'standard', preset?: DemoPreset) {
     if (disposed) return;
     active?.abort();
     const request = new AbortController(); active = request; jobId = null;
     update(sequence ? { phase: 'submitting', sequence } : { phase: 'submitting', demo: true });
     let lastJob: JobState | undefined;
     try {
-      const submission = sequence ? await runUpload(sequence, files ?? [], request.signal) : await services.submit(request.signal);
+      const submission = sequence ? await runUpload(sequence, files ?? [], request.signal, mode) : await services.submit(request.signal, preset);
       if (!current(request)) return;
       const accepted = receiveDemoSubmission(state, submission); update(accepted);
       if (accepted.phase !== 'queued') return;

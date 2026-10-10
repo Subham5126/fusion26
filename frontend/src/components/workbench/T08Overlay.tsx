@@ -11,13 +11,16 @@ export interface T08OverlayProps {
   select: (id: string) => void;
   visibility: { detections: boolean; tracks: boolean; predictions: boolean };
   nativeSize?: Size;
+  currentFrame?: number;
+  showAllTracks?: boolean;
+  uncertainTrackIds?: Set<string>;
 }
 // Positions are already projected by the verified source-specific mappers.
 // Keep OpticalViewer's integer pixel centers and exclusive raster edges intact.
-export function T08Overlay({ model, scale, selected, select, visibility, nativeSize }: T08OverlayProps) {
+export function T08Overlay({ model, scale, selected, select, visibility, nativeSize, currentFrame, showAllTracks = true, uncertainTrackIds = new Set() }: T08OverlayProps) {
   const px = (value: number) => value / Math.max(scale, .001);
   const glow = (color: string) => ({ filter: `drop-shadow(0 0 ${px(2.5)}px ${color})` });
-  const opacity = (id?: string) => !selected || selected === id ? 1 : .3;
+  const opacity = (id?: string) => !selected || selected === id ? 1 : .5;
   const controls = (id: string, label: string) => ({
     'data-track-control': true,
     role: 'button', tabIndex: 0, 'aria-label': label, 'aria-pressed': selected === id,
@@ -28,33 +31,59 @@ export function T08Overlay({ model, scale, selected, select, visibility, nativeS
   });
   return <g className="t08-overlay" data-renderer="t08-live">
     {model.tracks.map(track => {
+      if (!showAllTracks && track.id !== selected) return null;
       const color = trackColors(track.id), highlighted = selected === track.id;
       return <g key={track.id} data-track-id={track.id} className={`scientific-track t08-track ${highlighted ? 'is-selected' : ''}`}
         style={{ color: color.observed, stroke: color.observed, fill: color.observed, opacity: opacity(track.id) }}>
         {visibility.tracks && track.observed.map((point, index) => {
           const previous = track.observed[index - 1];
           const recent = index === track.observed.length - 1;
-          const ageOpacity = .25 + .75 * (index + 1) / track.observed.length;
+          const current = point.frame === currentFrame;
+          const ageOpacity = highlighted ? .65 + .35 * (index + 1) / track.observed.length : .25 + .75 * (index + 1) / track.observed.length;
           return <g key={point.frame} opacity={ageOpacity}>
-            {previous && <line className="t08-observed-segment" data-from-frame={previous.frame} data-to-frame={point.frame}
-              x1={previous.x} y1={previous.y} x2={point.x} y2={point.y} strokeWidth={px(highlighted ? 2.5 : 1.6)} />}
-            <circle className={`observed-point ${recent ? 't08-glow' : ''}`} cx={point.x} cy={point.y} r={px(recent ? 3.7 : 2.5)}
-              stroke="none" data-observed-frame={point.frame} style={recent ? glow(color.observed) : undefined} />
+            {previous && !(track.estimated ?? []).some(p=>p.frame>previous.frame && p.frame<point.frame) && <line className="t08-observed-segment" data-from-frame={previous.frame} data-to-frame={point.frame}
+              x1={previous.x} y1={previous.y} x2={point.x} y2={point.y} strokeWidth={px(highlighted ? 3.8 : 2.2)}
+              style={{ stroke: color.observed, ...glow(color.observed) }} />}
+            <circle className={`observed-point ${recent || highlighted ? 't08-glow' : ''}`} cx={point.x} cy={point.y} r={px(highlighted ? recent ? 5.5 : 4 : recent ? 3.7 : 2.5)}
+              stroke={highlighted ? '#d9fff5' : 'none'} strokeWidth={px(.65)} data-observed-frame={point.frame} style={{ fill: color.observed, ...(recent || highlighted ? glow(color.observed) : {}) }} />
+            {highlighted && current && <circle className="t08-current-observation" data-current-observed-frame={point.frame}
+              cx={point.x} cy={point.y} r={px(9)} fill="none" strokeWidth={px(1.5)} style={glow(color.observed)} />}
+            {highlighted && <text className="t08-frame-label" data-history-label-frame={point.frame} x={point.x + px(10)} y={point.y + px(recent ? 17 : -10)}
+              fontSize={px(10)} stroke="#071520" strokeWidth={px(3)} paintOrder="stroke">F{point.frame + 1}</text>}
+            {highlighted && recent && !current && <text className="t08-frame-label" data-last-seen-track={track.id}
+              x={point.x + px(10)} y={point.y - px(10)} fontSize={px(10)} stroke="#071520" strokeWidth={px(3)} paintOrder="stroke">
+              {track.id} · last seen F{point.frame + 1}
+            </text>}
             <circle className="track-hit-target" cx={point.x} cy={point.y} r={px(11)} fill="transparent" stroke="none"
               {...controls(track.id, `Select track ${track.id}, observed frame ${point.frame}`)} />
           </g>;
         })}
+        {visibility.tracks && !!track.estimated?.length && <g className="t08-estimated-history" stroke="#ffbe55" fill="none">
+          {[...track.observed,...track.estimated].sort((a,b)=>a.frame-b.frame).map((point,index,all)=>{
+            const isEstimate=track.estimated!.some(p=>p.frame===point.frame), previous=all[index-1];
+            const previousEstimate=previous && track.estimated!.some(p=>p.frame===previous.frame);
+            return <g key={point.frame}>
+              {previous && (isEstimate || previousEstimate) && <line className="t08-estimated-segment" data-estimated-from-frame={previous.frame} data-estimated-to-frame={point.frame}
+                x1={previous.x} y1={previous.y} x2={point.x} y2={point.y} strokeWidth={px(highlighted?2.6:1.7)} strokeDasharray={`${px(5)} ${px(4)}`} style={glow('#ffbe55')} />}
+              {isEstimate && <><circle data-estimated-frame={point.frame} cx={point.x} cy={point.y} r={px(highlighted?5:3.5)} strokeWidth={px(1.8)}
+                aria-label={`F${point.frame+1} estimated from camera registration, not detected`} style={glow('#ffbe55')} />
+                {highlighted && <text className="t08-frame-label" x={point.x+px(10)} y={point.y-px(10)} fill="#ffbe55" stroke="#071520" strokeWidth={px(3)} paintOrder="stroke" fontSize={px(10)}>F{point.frame+1} est.</text>}</>}
+            </g>;
+          })}
+        </g>}
         {visibility.predictions && track.predictions.length > 0 && <g className="scientific-forecast t08-forecast t08-glow"
           style={{ color: color.forecast, stroke: color.forecast, ...glow(color.forecast) }}>
           <polyline points={track.forecast.map(point => `${point.x},${point.y}`).join(' ')} fill="none"
             strokeDasharray={`${px(5)} ${px(4)}`} strokeWidth={px(highlighted ? 2.2 : 1.7)} />
           {track.predictions.map(point => <circle key={point.frame} className="predicted-point" data-predicted-frame={point.frame}
-            cx={point.x} cy={point.y} r={px(4.2)} fill="none" strokeWidth={px(1.7)} aria-label={`Predicted frame ${point.frame} · not observed`} />)}
+            cx={point.x} cy={point.y} r={px(4.2)} fill="none" strokeWidth={px(1.7)} style={{ stroke: color.forecast }} aria-label={`Predicted frame ${point.frame} · not observed`} />)}
+          {highlighted && <text x={track.predictions[0].x + px(10)} y={track.predictions[0].y + px(22)} fontSize={px(10)}
+            fill={color.forecast} stroke="#071520" strokeWidth={px(3)} paintOrder="stroke">Predicted</text>}
         </g>}
       </g>;
     })}
     {visibility.detections && model.detections.map(detection => {
-      const id = detection.trackId, color = id ? trackColors(id).observed : '#a3bbc9';
+      const id = detection.trackId, color = id === selected ? trackColors(id).observed : !id || uncertainTrackIds.has(id) ? '#ffbe55' : '#36e6ff';
       const fullLabel = id ?? 'candidate';
       const label = fullLabel.length > 28 ? `${fullLabel.slice(0, 25)}…` : fullLabel;
       const width = px(label.length * 6.6 + 12);
@@ -64,6 +93,7 @@ export function T08Overlay({ model, scale, selected, select, visibility, nativeS
         data-detection-id={detection.id} data-current-track-id={id} style={{ color, stroke: color, opacity: id ? opacity(id) : .65 }}>
         <title>{`${fullLabel} · ${detection.id} · current detection`}</title>
         <rect {...detection.box} className="t08-neon-box t08-glow" fill="none" strokeWidth={px(id === selected ? 2.7 : 1.7)} style={glow(color)} />
+        <path className="t08-corners" d={(() => { const {x,y,width:w,height:h}=detection.box; const a=Math.min(w/3,h/3,px(7)); return `M${x+a},${y}H${x}V${y+a} M${x+w-a},${y}H${x+w}V${y+a} M${x},${y+h-a}V${y+h}H${x+a} M${x+w-a},${y+h}H${x+w}V${y+h-a}`; })()} fill="none" strokeWidth={px(id === selected ? 3.5 : 2.2)} />
         {id && <rect {...detection.box} fill="transparent" stroke="none" {...controls(id, `Select track ${id}, current detection ${detection.id}`)} />}
         <g className="t08-box-label" {...(id ? controls(id, `Select track ${id} label`) : {})}>
           <rect x={x} y={y} width={width} height={px(18)} rx={px(3)} fill="#071520" strokeWidth={px(.65)} />

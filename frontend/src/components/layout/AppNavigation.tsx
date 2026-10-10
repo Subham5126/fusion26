@@ -30,8 +30,7 @@ export function AppNavigation({ page }: { page: AppPage; hash?: string }) {
         {destinations.map(link => <a key={link.href} href={link.href}
           aria-current={link.active ? 'page' : undefined}
           onClick={() => setMenuOpen(false)}>{link.label}</a>)}
-        <a className="button button--primary nav-launch" href="#/workbench"
-          onClick={() => setMenuOpen(false)}>Launch Workbench <Icon name="arrow" /></a>
+
       </nav>
     </div>
   </header>;

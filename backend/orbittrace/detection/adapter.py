@@ -1,7 +1,7 @@
 """Contract 0.1.0 bridge; algorithms remain in astrotrace, with no IO or truth.
 
 Both src and backend must be importable until Integration packages astrotrace.
-The default optimized configuration is the frozen CV-T04 selection; explicit
+The default optimized configuration is the measured precision profile; explicit
 numeric overrides are validated by the original config classes. IDs identify
 proposals, never persistent objects. Raw/reference transforms are not invented.
 """
@@ -17,7 +17,8 @@ import numpy as np
 from app.schemas.result import Detection
 from astrotrace.detection.baseline import BaselineConfig, OpenCVBaselineDetector
 from astrotrace.detection.interface import FrameContext
-from astrotrace.detection.optimized import OptimizedConfig, OptimizedDetector
+from astrotrace.detection.optimized import OptimizedDetector
+from astrotrace.detection.precision import precision_config
 
 Method = Literal["baseline", "optimized"]
 Profile = Literal["synthetic_static_stars", "ground_static_star_streaks", "spotgeo"]
@@ -28,7 +29,7 @@ def _settings(method: Method, config: Mapping[str, object] | None):
         detector, defaults = OpenCVBaselineDetector(), BaselineConfig()
     elif method == "optimized":
         detector = OptimizedDetector()
-        defaults = OptimizedConfig(threshold_sigma=4.5, max_context_elongation=2.0)
+        defaults = precision_config()
     else:
         raise ValueError("method must be baseline or optimized")
     if config is not None and not isinstance(config, Mapping):

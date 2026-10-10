@@ -170,7 +170,14 @@ def test_requested_real_esa_without_assuming_identities(key,expected):
     if expected=="succeeded":
         result=analyze_telescope_sequence(frames,sequence=manifest(frames,source="real"),diagnostics=diagnostic)
         assert_contract(result)
-        assert len(result.detections)==34 and len(result.tracks)==31
+        # Retain the historical CV-T04 regression while checking the stricter
+        # image-only profile removes proposals without moving/boosting survivors.
+        frozen=analyze_telescope_sequence(frames,sequence=manifest(frames,source="real"),
+            detector_config={"min_score":0.,"min_aperture_snr":0.,"max_peak_fraction":.55})
+        assert len(frozen.detections)==34 and len(frozen.tracks)==31
+        geometry=lambda d: (d.frame_index,d.x_raw_px,d.y_raw_px,d.bbox_raw_px,d.quality_score)
+        assert 0 < len(result.detections) < len(frozen.detections)
+        assert set(map(geometry,result.detections)) < set(map(geometry,frozen.detections))
         assert not any(t.status=="confirmed" or t.trajectory for t in result.tracks)
     else:
         with pytest.raises(TelescopeAnalysisError) as caught:

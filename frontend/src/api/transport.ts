@@ -23,13 +23,15 @@ export async function requestJson(endpoint: VerifiedReadEndpoint, signal?: Abort
 }
 
 /** The published demo route accepts a bodyless POST and returns HTTP 202. */
-export function postDemoJson(signal?: AbortSignal): Promise<unknown> {
-  return exchangeJson('/api/analyze/demo', 'POST', 202, signal);
+export type DemoPreset = '1' | '2' | '3' | '4';
+export function postDemoJson(signal?: AbortSignal, preset?: DemoPreset): Promise<unknown> {
+  if (preset !== undefined && !['1','2','3','4'].includes(preset)) throw new Error('Unknown demo preset');
+  return exchangeJson('/api/analyze/demo', 'POST', 202, signal, preset ? `?preset=${preset}` : '');
 }
 
-async function exchangeJson(endpoint: string, method: 'GET' | 'POST', expectedStatus: number, signal?: AbortSignal): Promise<unknown> {
+async function exchangeJson(endpoint: string, method: 'GET' | 'POST', expectedStatus: number, signal?: AbortSignal, query = ''): Promise<unknown> {
   signal?.throwIfAborted();
-  const response = await fetch(apiUrl(endpoint), { method, signal, headers: { Accept: 'application/json' } });
+  const response = await fetch(apiUrl(endpoint) + query, { method, signal, headers: { Accept: 'application/json' } });
   signal?.throwIfAborted();
   if (!response.ok) await throwHttpError(response, signal);
   if (response.status !== expectedStatus) throw new ResponseValidationError(`HTTP ${response.status}; expected ${expectedStatus}`);

@@ -1,7 +1,7 @@
 import hashlib
 import json
 import uuid
-from typing import List
+from typing import List, Literal
 
 import cv2
 import numpy as np
@@ -12,6 +12,7 @@ from app.core.deployment import public_mode
 from app.core.upload import read_bounded_file, decode_upload, TOTAL_BYTES
 from app.schemas.sequence import SequenceInput
 from app.services.job_manager import job_manager
+from orbittrace.demo_scenes import generate_demo_preset
 
 router = APIRouter()
 
@@ -26,15 +27,15 @@ def generate_target_frames(frames=5, width=64, height=48):
     return images
 
 @router.post("/api/analyze/demo", status_code=status.HTTP_202_ACCEPTED)
-async def analyze_demo(background_tasks: BackgroundTasks):
+async def analyze_demo(background_tasks: BackgroundTasks, preset: Literal['1', '2', '3', '4'] | None = None):
     if not job_manager.can_accept_job():
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Queue capacity exceeded")
     
     frames_count = 5
-    width = 64
-    height = 48
+    width = 640 if preset else 64
+    height = 480 if preset else 48
     
-    seq_id = f"demo-{uuid.uuid4().hex}"
+    seq_id = f"demo-{preset or 'legacy'}-{uuid.uuid4().hex}"
     
     sequence_data = {
         "schema_version": "0.1.0",
@@ -54,7 +55,7 @@ async def analyze_demo(background_tasks: BackgroundTasks):
     }
     
     sequence = SequenceInput.model_validate(sequence_data)
-    pixels = generate_target_frames(frames=frames_count, width=width, height=height)
+    pixels = generate_demo_preset(preset) if preset else generate_target_frames(frames=frames_count, width=width, height=height)
     
     config = PipelineConfig(threshold_sigma=3.0, confirmation_observations=3)
     
@@ -69,7 +70,8 @@ async def analyze_demo(background_tasks: BackgroundTasks):
 async def analyze_upload(
     background_tasks: BackgroundTasks,
     manifest: str = Form(...),
-    files: List[UploadFile] = File(...)
+    files: List[UploadFile] = File(...),
+    analysis_mode: Literal['standard', 'temporal'] = Form('standard'),
 ):
     if not job_manager.can_accept_job():
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Queue capacity exceeded")
@@ -106,7 +108,9 @@ async def analyze_upload(
             await upload_file.close()
     sequence = sequence.model_copy(update={"input_sha256": encoded_hash.hexdigest()})
 
-    config = PipelineConfig()
+    # Explicit opt-in: preserve existing clients and the frozen single-frame path.
+    config = PipelineConfig(analysis_mode=analysis_mode,
+                            gate_distance_px=25.0 if analysis_mode == 'temporal' else 20.0)
     
     try:
         job_state = job_manager.submit_job(sequence, frame_pixels, config, background_tasks)

@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef } from 'react';
+import { CustomCursor } from './components/ui/CustomCursor';
 import { AppFooter } from './components/layout/AppFooter';
 import { AppNavigation } from './components/layout/AppNavigation';
 import { useHashRoute } from './hooks/useHashRoute';
@@ -38,6 +39,6 @@ export default function App() {
           : <WorkbenchPage initialDiagnosticsOpen={page === 'readiness' || hash === '#/readiness' || hash === '#system-diagnostics'} />}
       </div>
     </main>
-    <AppFooter />
+    <AppFooter /><CustomCursor />
   </>;
 }

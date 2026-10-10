@@ -112,22 +112,22 @@ export function SystemDiagnostics({ isOpen = true, onClose }: SystemDiagnosticsP
             </li>
             <li>
               <div>
-                <strong>Synthetic Analysis</strong>
-                <p>Job submission, polling, results, manifests, frames and aligned overlays. Requires the backend.</p>
+                <strong>Live analysis</strong>
+                <p>Job submission, polling, results, manifests, frames and aligned overlays from the connected backend.</p>
               </div>
               <span className="ready">Integrated</span>
             </li>
             <li>
               <div>
                 <strong>Local image analysis</strong>
-                <p>Five confirmed telescope images can be analyzed by the backend. Suitability and registration failures remain visible.</p>
+                <p>Upload exactly five confirmed grayscale telescope frames. Suitability and registration failures are reported; accepted results render in native image coordinates.</p>
               </div>
               <span className="ready">Integrated</span>
             </li>
             <li>
               <div>
                 <strong>Scientific exports</strong>
-                <p>Backend JSON and CSV downloads are available after completed local-image analysis.</p>
+                <p>Frontend PDF and JSON track reports, plus backend CSV exports, are available after a completed upload analysis.</p>
               </div>
               <span className="ready">Integrated</span>
             </li>

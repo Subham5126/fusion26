@@ -15,6 +15,8 @@ import { ScientificOverlay } from '../src/components/workbench/ScientificOverlay
 import { LocalWorkbench } from '../src/components/workbench/LocalWorkbench';
 import { DemoWorkbench } from '../src/components/workbench/DemoWorkbench';
 import { WorkbenchShell } from '../src/components/workbench/WorkbenchShell';
+import { WorkbenchPage } from '../src/pages/WorkbenchPage';
+import { SystemDiagnostics } from '../src/components/workbench/SystemDiagnostics';
 
 // Authored headers and contract fixture exercise boundaries; none are live assets.
 function png(width = 64, height = 48) {
@@ -125,9 +127,10 @@ test('forecasts use only returned future points and are never counted as observa
   const html = renderToStaticMarkup(createElement(ScientificOverlay, { model, scale: 4, selected: 'fixture-track-1', select: () => {}, visibility: { detections: true, tracks: true, predictions: true } }));
   assert.match(html, /stroke-dasharray="1.25 1"/); assert.match(html, /class="predicted-point"[^>]*fill="none"/); assert.match(html, /data-observed-frame/); assert.match(html, /not observed/);
 });
-test('missing observations are not interpolated into a solid observed track', () => {
+test('available observations connect across a missed frame without inventing an observation', () => {
   const payload = result(); payload.tracks[0].points.splice(1, 1); payload.tracks[0].observed_count = 2;
-  const model = scientificOverlay(payload, frame(2)); assert.equal(model.tracks[0].observed.length, 2); assert.equal(model.tracks[0].segments.length, 0);
+  const model = scientificOverlay(payload, frame(2)); assert.equal(model.tracks[0].observed.length, 2); assert.equal(model.tracks[0].segments.length, 1);
+  assert.deepEqual(model.tracks[0].observed.map(p=>p.frame),[0,2]);
 });
 test('empty frames keep honest empty detection sets while preserving actual history', () => {
   const model = scientificOverlay(result(), frame(4)); assert.equal(model.detections.length, 0); assert.equal(model.tracks[0].observed.length, 3);
@@ -163,22 +166,38 @@ test('selection, visibility and non-color forecast distinctions appear in the SV
   assert.doesNotMatch(render(false, false), /data-observed-frame|data-predicted-frame|data-detection-id/);
   assert.doesNotMatch(render(true, false), /predicted-point/); assert.match(render(false, true), /predicted-point/);
 });
-test('local and analyzed sources stay separate and unavailable local actions are absent', () => {
+test('local and analyzed sources stay separate and arbitrary analysis remains disabled', () => {
   const local = renderToStaticMarkup(createElement(LocalWorkbench)); const demo = renderToStaticMarkup(createElement(DemoWorkbench, { result: result() }));
-  assert.match(local, /Local Image Preview/); assert.match(local, /Select telescope images/);
-  assert.doesNotMatch(local, /Analyze local images|Not performed|Timestamps|class="export-actions"/);
+  assert.match(local, /Local Image Preview/); assert.match(local, /Analyze local images/); assert.match(local, /disabled/);
   assert.doesNotMatch(local, /data-job-id|Scientific image overlays|scientific-detection/);
   assert.match(demo, /data-source="analyzed_demo"/); assert.match(demo, /Local Image Preview has independent images and no synthetic overlays/);
   const unsupported = result(); unsupported.source_type = 'real'; assert.equal(supportsDemoFrames(unsupported), false);
   assert.match(renderToStaticMarkup(createElement(DemoWorkbench, { result: unsupported })), /No images or overlays are substituted/);
 });
-
-test('observation workspace precedes explicitly synthetic controls and contains no synthetic result', () => {
+test('live observation workspace excludes synthetic controls without substituting results', () => {
   const html = renderToStaticMarkup(createElement(WorkbenchShell));
-  assert.ok(html.indexOf('id="observations"') < html.indexOf('id="synthetic-analysis"'));
+  assert.match(html, /id="observations"/);
   assert.match(html, /data-source="local_preview"/);
-  assert.match(html, /data-source="synthetic"/);
-  assert.match(html, /Simulated source/);
+  assert.doesNotMatch(html, /id="synthetic-analysis"|data-source="synthetic"|Simulated source/);
   assert.doesNotMatch(html, /data-job-id|scientific-detection|data-observed-frame/);
-  assert.match(html, /Run Synthetic Demo/);
+  assert.match(html, /Not performed/);
+});
+
+test('integrated UI retains upload actions and keeps diagnostics outside the default live view', () => {
+  const html = renderToStaticMarkup(createElement(WorkbenchPage));
+  assert.match(html, /Mission Workbench/);
+  assert.match(html, /Analyze local images/);
+  assert.match(html, /aria-label="Local frame playback"/);
+  assert.match(html, /aria-controls="system-diagnostics"/);
+  assert.doesNotMatch(html, /id="system-diagnostics"|Synthetic Analysis|Browser only; no upload/);
+  assert.equal(renderToStaticMarkup(createElement(SystemDiagnostics, { isOpen: false })), '');
+});
+
+test('opened diagnostics describes real upload and report capabilities without fabricating a health result', () => {
+  const html = renderToStaticMarkup(createElement(WorkbenchPage, { initialDiagnosticsOpen: true }));
+  assert.match(html, /id="system-diagnostics"/);
+  assert.match(html, /Upload exactly five confirmed grayscale telescope frames/);
+  assert.match(html, /Frontend PDF and JSON track reports/);
+  assert.match(html, /Checking backend/);
+  assert.doesNotMatch(html, /workflow and registration handling are pending|downloads are not connected yet|readiness:.*bootstrap/);
 });

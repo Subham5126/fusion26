@@ -111,9 +111,9 @@ export function OpticalViewer({ frame, onSelect, onStep, onToggle, onError, onRe
         {!ready && <div className="viewer-empty" role="status"><Icon name="image" /><h3>{failed === frame.url ? 'This frame could not be displayed.' : 'Loading observation…'}</h3>
           {failed === frame.url && <button className="button button--secondary button--small" type="button" onClick={() => { setFailed(''); setLoaded(''); setRetry(value => value + 1); }}>Retry frame</button>}</div>}
       </> : emptyState ?? <div className="viewer-empty local-viewer-empty"><span className="viewer-reticle" aria-hidden="true" /><span className="viewer-corner-targets" aria-hidden="true" /><Icon name="image" />
-        <h3>Bring your observations into focus.</h3><p>Choose 3–30 telescope images, confirm their frame order, and inspect the original pixels.</p>
+        <h3>Bring your observations into focus.</h3><p>Choose five telescope images, confirm their frame order, and analyze the sequence.</p>
         <button className="button button--primary button--small" type="button" onClick={onSelect}><Icon name="plus" />Choose images</button>
-        <small>JPEG or PNG · images stay in this browser</small>
+        <small>JPEG or PNG · uploaded only when you choose Analyze</small>
       </div>}
     </div>
     <div className="image-readout"><span>{frame ? `${frame.width_px} × ${frame.height_px} px · decoded image` : 'Original aspect ratio · native pixel geometry'}</span>

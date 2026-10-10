@@ -9,3 +9,30 @@
 .t08-overlay [data-track-control]:focus-visible { outline: none; stroke: white; stroke-width: 1px; }
 .t08-forecast-status { margin: 12px 0; padding: 10px 14px; border-left: 2px solid #ffad45; background: #ffad450b; color: #e9bd82; font-size: 12px; }
 .t08-track-colors { display: flex; gap: 16px; font: 12px var(--font-mono, monospace); margin: 12px 0; }
+.t08-overlay .t08-frame-label { font-family: var(--font-mono, monospace); font-weight: 700; pointer-events: none; }
+.track-quality-panel { margin: 16px 0; padding: 14px; border: 1px solid #23dabb40; border-radius: 10px; background: #23dabb08; }
+.track-quality-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12px; }
+.track-quality-heading strong { font: 700 20px var(--font-mono, monospace); color: #eafcf8; }
+.track-confidence-bar { height: 8px; margin: 12px 0 8px; border-radius: 8px; background: #b2c9d51a; overflow: hidden; }
+.track-confidence-bar span { display: block; height: 100%; background: var(--quality-color); box-shadow: 0 0 10px var(--quality-color); }
+.quality-low { --quality-color: #ffad45; }
+.quality-medium { --quality-color: #f5db59; }
+.quality-high { --quality-color: #23dabb; }
+.quality-explanation { font-size: 11px; color: #a6bdc6; margin: 8px 0; line-height: 1.5; }
+.track-quality-panel .evidence-values dd { overflow-wrap: anywhere; }
+.local-workbench .export-actions { flex-wrap: wrap; }
+.track-path-detail { padding: 12px; margin: 12px 0; border: 1px solid #23dabb40; border-radius: 10px; background: #050e13; }
+.track-path-detail strong { font-size: 13px; }
+.track-path-detail p { font-size: 11px; line-height: 1.5; color: #a6bdc6; margin: 8px 0; }
+.track-path-detail svg { display: block; width: 100%; height: 180px; }
+.track-path-detail polyline { stroke-linejoin: round; stroke-linecap: round; }
+.t08-detection:not(.is-selected) .t08-box-label { opacity: 0; transition: opacity 150ms; }
+.t08-detection:hover .t08-box-label, .t08-detection:focus-within .t08-box-label { opacity: 1; }
+.analysis-mode-control { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 24px; font-size: 12px; }
+.analysis-mode-control select { max-width: 100%; padding: 9px; color: #dffbf3; background: #0a2429; border: 1px solid #2c6465; border-radius: 8px; }
+.track-confidence-bar span { transition: width 250ms ease; }
+.local-sequence-notice { padding: 8px 24px; font-size: 12px; line-height: 1.6; }
+.local-workbench > .analysis-note { margin: 10px 24px; }
+@media (prefers-reduced-motion: reduce) {
+  .track-confidence-bar span, .t08-detection .t08-box-label { transition: none; }
+}

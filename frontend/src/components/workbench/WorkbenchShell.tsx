@@ -5,7 +5,6 @@ import { ConceptualField } from './ConceptualField';
 import { presentAnalysis, unavailableAnalysis } from '../../state/analysis';
 import type { AnalysisState } from '../../state/analysis';
 import { LocalWorkbench } from './LocalWorkbench';
-import { AnalysisPanel } from './AnalysisPanel';
 
 function TrackInspector() {
   const [tab, setTab] = useState<'evidence' | 'sequence'>('evidence');
@@ -38,8 +37,8 @@ function TrackInspector() {
   </aside>;
 }
 
-export function WorkbenchShell({ preview = false, analysis = unavailableAnalysis, overview, navigation, connection }: { preview?: boolean; analysis?: AnalysisState; overview?: ReactNode; navigation?: ReactNode; connection?: ReactNode }) {
-  if (!preview) return <><LocalWorkbench overview={overview} navigation={navigation} connection={connection} /><AnalysisPanel /></>;
+export function WorkbenchShell({ preview = false, analysis = unavailableAnalysis, overview, navigation }: { preview?: boolean; analysis?: AnalysisState; overview?: ReactNode; navigation?: ReactNode }) {
+  if (!preview) return <LocalWorkbench overview={overview} navigation={navigation} />;
   const presentation = presentAnalysis(analysis);
   return <section className={`workbench-shell ${preview ? 'workbench-shell--preview' : ''}`}
     aria-label={preview ? 'Conceptual mission workbench preview' : 'Mission workbench shell'}>

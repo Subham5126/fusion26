@@ -109,19 +109,27 @@ def test_all_empty_images_consumed_with_explicit_frame_indices(tracking):
     ("test", "57", [7, 4, 7, 4, 14]),
     ("test", "1107", [0, 0, 0, 0, 0]),
 ])
-def test_real_esa_native_geometry_and_tracking(tracking, split, sequence_id, counts):
+@pytest.mark.parametrize("profile", ["cv_t04", "precision"])
+def test_real_esa_native_geometry_and_tracking(tracking, split, sequence_id, counts, profile):
     source = Path(os.environ.get("CV_T06_REAL_SOURCE", str(Path(__file__).resolve().parents[2] / "data/raw/SpotGEOv2")))
     if not source.is_dir():
         pytest.skip("External ESA images unavailable; set CV_T06_REAL_SOURCE")
     dataset = SpotGeoDataset(source, split=split)
     sequence = dataset.load_sequence(sequence_id)
     frames = [f.pixels for f in sequence.frames]
-    actual = detect_sequence(frames, sequence_id=f"{split}-{sequence_id}")
-    expected = detect_optimized_sequence(sequence, OptimizedConfig(threshold_sigma=4.5, max_context_elongation=2.).to_dict())
+    from astrotrace.detection.precision import precision_config
+    config = (OptimizedConfig(threshold_sigma=4.5, max_context_elongation=2.)
+              if profile == "cv_t04" else precision_config()).to_dict()
+    actual = detect_sequence(frames, sequence_id=f"{split}-{sequence_id}",
+                             config=config if profile == "cv_t04" else None)
+    expected = detect_optimized_sequence(sequence, config)
     # Compare every scientific field/evidence value against the unchanged CV-T04.
     original = [d for frame in expected.frames for d in frame.detections]
     assert [{k: v for k, v in d.model_dump().items() if k != "detection_id"} for d in actual] == [
         {k: v for k, v in d.model_dump().items() if k != "detection_id"} for d in original]
-    assert [sum(d.frame_index == i for d in actual) for i in range(5)] == counts
+    if profile == "cv_t04":
+        assert [sum(d.frame_index == i for d in actual) for i in range(5)] == counts
+    else:
+        assert all(sum(d.frame_index == i for d in actual) <= counts[i] for i in range(5))
     assert len({d.detection_id for d in actual}) == len(actual)
     consume(tracking, actual, 5, source_type="real", dimensions=(640, 480))

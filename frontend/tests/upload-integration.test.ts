@@ -8,6 +8,8 @@ import { runUpload } from '../src/api/client';
 import { createAnalysisJobController } from '../src/state/analysisJob';
 import type { AnalysisState } from '../src/state/analysis';
 import { imageTransform, pixelToViewport } from '../src/viewer/geometry';
+import { reviewOverlay } from '../src/viewer/resultReview';
+import { trackEvidence } from '../src/viewer/trackReport';
 
 const frames = (): LocalFrame[] => Array.from({length:5},(_,i) => ({id:`local-${i}`, file:new File(['pixels'],`${i}.png`,{type:'image/png'}), url:`blob:${i}`,
   width_px:640,height_px:480,timestamp_s:null,header:{width:640,height:480,orientation:1,format:'image/png'}}));
@@ -46,6 +48,38 @@ test('registered tracks project through the current frame inverse while raw boxe
     const transform=imageTransform({width:640,height:480},{width,height:400},{zoom:1,pan:{x:0,y:0}});
     assert.equal(pixelToViewport(model.detections[0].center,transform).x,transform.left+(model.detections[0].center.x+.5)*transform.scale);
   }
+});
+
+test('original image history pins each actual source position while forecasts retain current-frame registration', () => {
+  const s=source(), before=structuredClone(s.result);
+  s.diagnostics.registration.frames.forEach((f,i)=>{ f.reference_to_raw[0][2]=-30*i; f.reference_to_raw[1][2]=-20*i; });
+  const first=s.result.tracks[0].points[0];
+  for (const i of [0,1,2,3,4,1]) {
+    const original=uploadOverlay(s.result,s.local[i],i,s.manifest,s.diagnostics,'original');
+    const registered=uploadOverlay(s.result,s.local[i],i,s.manifest,s.diagnostics,'registered');
+    assert.equal(original.tracks[0].observed[0].x,first.x_raw_px);
+    assert.equal(original.tracks[0].observed[0].y,first.y_raw_px);
+    assert.equal(registered.tracks[0].observed[0].x,first.x_reference_px-30*i);
+    assert.deepEqual(original.detections,registered.detections);
+    assert.deepEqual(original.tracks[0].forecast,registered.tracks[0].forecast);
+    assert.ok(original.tracks[0].observed.every(p=>p.frame<=i));
+    const reviewed=reviewOverlay(original,s.result,true,i);
+    if (reviewed.tracks[0].predictions.length) assert.deepEqual(reviewed.tracks[0].forecast[0],registered.tracks[0].forecast[0]);
+    for (const zoom of [1,2,4,8]) {
+      const transform=imageTransform({width:640,height:480},{width:640,height:480},{zoom,pan:{x:0,y:0}});
+      const location=pixelToViewport(original.tracks[0].observed[0],transform);
+      assert.equal(location.x,transform.left+(first.x_raw_px!+.5)*transform.scale);
+    }
+  }
+  assert.deepEqual(s.result,before);
+});
+
+test('raw image direction and camera-corrected direction are explicitly distinct', () => {
+  const s=source(), track=s.result.tracks[0];
+  track.points=[{...track.points[0],x_raw_px:600,y_raw_px:400,x_reference_px:600,y_reference_px:400},
+    {...track.points[1],x_raw_px:500,y_raw_px:300,x_reference_px:608,y_reference_px:404}];
+  assert.equal(trackEvidence(track,'original').direction,'upper left');
+  assert.equal(trackEvidence(track).direction,'lower right');
 });
 test('foreign or malformed diagnostics and mismatched track observations suppress overlays', () => {
   const s=source();

@@ -10,7 +10,10 @@ export function HeroCanvas3D() {
     if (!container) return;
 
     // Check prefers-reduced-motion
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let prefersReducedMotion = motionPreference.matches;
+    let requestRender = () => {};
+    const updateMotionPreference = () => { prefersReducedMotion = motionPreference.matches; requestRender(); };
 
     // Scene setup
     const scene = new THREE.Scene();
@@ -29,6 +32,7 @@ export function HeroCanvas3D() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
+    motionPreference.addEventListener('change', updateMotionPreference);
 
     // Group for all celestial objects that tilt with mouse
     const worldGroup = new THREE.Group();
@@ -56,6 +60,7 @@ export function HeroCanvas3D() {
       earthMat.map = texture;
       earthMat.color.set(0xc3ddff);
       earthMat.needsUpdate = true;
+      requestRender();
     });
 
     // Match the background's cool palette and upper-right sunlight.
@@ -80,6 +85,7 @@ export function HeroCanvas3D() {
       cloudMat.alphaMap = texture;
       cloudMat.needsUpdate = true;
       clouds.visible = true;
+      requestRender();
     });
 
     // 2. Decorative orbital rings
@@ -191,6 +197,7 @@ export function HeroCanvas3D() {
     let currentY = 0;
 
     const handlePointerMove = (e: MouseEvent) => {
+      if (prefersReducedMotion || window.matchMedia('(pointer: coarse)').matches) return;
       const rect = container.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
@@ -209,6 +216,7 @@ export function HeroCanvas3D() {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
+      requestRender();
     };
 
     const resizeObserver = new ResizeObserver(handleResize);
@@ -218,14 +226,14 @@ export function HeroCanvas3D() {
     let isVisible = true;
     const visibilityObserver = new IntersectionObserver(([entry]) => {
       isVisible = entry.isIntersecting;
+      requestRender();
     });
     visibilityObserver.observe(container);
 
-    let animationFrameId: number;
+    let animationFrameId = 0;
 
     const animate = () => {
-      animationFrameId = requestAnimationFrame(animate);
-
+      animationFrameId = 0;
       if (!isVisible || document.hidden) return;
 
       const delta = prefersReducedMotion ? 0 : 0.005;
@@ -251,8 +259,8 @@ export function HeroCanvas3D() {
       });
 
       // Smooth mouse reaction interpolation
-      currentX += (targetX - currentX) * 0.05;
-      currentY += (targetY - currentY) * 0.05;
+      currentX = prefersReducedMotion ? 0 : currentX + (targetX - currentX) * 0.05;
+      currentY = prefersReducedMotion ? 0 : currentY + (targetY - currentY) * 0.05;
 
       worldGroup.rotation.x = currentY * 0.6;
       worldGroup.rotation.z = -currentX * 0.3;
@@ -261,12 +269,19 @@ export function HeroCanvas3D() {
       camera.lookAt(0, 0, 0);
 
       renderer.render(scene, camera);
+      if (!prefersReducedMotion) animationFrameId = requestAnimationFrame(animate);
     };
-
-    animate();
+    requestRender = () => {
+      if (!isVisible || document.hidden) { cancelAnimationFrame(animationFrameId); animationFrameId = 0; }
+      else if (!animationFrameId) animationFrameId = requestAnimationFrame(animate);
+    };
+    document.addEventListener('visibilitychange', requestRender);
+    requestRender();
 
     // Cleanup on unmount
     return () => {
+      motionPreference.removeEventListener('change', updateMotionPreference);
+      document.removeEventListener('visibilitychange', requestRender);
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('mousemove', handlePointerMove);
       resizeObserver.disconnect();
