@@ -109,14 +109,14 @@ export function LocalWorkbench({ overview, navigation }: { overview?: ReactNode;
       </dl>}
     </div><div className="workbench-overview-controls">{navigation}</div></header>
     <header className="observation-toolbar" aria-label="Image selection and sequence controls">
-      <div className="observation-toolbar-heading"><Icon name="image" /><div><h2>Optical observations</h2><p>Local Image Preview · Analyze uploads your confirmed sequence.</p></div></div>
+      <div className="observation-toolbar-heading"><Icon name="image" /><div><h2>Optical observations</h2><p>Local Image Preview · Analysis uploads your confirmed sequence.</p></div></div>
       <div className="source-actions" role="group" aria-label="Image selection">
         <button className="button button--primary button--small" type="button" onClick={choose}><Icon name="plus" />{current ? 'Replace images' : 'Choose images'}</button>
         <button className="button button--secondary button--small" type="button" aria-label="Analyze local images" title="Analyze five confirmed images" disabled={!ready || busy || sequence.frames.length !== 5} onClick={submit}><Icon name="scan" /><span className="local-analysis-control-label">Analyze local images</span></button>
         {!!(current || sequence.draft.length || sequence.loading) && <button className="button button--quiet button--small" type="button" aria-label="Clear sequence" title="Clear sequence" onClick={() => { playback.pause(); sequence.clear(); }}>Clear</button>}
       </div>
     </header>
-    <input ref={input} hidden type="file" multiple accept="image/jpeg,image/png,.jpg,.jpeg,.png" aria-label="Select telescope images" tabIndex={-1}
+    <input ref={input} className="visually-hidden" type="file" multiple accept="image/jpeg,image/png,.jpg,.jpeg,.png" aria-label="Select telescope images" tabIndex={-1}
       onChange={event => { const files = Array.from(event.currentTarget.files ?? []); event.currentTarget.value = ''; if (files.length) { playback.pause(); void sequence.select(files); } }} />
     {modeControl}
     {mode === 'temporal' && <p className="analysis-note">Experimental mode for compact stationary star fields. Use Standard for ESA streak images; Motion performed worse on that evaluation. Slow targets may be suppressed. Original detections remain in Report JSON.</p>}
@@ -168,7 +168,7 @@ export function LocalWorkbench({ overview, navigation }: { overview?: ReactNode;
       <dl className="evidence-values"><div><dt>Source</dt><dd>{result ? 'Uploaded images' : 'Local images'}</dd></div><div><dt>Status</dt><dd>{sequence.loading ? 'Validating' : sequence.draft.length ? 'Review order' : result ? 'Live analysis result' : current ? 'Ready to inspect' : 'Awaiting images'}</dd></div><div><dt>Frames</dt><dd>{sequence.frames.length || 'Not loaded'}</dd></div><div><dt>Dimensions</dt><dd>{current ? `${current.width_px} × ${current.height_px} px` : 'Not available'}</dd></div><div><dt>Timestamps</dt><dd>Unknown</dd></div><div><dt>Analysis</dt><dd>{analysis.state.phase === 'idle' ? 'Not performed' : analysis.state.phase}</dd></div></dl>
       <section className="inspector-frame-card" aria-label="Frame order">
       <span className="inspector-section-label inspector-frames-label"><Icon name="layers" />Frame order</span>
-      {!current && <p className="inspector-empty-text">Your confirmed frame order will appear here.</p>}
+      {!current && <div className="inspector-empty-sequence"><span className="empty-frame-stack" aria-hidden="true"><i /><i /><i /></span><strong>Choose images to begin</strong><p className="inspector-empty-text">Your confirmed frame order will appear here. Review the order before playback.</p></div>}
       {current && <ol className="confirmed-frame-list" aria-label="Confirmed frame order">{sequence.frames.map((frame, index) => <li key={frame.id}><button type="button" disabled={sequence.loading || !!sequence.draft.length}
         aria-current={index === playback.index ? 'true' : undefined} aria-label={`Inspect frame ${index + 1}: ${frame.file.name}`} onClick={() => playback.seek(index)}>
         <span>{String(index + 1).padStart(2, '0')}</span><img src={frame.url} alt="" width="44" height="33" /><span title={frame.file.name}>{frame.file.name}</span></button></li>)}</ol>}

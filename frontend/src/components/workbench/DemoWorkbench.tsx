@@ -80,9 +80,10 @@ function VerifiedDemoWorkbench({ result }: { result: AnalysisResult }) {
         {!visibility.predictions && ' Predictions are hidden.'}</p>
       {!!model.warnings.length && <div className="sequence-feedback sequence-feedback--error" role="alert">{model.warnings.join(' ')}</div>}
       {!model.warnings.length && ready && !model.detections.length && <p className="analysis-note">No detections in this frame. No points were added.</p>}
-      <p className="analysis-note">Forecasts appear at the last observed frame. Future points have no source images and do not count as observations.</p>
+      <p className="analysis-note demo-forecast-note">Forecasts appear at the final observed frame. Future points have no source images and are not observations.</p>
     </div><aside className="track-inspector demo-track-inspector" aria-label="Analyzed demo track inspector">
       <div className="inspector-title"><Icon name="track" /><h3>Track evidence</h3></div>
+      <button type="button" className="button button--primary button--small demo-final-forecast" onClick={() => playback.seek(backend.frames.length - 1)}><span>Inspect final frame & forecasts</span><Icon name="arrow" /></button>
       <label className="demo-track-selector">Selected track<select aria-label="Select analyzed track" value={selected ?? ''} disabled={!result.tracks.length} onChange={event => setSelected(event.target.value)}>
         {!result.tracks.length && <option value="">No tracks returned</option>}{result.tracks.map(track => <option key={track.track_id} value={track.track_id}>{track.track_id}</option>)}</select></label>
       {track ? <><p className="analysis-note">{track.candidate_label}</p>
@@ -93,7 +94,7 @@ function VerifiedDemoWorkbench({ result }: { result: AnalysisResult }) {
         <div><dt>Image-plane speed</dt><dd>{track.trajectory ? `${number(track.trajectory.speed)} ${track.trajectory.speed_unit}` : 'No fit'}</dd></div>
         <div><dt>Fit RMSE</dt><dd>{track.trajectory?.fit_rmse_px == null ? 'Not provided' : `${number(track.trajectory.fit_rmse_px)} px`}</dd></div>
       </dl>{!!track.warnings.length && <ul className="analysis-note">{track.warnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul>}</> : <p className="analysis-note">No tracks were returned.</p>}
-      <button type="button" className="button button--secondary button--small" onClick={() => playback.seek(backend.frames.length - 1)}>Inspect final frame & forecasts</button>
+
       <div className="identity-note"><Icon name="info" /><span>Image-plane candidate evidence. Identity and physical orbit remain unverified.</span></div>
     </aside></div>
     <p className="demo-metadata-note">Frame order, dimensions and acquisition times come from this job’s backend manifest. Playback rate is a display control. Local observations have independent upload jobs.</p>

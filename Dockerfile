@@ -1,4 +1,5 @@
-FROM python:3.12-slim
+# Docker Official Image mirror: avoid Docker Hub's shared-builder pull limits.
+FROM public.ecr.aws/docker/library/python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \

@@ -4,8 +4,6 @@ import { useAnalysisJob } from '../../hooks/useAnalysisJob';
 import { presentAnalysis } from '../../state/analysis';
 import type { AnalysisResult, TrackPoint } from '../../types/contracts';
 import { DemoWorkbench } from './DemoWorkbench';
-import { useState } from 'react';
-import { emptyResult } from '../../fixtures/empty-result';
 
 const numeric = new Intl.NumberFormat(undefined, { maximumFractionDigits: 3 });
 const value = (number: number | null) => number === null ? 'Not provided' : numeric.format(number);
@@ -88,7 +86,6 @@ export function AnalysisResults({ result, showViewer = true, reviewCounts }: { r
 }
 
 export function AnalysisPanel() {
-  const [fixture, setFixture] = useState(false);
   const { state, run, cancel } = useAnalysisJob();
   const id = useId();
   const busy = ['submitting', 'queued', 'processing', 'awaiting_result'].includes(state.phase);
@@ -113,7 +110,5 @@ export function AnalysisPanel() {
       <p className="analysis-note">No result was substituted. A new run creates a new backend job.</p></div>}
     {!!job?.warnings.length && <div className="analysis-job-warnings"><Warnings warnings={job.warnings} label="Job warnings" /></div>}
     {state.phase === 'succeeded' && <AnalysisResults key={state.result.job_id} result={state.result} />}
-    <button type="button" className="button button--quiet button--small" onClick={() => setFixture(value => !value)}>Toggle contract fixture backup</button>
-    {fixture && <div><p role="status">CONTRACT FIXTURE — illustrative empty output, no inference performed.</p><AnalysisResults result={emptyResult} showViewer={false} /></div>}
   </section>;
 }
